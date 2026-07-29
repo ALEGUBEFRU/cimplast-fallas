@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0f1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Reporte de fallas Cimplast">
+<title>Cimplast · Fallas</title>
+
+<style>
+  /* ── TOKENS ─────────────────────────────────────────── */
+  :root {
+    --bg:        #0a0f1a;
+    --surface:   #111827;
+    --surface2:  #1c2636;
+    --border:    #253048;
+    --accent:    #f59e0b;   /* ámbar industrial */
+    --accent-dk: #b45309;
+    --danger:    #ef4444;
+    --ok:        #22c55e;
+    --text:      #f1f5f9;
+    --muted:     #64748b;
+    --label:     #94a3b8;
+    --font-ui:   'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    --r:         10px;
+    --r-lg:      16px;
+  }
+
+  /* ── RESET ──────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  button { cursor: pointer; font-family: inherit; border: none; background: none; }
+  input, textarea, select { font-family: inherit; }
+
+  /* ── HEADER ─────────────────────────────────────────── */
+  header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--accent);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-mark {
+    width: 34px; height: 34px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    font-weight: 900;
+    color: #000;
+    letter-spacing: -1px;
+  }
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  .logo-text span:first-child {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    color: var(--text);
+  }
+  .logo-text span:last-child {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pill-turno {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--label);
+    font-family: var(--font-mono);
+  }
+  .btn-historial {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 7px 12px;
+    font-size: 12px;
+    color: var(--label);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: border-color .15s, color .15s;
+  }
+  .btn-historial:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── VIEWS ──────────────────────────────────────────── */
+  .view { display: none; flex-direction: column; flex: 1; }
+  .view.active { display: flex; }
+
+  /* ── FORM VIEW ──────────────────────────────────────── */
+  .form-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 20px 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  .field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--label);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .req { color: var(--accent); font-size: 14px; }
+
+  .field input,
+  .field textarea,
+  .field select {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    color: var(--text);
+    font-size: 16px; /* 16px evita zoom en iOS */
+    padding: 13px 15px;
+    width: 100%;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(245,158,11,.15);
+  }
+  .field textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+  /* select arrow */
+  .select-wrap { position: relative; }
+  .select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+    font-size: 14px;
+  }
+  .select-wrap select { padding-right: 36px; }
+
+  /* turno chips */
+  .chip-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--label);
+    transition: all .15s;
+    flex: 1;
+    text-align: center;
+    min-width: 100px;
+  }
+  .chip.selected {
+    background: rgba(245,158,11,.12);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* foto */
+  .foto-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--r-lg);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .foto-zone:hover { border-color: var(--accent); background: rgba(245,158,11,.04); }
+  .foto-zone input[type=file] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+  }
+  .foto-icon { font-size: 28px; margin-bottom: 6px; }
+  .foto-txt { font-size: 13px; color: var(--muted); }
+  .foto-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .foto-thumb {
+    width: 72px; height: 72px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1.5px solid var(--border);
+    position: relative;
+  }
+  .thumb-wrap { position: relative; display: inline-block; }
+  .thumb-del {
+    position: absolute;
+    top: -6px; right: -6px;
+    background: var(--danger);
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  /* datetime row */
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ── SUBMIT BAR ──────────────────────────────────────── */
+  .submit-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, var(--bg) 70%, transparent);
+    padding: 16px 20px 24px;
+    z-index: 50;
+  }
+  .btn-submit {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 16px;
+    border-radius: var(--r-lg);
+    letter-spacing: .03em;
+    transition: background .15s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn-submit:active { transform: scale(.98); }
+  .btn-submit:disabled { background: var(--border); color: var(--muted); }
+  .btn-submit .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(0,0,0,.3);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── TOAST ──────────────────────────────────────────── */
+  .toast {
+    position: fixed;
+    top: 80px; left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    z-index: 999;
+    white-space: nowrap;
+    max-width: 90vw;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast.ok  { border-color: var(--ok);     color: var(--ok); }
+  .toast.err { border-color: var(--danger);  color: var(--danger); }
+
+  /* ── HISTORIAL VIEW ─────────────────────────────────── */
+  .hist-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .btn-back {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--label);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hist-title { font-size: 16px; font-weight: 700; }
+  .hist-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .hist-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .hist-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .hist-equipo {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .hist-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-pendiente { background: rgba(245,158,11,.15); color: var(--accent); }
+  .badge-enviado   { background: rgba(34,197,94,.15);  color: var(--ok); }
+  .hist-sintoma {
+    font-size: 13px;
+    color: var(--label);
+    line-height: 1.4;
+  }
+  .hist-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-top: 2px;
+  }
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--muted);
+    padding: 40px;
+    text-align: center;
+  }
+  .empty-state .big { font-size: 40px; }
+  .empty-state p { font-size: 14px; line-height: 1.5; }
+
+  /* ── CONFIG VIEW ─────────────────────────────────────── */
+  .config-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .config-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .config-card h3 { font-size: 14px; font-weight: 700; color: var(--label); }
+  .btn-config-save {
+    background: var(--accent);
+    color: #000;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 13px;
+    border-radius: var(--r);
+    transition: background .15s;
+  }
+
+  /* ── SUCCESS OVERLAY ─────────────────────────────────── */
+  .success-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,15,26,.95);
+    z-index: 200;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    padding: 40px;
+  }
+  .success-overlay.show { display: flex; }
+  .success-check {
+    width: 80px; height: 80px;
+    background: rgba(34,197,94,.15);
+    border: 2px solid var(--ok);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 36px;
+  }
+  .success-overlay h2 { font-size: 22px; font-weight: 800; }
+  .success-overlay p  { font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .success-overlay .ref {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    background: rgba(245,158,11,.08);
+    border: 1px solid rgba(245,158,11,.2);
+    border-radius: 8px;
+    padding: 8px 16px;
+  }
+  .btn-nueva {
+    margin-top: 10px;
+    background: var(--accent);
+    color: #000;
+    font-size: 15px;
+    font-weight: 800;
+    padding: 14px 32px;
+    border-radius: var(--r-lg);
+  }
+
+  /* ── OFFLINE BANNER ──────────────────────────────────── */
+  .offline-bar {
+    background: rgba(239,68,68,.12);
+    border-bottom: 1px solid rgba(239,68,68,.3);
+    padding: 8px 20px;
+    font-size: 12px;
+    color: #fca5a5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    display: none;
+  }
+  body.offline .offline-bar { display: flex; }
+
+  @media (min-width: 480px) {
+    .form-scroll { max-width: 480px; margin: 0 auto; width: 100%; }
+    .submit-bar  { max-width: 480px; left: 50%; transform: translateX(-50%); right: auto; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- OFFLINE BANNER -->
+<div class="offline-bar">⚠ Sin conexión — el reporte se guardará localmente y se enviará al recuperar la red.</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">C</div>
+    <div class="logo-text">
+      <span>Cimplast</span>
+      <span>Reporte de Fallas</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="pill-turno" id="turnoHeader">—</div>
+    <button class="btn-historial" onclick="showView('historial')">📋 Mis reportes</button>
+  </div>
+</header>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-check">✓</div>
+  <h2>Reporte enviado</h2>
+  <p>El equipo de mantenimiento fue notificado. El registro quedó guardado en SharePoint.</p>
+  <div class="ref" id="successRef"></div>
+  <button class="btn-nueva" onclick="resetForm()">+ Nueva falla</button>
+</div>
+
+<!-- ══════════ VIEW: FORMULARIO ══════════ -->
+<div class="view active" id="viewForm">
+
+  <!-- CONFIG inicial si no hay SP configurado -->
+  <div id="spWarning" style="display:none; background: rgba(245,158,11,.08); border-bottom: 1px solid rgba(245,158,11,.2); padding: 10px 20px; font-size: 12px; color: var(--accent); display:flex; gap:8px; align-items:center;">
+    ⚙ SharePoint no configurado.
+    <button onclick="showView('config')" style="text-decoration:underline; color:var(--accent); font-size:12px; font-weight:600;">Configurar ahora</button>
+  </div>
+
+  <div class="form-scroll" id="formScroll">
+
+    <!-- QUIÉN REPORTA -->
+    <div class="section-label">Operador</div>
+    <div class="field">
+      <label>Nombre <span class="req">*</span></label>
+      <input type="text" id="fNombre" placeholder="Tu nombre completo" autocomplete="name">
+    </div>
+
+    <!-- TURNO -->
+    <div class="field">
+      <label>Turno <span class="req">*</span></label>
+      <div class="chip-group" id="turnoGroup">
+        <button class="chip" data-val="Mañana"  onclick="selChip(this,'turnoGroup')">🌅 Mañana</button>
+        <button class="chip" data-val="Tarde"   onclick="selChip(this,'turnoGroup')">🌆 Tarde</button>
+        <button class="chip" data-val="Noche"   onclick="selChip(this,'turnoGroup')">🌙 Noche</button>
+      </div>
+    </div>
+
+    <!-- EQUIPO -->
+    <div class="section-label" style="margin-top:4px">Equipo</div>
+    <div class="field">
+      <label>Planta <span class="req">*</span></label>
+      <div class="select-wrap">
+        <select id="fPlanta" onchange="updateEquipos()">
+          <option value="">— Seleccionar —</option>
+          <option value="Titese">Titese</option>
+          <option value="Planta 2">Planta 2</option>
+          <option value="Planta 3">Planta 3</option>
+          <option value="Planta 4">Planta 4</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Equipo / Activo <span class="req">*</span></label>
+      <div class="select-wrap">
+        <select id="fEquipo">
+          <option value="">— Primero seleccionar planta —</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>¿Equipo no listado?</label>
+      <input type="text" id="fEquipoManual" placeholder="Escribir nombre del equipo (opcional)">
+    </div>
+
+    <!-- FALLA -->
+    <div class="section-label" style="margin-top:4px">Falla</div>
+    <div class="field">
+      <label>Sistema afectado <span class="req">*</span></label>
+      <div class="chip-group" id="sistemaGroup">
+        <button class="chip" data-val="Eléctrico"  onclick="selChip(this,'sistemaGroup')">⚡ Eléctrico</button>
+        <button class="chip" data-val="Hidráulico" onclick="selChip(this,'sistemaGroup')">💧 Hidráulico</button>
+        <button class="chip" data-val="Neumático"  onclick="selChip(this,'sistemaGroup')">🌬 Neumático</button>
+        <button class="chip" data-val="Mecánico"   onclick="selChip(this,'sistemaGroup')">⚙ Mecánico</button>
+        <button class="chip" data-val="Automati."  onclick="selChip(this,'sistemaGroup')">🖥 Automati.</button>
+        <button class="chip" data-val="No sé"      onclick="selChip(this,'sistemaGroup')">❓ No sé</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Descripción del síntoma <span class="req">*</span></label>
+      <textarea id="fSintoma" placeholder="Describir qué está pasando: ruidos, alarmas, comportamiento anormal, momento en que ocurrió…"></textarea>
+    </div>
+    <div class="field">
+      <label>¿Equipo detenido?</label>
+      <div class="chip-group" id="detenidoGroup">
+        <button class="chip" data-val="Sí — parado"         onclick="selChip(this,'detenidoGroup')">🔴 Sí — parado</button>
+        <button class="chip" data-val="Parcial — reducido"  onclick="selChip(this,'detenidoGroup')">🟡 Parcial</button>
+        <button class="chip" data-val="No — sigue operando" onclick="selChip(this,'detenidoGroup')">🟢 Sigue</button>
+      </div>
+    </div>
+
+    <!-- FECHA/HORA -->
+    <div class="row-2">
+      <div class="field">
+        <label>Fecha <span class="req">*</span></label>
+        <input type="date" id="fFecha">
+      </div>
+      <div class="field">
+        <label>Hora <span class="req">*</span></label>
+        <input type="time" id="fHora">
+      </div>
+    </div>
+
+    <!-- FOTO -->
+    <div class="section-label" style="margin-top:4px">Evidencia</div>
+    <div class="foto-zone" id="fotoZone">
+      <input type="file" id="fFotos" accept="image/*" multiple capture="environment" onchange="handleFotos(this)">
+      <div class="foto-icon">📷</div>
+      <div class="foto-txt">Tocar para sacar foto o adjuntar imagen</div>
+      <div class="foto-preview" id="fotoPreview"></div>
+    </div>
+
+  </div><!-- /form-scroll -->
+
+  <div class="submit-bar">
+    <button class="btn-submit" id="btnSubmit" onclick="submitForm()">
+      Enviar reporte de falla
+    </button>
+  </div>
+
+</div><!-- /viewForm -->
+
+<!-- ══════════ VIEW: HISTORIAL ══════════ -->
+<div class="view" id="viewHistorial">
+  <div class="hist-header">
+    <button class="btn-back" onclick="showView('form')">← Volver</button>
+    <span class="hist-title">Mis reportes</span>
+  </div>
+  <div class="hist-list" id="histList"></div>
+</div>
+
+<!-- ══════════ VIEW: CONFIG ══════════ -->
+<div class="view" id="viewConfig">
+  <div class="hist-header">
+    <button class="btn-back" onclick="showView('form')">← Volver</button>
+    <span class="hist-title">Configuración SharePoint</span>
+  </div>
+  <div class="config-scroll">
+    <div class="config-card">
+      <h3>🔗 CONEXIÓN SHAREPOINT DIRECTA</h3>
+      <p style="font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:4px">
+        Conecta directo a SharePoint usando tu cuenta Microsoft 365. Sin Power Automate ni Azure AD.
+      </p>
+      <div class="field">
+        <label>URL del sitio SharePoint</label>
+        <input type="url" id="cfgSite" placeholder="https://cimplast.sharepoint.com/sites/MantenimientoPlanta" value="https://cimplast.sharepoint.com/sites/MantenimientoPlanta">
+      </div>
+      <div class="field">
+        <label>Nombre de la lista</label>
+        <input type="text" id="cfgLista" placeholder="Fallas" value="Fallas">
+      </div>
+      <button class="btn-config-save" onclick="loginYGuardar()">🔑 Iniciar sesión con Microsoft y guardar</button>
+      <div id="cfgTestResult" style="display:none; margin-top:8px; font-size:12px; padding:8px 12px; border-radius:8px;"></div>
+      <div id="cfgUserInfo" style="display:none; margin-top:8px; font-size:12px; color:var(--ok); padding:8px 12px; border-radius:8px; background:rgba(34,197,94,.08); border:1px solid var(--ok)"></div>
+      <p style="font-size:11px; color:var(--muted); line-height:1.5; margin-top:8px">
+        <strong>Sin configurar:</strong> los reportes se guardan localmente y podés exportarlos a CSV.
+      </p>
+    </div>
+    <div class="config-card">
+      <h3>📤 EXPORTAR REPORTES LOCALES</h3>
+      <p style="font-size:13px; color:var(--label); line-height:1.5">
+        Exportá todos los reportes guardados localmente a un archivo Excel (.csv) para cargarlo manualmente en SharePoint o SAP PM.
+      </p>
+      <button class="btn-config-save" onclick="exportCSV()">Descargar CSV</button>
+    </div>
+    <div class="config-card">
+      <h3>👤 MI NOMBRE POR DEFECTO</h3>
+      <div class="field">
+        <label>Nombre del operador</label>
+        <input type="text" id="cfgNombre" placeholder="Tu nombre">
+      </div>
+      <button class="btn-config-save" onclick="saveNombre()">Guardar nombre</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ SCRIPTS ════════════════ -->
+<script>
+// ── EQUIPOS POR PLANTA ──────────────────────────────────
+const EQUIPOS = {
+  "Titese": [
+    "Sopladora Uniloy N°1","Sopladora Uniloy N°2","Sopladora Uniloy N°3",
+    "Inyectora N°1","Inyectora N°2","Compresor Kaeser N°1","Compresor Kaeser N°2",
+    "Chiller N°1","Chiller N°2","Molino N°1","Secador N°1"
+  ],
+  "Planta 2": [
+    "Inyecto-sopladora N°1","Inyecto-sopladora N°2","Extrusora PEAD N°1",
+    "Extrusora COEX N°1","Compresor N°1","Chiller N°1","Molino N°2"
+  ],
+  "Planta 3": [
+    "Línea extrusión N°1","Línea extrusión N°2","Compresor Atlas Copco",
+    "Chiller N°3","Molino N°3","Mezclador N°1"
+  ],
+  "Planta 4": [
+    "Inyectora grande N°1","Inyectora grande N°2","Sopladora PET N°1",
+    "Compresor N°2","Chiller N°4","Molino N°4"
+  ]
+};
+
+function updateEquipos() {
+  const planta = document.getElementById('fPlanta').value;
+  const sel = document.getElementById('fEquipo');
+  sel.innerHTML = '<option value="">— Seleccionar equipo —</option>';
+  if (planta && EQUIPOS[planta]) {
+    EQUIPOS[planta].forEach(eq => {
+      const opt = document.createElement('option');
+      opt.value = eq; opt.textContent = eq;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+// ── CHIPS ───────────────────────────────────────────────
+function selChip(el, groupId) {
+  document.querySelectorAll(`#${groupId} .chip`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (groupId === 'turnoGroup') {
+    document.getElementById('turnoHeader').textContent = el.dataset.val;
+    localStorage.setItem('ultimoTurno', el.dataset.val);
+  }
+}
+
+// ── FOTO ────────────────────────────────────────────────
+let fotosData = [];
+function handleFotos(input) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      fotosData.push({ name: file.name, data: e.target.result });
+      renderFotos();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function renderFotos() {
+  const preview = document.getElementById('fotoPreview');
+  preview.innerHTML = '';
+  fotosData.forEach((f, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'thumb-wrap';
+    wrap.innerHTML = `
+      <img class="foto-thumb" src="${f.data}" alt="foto">
+      <div class="thumb-del" onclick="deleteFoto(${i})">✕</div>`;
+    preview.appendChild(wrap);
+  });
+}
+function deleteFoto(i) {
+  fotosData.splice(i, 1);
+  renderFotos();
+}
+
+// ── VIEWS ───────────────────────────────────────────────
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+  if (name === 'historial') renderHistorial();
+}
+
+// ── TOAST ────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'ok' ? '✓ ' : '⚠ ') + msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── VALIDACIÓN ───────────────────────────────────────────
+function getChipVal(groupId) {
+  const sel = document.querySelector(`#${groupId} .chip.selected`);
+  return sel ? sel.dataset.val : '';
+}
+function validate() {
+  const errs = [];
+  if (!document.getElementById('fNombre').value.trim()) errs.push('Nombre del operador');
+  if (!getChipVal('turnoGroup'))                         errs.push('Turno');
+  if (!document.getElementById('fPlanta').value)        errs.push('Planta');
+  const eq = document.getElementById('fEquipo').value || document.getElementById('fEquipoManual').value.trim();
+  if (!eq) errs.push('Equipo / Activo');
+  if (!getChipVal('sistemaGroup'))                       errs.push('Sistema afectado');
+  if (!document.getElementById('fSintoma').value.trim()) errs.push('Descripción del síntoma');
+  if (!document.getElementById('fFecha').value)         errs.push('Fecha');
+  if (!document.getElementById('fHora').value)          errs.push('Hora');
+  return errs;
+}
+
+// ── SUBMIT ───────────────────────────────────────────────
+async function submitForm() {
+  const errs = validate();
+  if (errs.length) {
+    showToast('Completar: ' + errs.slice(0,2).join(', ') + (errs.length>2?'…':''), 'err');
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Enviando…';
+
+  const equipo = document.getElementById('fEquipo').value || document.getElementById('fEquipoManual').value.trim();
+  const reporte = {
+    id:        'CF-' + Date.now(),
+    timestamp: new Date().toISOString(),
+    nombre:    document.getElementById('fNombre').value.trim(),
+    turno:     getChipVal('turnoGroup'),
+    planta:    document.getElementById('fPlanta').value,
+    equipo,
+    sistema:   getChipVal('sistemaGroup'),
+    sintoma:   document.getElementById('fSintoma').value.trim(),
+    detenido:  getChipVal('detenidoGroup') || 'No especificado',
+    fecha:     document.getElementById('fFecha').value,
+    hora:      document.getElementById('fHora').value,
+    fotos:     fotosData.length,
+    estado:    'pendiente'
+  };
+
+  // Guardar local siempre
+  saveLocal(reporte);
+
+  // Intentar SharePoint directo
+  const cfg = getConfig();
+  let enviado = false;
+  if (cfg.site && cfg.lista) {
+    try {
+      await sendToSharePoint(reporte);
+      reporte.estado = 'enviado';
+      updateLocal(reporte);
+      enviado = true;
+    } catch(e) {
+      console.warn('SP error:', e.message);
+      // Si es error de auth, intentar login
+      if (e.message?.includes('token') || e.message?.includes('auth')) {
+        showToast('Sesión expirada — ir a Configuración para reconectar', 'err');
+      }
+    }
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Enviar reporte de falla';
+
+  document.getElementById('successRef').textContent = reporte.id;
+  document.getElementById('successOverlay').classList.add('show');
+
+  if (!enviado && cfg.site) {
+    showToast('Sin conexión — guardado local, se enviará al recuperar red', 'err');
+  }
+  if (!cfg.site) {
+    showToast('Guardado local — configurá SharePoint en Configuración', 'err');
+  }
+}
+
+// ── SHAREPOINT REST API (sin MSAL, usa sesión del navegador) ──
+// Funciona porque el archivo está hosteado en el mismo tenant SharePoint
+// El navegador ya tiene la cookie de autenticación de M365
+
+const SP_SITE = 'https://cimplast.sharepoint.com/sites/MantenimientoPlanta';
+
+async function getFormDigest() {
+  const resp = await fetch(`${SP_SITE}/_api/contextinfo`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Accept': 'application/json;odata=verbose' }
+  });
+  if (!resp.ok) throw new Error('No se pudo obtener el digest de SharePoint');
+  const data = await resp.json();
+  return data.d.GetContextWebInformation.FormDigestValue;
+}
+
+async function loginYGuardar() {
+  const site  = document.getElementById('cfgSite').value.trim();
+  const lista = document.getElementById('cfgLista').value.trim() || 'Fallas';
+  const resultEl = document.getElementById('cfgTestResult');
+  const userEl   = document.getElementById('cfgUserInfo');
+
+  resultEl.style.display = 'block';
+  resultEl.style.cssText += ';background:rgba(100,116,139,.1);color:var(--label);border:1px solid var(--border)';
+  resultEl.textContent = '⏳ Verificando conexión con SharePoint…';
+
+  try {
+    // Probar conectividad y obtener usuario actual
+    const userResp = await fetch(`${SP_SITE}/_api/web/currentuser`, {
+      credentials: 'include',
+      headers: { 'Accept': 'application/json;odata=verbose' }
+    });
+    if (!userResp.ok) throw new Error('No se pudo conectar al sitio SharePoint. Asegurate de estar logueado en Microsoft 365.');
+    const userData = await userResp.json();
+    const userName = userData.d.Title;
+    const userEmail = userData.d.Email;
+
+    // Guardar config
+    const cfg = { site, lista, loggedIn: true, user: userEmail, userName };
+    localStorage.setItem('cimplast_cfg', JSON.stringify(cfg));
+    checkSpWarning();
+
+    resultEl.style.cssText += ';background:rgba(34,197,94,.1);color:var(--ok);border:1px solid var(--ok)';
+    resultEl.textContent = `✓ Conectado correctamente a SharePoint`;
+    userEl.style.display = 'block';
+    userEl.textContent   = `✓ ${userName} → lista "${lista}" en MantenimientoPlanta`;
+    showToast('Conectado a SharePoint');
+
+    // Pre-llenar nombre del operador si está vacío
+    const nombreField = document.getElementById('fNombre');
+    if (!nombreField.value) {
+      nombreField.value = userName;
+      localStorage.setItem('cimplast_nombre', userName);
+    }
+  } catch(e) {
+    resultEl.style.cssText += ';background:rgba(239,68,68,.1);color:var(--danger);border:1px solid var(--danger)';
+    resultEl.textContent = '✕ ' + (e.message || e);
+    showToast('Error de conexión', 'err');
+  }
+}
+
+async function sendToSharePoint(reporte) {
+  const cfg = getConfig();
+  const site  = cfg.site  || SP_SITE;
+  const lista = cfg.lista || 'Fallas';
+
+  // Obtener Form Digest (token anti-CSRF de SharePoint)
+  const digest = await getFormDigest();
+
+  // Crear ítem via REST API
+  const item = {
+    __metadata:  { type: `SP.Data.${lista}ListItem` },
+    Title:       reporte.id,
+    Operador:    reporte.nombre,
+    Turno:       reporte.turno,
+    Planta:      reporte.planta,
+    Equipo:      reporte.equipo,
+    Sistema:     reporte.sistema,
+    Sintoma:     reporte.sintoma,
+    Detenido:    reporte.detenido,
+    FechaFalla:  reporte.fecha + 'T' + reporte.hora + ':00Z',
+    CantFotos:   reporte.fotos
+  };
+
+  const createResp = await fetch(
+    `${site}/_api/web/lists/getbytitle('${lista}')/items`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Accept':          'application/json;odata=verbose',
+        'Content-Type':    'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      },
+      body: JSON.stringify(item)
+    }
+  );
+
+  if (!createResp.ok) {
+    const err = await createResp.json().catch(() => ({}));
+    const msg = err.error?.message?.value || `Error ${createResp.status}`;
+    throw new Error(msg);
+  }
+}
+
+// ── LOCAL STORAGE ────────────────────────────────────────
+function saveLocal(r) {
+  const arr = JSON.parse(localStorage.getItem('cimplast_fallas') || '[]');
+  arr.unshift(r);
+  localStorage.setItem('cimplast_fallas', JSON.stringify(arr));
+}
+function updateLocal(r) {
+  const arr = JSON.parse(localStorage.getItem('cimplast_fallas') || '[]');
+  const i = arr.findIndex(x => x.id === r.id);
+  if (i >= 0) { arr[i] = r; localStorage.setItem('cimplast_fallas', JSON.stringify(arr)); }
+}
+function getLocalFallas() {
+  return JSON.parse(localStorage.getItem('cimplast_fallas') || '[]');
+}
+
+// ── HISTORIAL ────────────────────────────────────────────
+function renderHistorial() {
+  const list = document.getElementById('histList');
+  const fallas = getLocalFallas();
+  if (!fallas.length) {
+    list.innerHTML = `<div class="empty-state"><div class="big">📋</div><p>Todavía no hay reportes registrados en este dispositivo.</p></div>`;
+    return;
+  }
+  list.innerHTML = fallas.map(f => `
+    <div class="hist-card">
+      <div class="hist-card-top">
+        <span class="hist-equipo">${f.equipo}</span>
+        <span class="hist-badge badge-${f.estado}">${f.estado === 'enviado' ? '✓ Enviado' : '⏳ Pendiente'}</span>
+      </div>
+      <div class="hist-sintoma">${f.sintoma.substring(0,100)}${f.sintoma.length>100?'…':''}</div>
+      <div class="hist-meta">
+        <span>📍 ${f.planta}</span>
+        <span>🕐 ${f.fecha} ${f.hora}</span>
+        <span>🌀 ${f.turno}</span>
+        ${f.fotos ? `<span>📷 ${f.fotos}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── CONFIG ────────────────────────────────────────────────
+function getConfig() {
+  return JSON.parse(localStorage.getItem('cimplast_cfg') || '{}');
+}
+function saveNombre() {
+  const n = document.getElementById('cfgNombre').value.trim();
+  if (n) { localStorage.setItem('cimplast_nombre', n); showToast('Nombre guardado'); }
+}
+function checkSpWarning() {
+  const cfg = getConfig();
+  const warn = document.getElementById('spWarning');
+  warn.style.display = (cfg.site && cfg.loggedIn) ? 'none' : 'flex';
+}
+function loadConfig() {
+  const cfg = getConfig();
+  if (cfg.site)  document.getElementById('cfgSite').value  = cfg.site;
+  if (cfg.lista) document.getElementById('cfgLista').value = cfg.lista;
+  // Mostrar usuario si ya está logueado
+  if (cfg.loggedIn && cfg.user) {
+    const userEl = document.getElementById('cfgUserInfo');
+    if (userEl) {
+      userEl.style.display = 'block';
+      userEl.textContent = `✓ Conectado como ${cfg.user} → lista "${cfg.lista}"`;
+    }
+  }
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────
+function exportCSV() {
+  const fallas = getLocalFallas();
+  if (!fallas.length) { showToast('No hay reportes para exportar', 'err'); return; }
+  const cols = ['id','timestamp','nombre','turno','planta','equipo','sistema','sintoma','detenido','fecha','hora','fotos','estado'];
+  const header = cols.join(';');
+  const rows = fallas.map(f => cols.map(c => `"${(f[c]||'').toString().replace(/"/g,'""')}"`).join(';'));
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fallas_cimplast_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── RESET FORM ────────────────────────────────────────────
+function resetForm() {
+  document.getElementById('successOverlay').classList.remove('show');
+  document.getElementById('fNombre').value = localStorage.getItem('cimplast_nombre') || '';
+  document.getElementById('fPlanta').value = '';
+  document.getElementById('fEquipo').innerHTML = '<option value="">— Primero seleccionar planta —</option>';
+  document.getElementById('fEquipoManual').value = '';
+  document.getElementById('fSintoma').value = '';
+  document.getElementById('fFecha').value = today();
+  document.getElementById('fHora').value = nowTime();
+  fotosData = [];
+  renderFotos();
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  // Re-select last turno
+  const lt = localStorage.getItem('ultimoTurno');
+  if (lt) {
+    const chip = document.querySelector(`#turnoGroup .chip[data-val="${lt}"]`);
+    if (chip) chip.classList.add('selected');
+  }
+  document.getElementById('formScroll').scrollTop = 0;
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+function today() {
+  return new Date().toISOString().slice(0,10);
+}
+function nowTime() {
+  const d = new Date();
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+function autoTurno() {
+  const h = new Date().getHours();
+  if (h >= 6 && h < 14)  return 'Mañana';
+  if (h >= 14 && h < 22) return 'Tarde';
+  return 'Noche';
+}
+
+// ── OFFLINE ───────────────────────────────────────────────
+window.addEventListener('online',  () => { document.body.classList.remove('offline'); trySendPending(); });
+window.addEventListener('offline', () => document.body.classList.add('offline'));
+async function trySendPending() {
+  const cfg = getConfig();
+  if (!cfg.site || !cfg.loggedIn) return;
+  const fallas = getLocalFallas().filter(f => f.estado === 'pendiente');
+  let enviados = 0;
+  for (const f of fallas) {
+    try {
+      await sendToSharePoint(f);
+      f.estado = 'enviado';
+      updateLocal(f);
+      enviados++;
+    } catch(e) {}
+  }
+  if (enviados) showToast(`${enviados} reporte(s) pendientes enviados a SharePoint`);
+}
+
+// ── INIT ──────────────────────────────────────────────────
+function init() {
+  // Fecha/hora actuales
+  document.getElementById('fFecha').value = today();
+  document.getElementById('fHora').value  = nowTime();
+
+  // Nombre guardado
+  const nombre = localStorage.getItem('cimplast_nombre');
+  if (nombre) document.getElementById('fNombre').value = nombre;
+
+  // Turno automático
+  const turno = autoTurno();
+  const chip  = document.querySelector(`#turnoGroup .chip[data-val="${turno}"]`);
+  if (chip) { chip.classList.add('selected'); document.getElementById('turnoHeader').textContent = turno; }
+
+  loadConfig();
+  checkSpWarning();
+  if (!navigator.onLine) document.body.classList.add('offline');
+}
+
+init();
+</script>
+</body>
+</html>
