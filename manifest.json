@@ -1,0 +1,28 @@
+{
+  "name": "Cimplast · Reporte de Fallas",
+  "short_name": "Fallas",
+  "description": "App de reporte de fallas de equipos para operadores de Cimplast S.A.C.I.",
+  "start_url": "/cimplast-fallas/",
+  "scope": "/cimplast-fallas/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0f1a",
+  "theme_color": "#f59e0b",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "screenshots": []
+}
