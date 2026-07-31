@@ -786,7 +786,7 @@ a { color: inherit; text-decoration: none; }
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────
-const GS_API = 'https://script.google.com/macros/s/AKfycbyjwsLX_NVF_IqJqA6aVbcaK2wjW2LEL8Sod322i7n5AwWzvv4xy3D0So2LhytHwyeuHw/exec';
+const GS_API = 'https://script.google.com/macros/s/AKfycbzlkoZKQPjoACq9XNJ0s9RxbFcIP0iK3JWxZ10HHdteyRebvsBhl_rX-bxUIRaQZeBvbw/exec';
 
 const EQUIPOS = {
   'Titese':   ['Sopladora Uniloy N°1','Sopladora Uniloy N°2','Sopladora Uniloy N°3','Inyectora N°1','Inyectora N°2','Compresor Kaeser N°1','Compresor Kaeser N°2','Chiller N°1','Chiller N°2','Molino N°1','Secador N°1'],
@@ -840,10 +840,10 @@ function switchView(name) {
 }
 
 // ── CARGA DE DATOS ────────────────────────────────────────
-async function recargar() {
+async function recargar(silencioso = false) {
   const icon = document.getElementById('refreshIcon');
   icon.classList.add('loading');
-  showLoading('Cargando datos…');
+  if (!silencioso) showLoading('Cargando datos…');
   try {
     const [rFallas, rOTs] = await Promise.all([
       fetch(`${GS_API}?accion=fallas`).then(r => r.json()),
@@ -853,10 +853,10 @@ async function recargar() {
     otsTodas    = rOTs.ots    || [];
     aplicarFiltros();
   } catch(e) {
-    showToast('Error cargando datos', 'err');
+    if (!silencioso) showToast('Error cargando datos', 'err');
   } finally {
     icon.classList.remove('loading');
-    hideLoading();
+    if (!silencioso) hideLoading();
   }
 }
 
@@ -1368,8 +1368,8 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
 });
 
-// Auto-refresh cada 2 minutos
-setInterval(recargar, 120000);
+// Auto-refresh silencioso cada 2 minutos
+setInterval(() => recargar(true), 120000);
 </script>
 </body>
 </html>
