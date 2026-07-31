@@ -387,8 +387,10 @@
     border-radius: 20px;
     white-space: nowrap;
   }
-  .badge-pendiente { background: rgba(245,158,11,.15); color: var(--accent); }
-  .badge-enviado   { background: rgba(34,197,94,.15);  color: var(--ok); }
+  .badge-pendiente  { background: rgba(245,158,11,.15); color: var(--accent); }
+  .badge-enviado    { background: rgba(245,158,11,.15); color: var(--accent); }
+  .badge-encurso    { background: rgba(59,130,246,.15); color: #60a5fa; }
+  .badge-concluido  { background: rgba(34,197,94,.15);  color: var(--ok); }
   .hist-sintoma {
     font-size: 13px;
     color: var(--label);
@@ -504,6 +506,70 @@
   }
   body.offline .offline-bar { display: flex; }
 
+  /* ── BOTÓN GENERAR OT ───────────────────────────────── */
+  .btn-generar-ot {
+    width: 100%;
+    margin-top: 10px;
+    background: rgba(245,158,11,.12);
+    border: 1.5px solid var(--accent);
+    border-radius: var(--r);
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background .15s;
+  }
+  .btn-generar-ot:hover { background: rgba(245,158,11,.22); }
+  .btn-generar-ot:disabled { opacity: .4; }
+
+  /* ── VIEW OT ────────────────────────────────────────── */
+  .ot-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .ot-origen {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--r);
+    padding: 12px 14px;
+    margin-bottom: 4px;
+  }
+  .ot-origen-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .ot-origen-equipo { font-size: 15px; font-weight: 700; color: var(--text); }
+  .ot-origen-desc { font-size: 12px; color: var(--label); margin-top: 2px; line-height: 1.4; }
+  .ot-submit-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, var(--bg) 70%, transparent);
+    padding: 16px 20px 24px;
+    z-index: 50;
+  }
+  .btn-ot-submit {
+    width: 100%;
+    background: #16a34a;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 16px;
+    border-radius: var(--r-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background .15s, transform .1s;
+  }
+  .btn-ot-submit:active { transform: scale(.98); }
+  .btn-ot-submit:disabled { background: var(--border); color: var(--muted); }
+
   @media (min-width: 480px) {
     .form-scroll { max-width: 480px; margin: 0 auto; width: 100%; }
     .submit-bar  { max-width: 480px; left: 50%; transform: translateX(-50%); right: auto; width: 100%; }
@@ -545,9 +611,9 @@
 <!-- ══════════ VIEW: FORMULARIO ══════════ -->
 <div class="view active" id="viewForm">
 
-  <!-- CONFIG inicial si no hay SP configurado -->
-  <div id="spWarning" style="display:none; background: rgba(245,158,11,.08); border-bottom: 1px solid rgba(245,158,11,.2); padding: 10px 20px; font-size: 12px; color: var(--accent); display:flex; gap:8px; align-items:center;">
-    ⚙ SharePoint no configurado.
+  <!-- Banner oculto - la app se autoconfigura -->
+  <div id="spWarning" style="display:none; background: rgba(245,158,11,.08); border-bottom: 1px solid rgba(245,158,11,.2); padding: 10px 20px; font-size: 12px; color: var(--accent); gap:8px; align-items:center;">
+    ⚙ Google Sheets no configurado.
     <button onclick="showView('config')" style="text-decoration:underline; color:var(--accent); font-size:12px; font-weight:600;">Configurar ahora</button>
   </div>
 
@@ -659,11 +725,147 @@
   <div class="hist-header">
     <button class="btn-back" onclick="showView('form')">← Volver</button>
     <span class="hist-title">Mis reportes</span>
+    <button class="btn-historial" onclick="showView('gestionOTs')" style="margin-left:auto">📋 Gestionar OTs</button>
   </div>
   <div class="hist-list" id="histList"></div>
 </div>
 
-<!-- ══════════ VIEW: CONFIG ══════════ -->
+<!-- ══════════ VIEW: GESTIONAR OTs ══════════ -->
+<div class="view" id="viewGestionOTs">
+  <div class="hist-header">
+    <button class="btn-back" onclick="showView('historial')">← Volver</button>
+    <span class="hist-title">Gestionar OTs</span>
+  </div>
+  <div class="hist-list" id="otsList"></div>
+</div>
+
+<!-- ══════════ VIEW: CERRAR OT ══════════ -->
+<div class="view" id="viewCerrarOT">
+  <div class="ot-header">
+    <button class="btn-back" onclick="showView('historial')">← Volver</button>
+    <span class="hist-title">Cerrar Orden de Trabajo</span>
+  </div>
+  <div class="form-scroll" style="padding-bottom:120px">
+
+    <div class="ot-origen" id="cerrarOtInfo">
+      <div class="ot-origen-label">OT</div>
+      <div class="ot-origen-equipo" id="cerrarOtNro">—</div>
+      <div class="ot-origen-desc" id="cerrarOtEquipo">—</div>
+    </div>
+
+    <div class="section-label" style="margin-top:8px">Datos de cierre</div>
+
+    <div class="field">
+      <label>Horas reales trabajadas <span class="req">*</span></label>
+      <input type="number" id="cerrarHoras" placeholder="Ej: 3.5" min="0" step="0.5">
+    </div>
+
+    <div class="field">
+      <label>Repuestos utilizados</label>
+      <textarea id="cerrarRepuestos" placeholder="Ej: Rodamiento 6205 x1, Retén 40x60 x2…" style="min-height:70px"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Costo total (Gs.)</label>
+      <input type="number" id="cerrarCosto" placeholder="Ej: 150000" min="0">
+    </div>
+
+    <div class="field">
+      <label>Observaciones del cierre <span class="req">*</span></label>
+      <textarea id="cerrarObs" placeholder="Describir qué se hizo, causa raíz encontrada, recomendaciones…"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Fecha de cierre</label>
+      <input type="date" id="cerrarFecha">
+    </div>
+
+  </div>
+  <div class="ot-submit-bar">
+    <button class="btn-ot-submit" id="btnCerrarOT" onclick="submitCerrarOT()" style="background:#16a34a">
+      ✓ Confirmar cierre de OT
+    </button>
+  </div>
+</div>
+
+<!-- ══════════ VIEW: GENERAR OT ══════════ -->
+<div class="view" id="viewGenOT">
+  <div class="ot-header">
+    <button class="btn-back" onclick="showView('historial')">← Volver</button>
+    <span class="hist-title">Nueva Orden de Trabajo</span>
+  </div>
+  <div class="form-scroll" style="padding-bottom:120px">
+
+    <!-- Origen: datos de la falla -->
+    <div class="section-label">Origen — Falla reportada</div>
+    <div class="ot-origen" id="otOrigenCard">
+      <div class="ot-origen-label">Equipo</div>
+      <div class="ot-origen-equipo" id="otOrigenEquipo">—</div>
+      <div class="ot-origen-desc" id="otOrigenDesc">—</div>
+    </div>
+
+    <!-- Datos de la OT -->
+    <div class="section-label" style="margin-top:8px">Orden de Trabajo</div>
+
+    <div class="field">
+      <label>N° OT <span class="req">*</span></label>
+      <input type="text" id="otNro" placeholder="Ej: OT-2026-001" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label>Tipo <span class="req">*</span></label>
+      <div class="chip-group" id="otTipoGroup">
+        <button class="chip" data-val="Correctivo" onclick="selChip(this,'otTipoGroup')">🔧 Correctivo</button>
+        <button class="chip" data-val="Preventivo" onclick="selChip(this,'otTipoGroup')">📋 Preventivo</button>
+        <button class="chip" data-val="Mejora"     onclick="selChip(this,'otTipoGroup')">⬆ Mejora</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Prioridad <span class="req">*</span></label>
+      <div class="chip-group" id="otPrioGroup">
+        <button class="chip" data-val="Alta"   onclick="selChip(this,'otPrioGroup')">🔴 Alta</button>
+        <button class="chip" data-val="Media"  onclick="selChip(this,'otPrioGroup')">🟡 Media</button>
+        <button class="chip" data-val="Baja"   onclick="selChip(this,'otPrioGroup')">🟢 Baja</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Técnico asignado <span class="req">*</span></label>
+      <div class="select-wrap">
+        <select id="otTecnico">
+          <option value="">— Seleccionar técnico —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Descripción / Tarea</label>
+      <textarea id="otDescripcion" placeholder="Describir el trabajo a realizar…"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Tiempo estimado (horas)</label>
+      <input type="number" id="otHoras" placeholder="Ej: 2" min="0" step="0.5">
+    </div>
+
+    <div class="field">
+      <label>Fecha programada</label>
+      <input type="date" id="otFecha">
+    </div>
+
+    <div class="field">
+      <label>Observaciones</label>
+      <textarea id="otObs" placeholder="Repuestos necesarios, precauciones, contexto adicional…"></textarea>
+    </div>
+
+  </div>
+  <div class="ot-submit-bar">
+    <button class="btn-ot-submit" id="btnOTSubmit" onclick="submitOT()">
+      ⚙ Crear Orden de Trabajo
+    </button>
+  </div>
+</div>
 <div class="view" id="viewConfig">
   <div class="hist-header">
     <button class="btn-back" onclick="showView('form')">← Volver</button>
@@ -671,19 +873,11 @@
   </div>
   <div class="config-scroll">
     <div class="config-card">
-      <h3>🔗 CONEXIÓN SHAREPOINT DIRECTA</h3>
+      <h3>📊 CONEXIÓN GOOGLE SHEETS</h3>
       <p style="font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:4px">
-        Conecta directo a SharePoint usando tu cuenta Microsoft 365. Sin Power Automate ni Azure AD.
+        Conecta directo a Google Sheets. Sin Azure AD ni Power Automate.
       </p>
-      <div class="field">
-        <label>URL del sitio SharePoint</label>
-        <input type="url" id="cfgSite" placeholder="https://cimplast.sharepoint.com/sites/MantenimientoPlanta" value="https://cimplast.sharepoint.com/sites/MantenimientoPlanta">
-      </div>
-      <div class="field">
-        <label>Nombre de la lista</label>
-        <input type="text" id="cfgLista" placeholder="Fallas" value="Fallas">
-      </div>
-      <button class="btn-config-save" onclick="loginYGuardar()">🔑 Iniciar sesión con Microsoft y guardar</button>
+      <button class="btn-config-save" onclick="loginYGuardar()">🔗 Verificar conexión con Google Sheets</button>
       <div id="cfgTestResult" style="display:none; margin-top:8px; font-size:12px; padding:8px 12px; border-radius:8px;"></div>
       <div id="cfgUserInfo" style="display:none; margin-top:8px; font-size:12px; color:var(--ok); padding:8px 12px; border-radius:8px; background:rgba(34,197,94,.08); border:1px solid var(--ok)"></div>
       <p style="font-size:11px; color:var(--muted); line-height:1.5; margin-top:8px">
@@ -788,7 +982,8 @@ function deleteFoto(i) {
 function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
-  if (name === 'historial') renderHistorial();
+  if (name === 'historial')  renderHistorial();
+  if (name === 'gestionOTs') renderGestionOTs();
 }
 
 // ── TOAST ────────────────────────────────────────────────
@@ -852,21 +1047,17 @@ async function submitForm() {
   // Guardar local siempre
   saveLocal(reporte);
 
-  // Intentar SharePoint directo
+  // Intentar Google Sheets
   const cfg = getConfig();
   let enviado = false;
-  if (cfg.site && cfg.lista) {
+  if (cfg.loggedIn) {
     try {
       await sendToSharePoint(reporte);
       reporte.estado = 'enviado';
       updateLocal(reporte);
       enviado = true;
     } catch(e) {
-      console.warn('SP error:', e.message);
-      // Si es error de auth, intentar login
-      if (e.message?.includes('token') || e.message?.includes('auth')) {
-        showToast('Sesión expirada — ir a Configuración para reconectar', 'err');
-      }
+      console.warn('GS error:', e.message);
     }
   }
 
@@ -876,69 +1067,40 @@ async function submitForm() {
   document.getElementById('successRef').textContent = reporte.id;
   document.getElementById('successOverlay').classList.add('show');
 
-  if (!enviado && cfg.site) {
+  if (!enviado && cfg.loggedIn) {
     showToast('Sin conexión — guardado local, se enviará al recuperar red', 'err');
   }
-  if (!cfg.site) {
-    showToast('Guardado local — configurá SharePoint en Configuración', 'err');
+  if (!cfg.loggedIn) {
+    showToast('Guardado local — configurá Google Sheets en Configuración', 'err');
   }
 }
 
-// ── SHAREPOINT REST API (sin MSAL, usa sesión del navegador) ──
-// Funciona porque el archivo está hosteado en el mismo tenant SharePoint
-// El navegador ya tiene la cookie de autenticación de M365
-
-const SP_SITE = 'https://cimplast.sharepoint.com/sites/MantenimientoPlanta';
-
-async function getFormDigest() {
-  const resp = await fetch(`${SP_SITE}/_api/contextinfo`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Accept': 'application/json;odata=verbose' }
-  });
-  if (!resp.ok) throw new Error('No se pudo obtener el digest de SharePoint');
-  const data = await resp.json();
-  return data.d.GetContextWebInformation.FormDigestValue;
-}
+// ── GOOGLE SHEETS API ────────────────────────────────────
+const GS_API = 'https://script.google.com/macros/s/AKfycbyjwsLX_NVF_IqJqA6aVbcaK2wjW2LEL8Sod322i7n5AwWzvv4xy3D0So2LhytHwyeuHw/exec';
 
 async function loginYGuardar() {
-  const site  = document.getElementById('cfgSite').value.trim();
-  const lista = document.getElementById('cfgLista').value.trim() || 'Fallas';
   const resultEl = document.getElementById('cfgTestResult');
   const userEl   = document.getElementById('cfgUserInfo');
 
   resultEl.style.display = 'block';
   resultEl.style.cssText += ';background:rgba(100,116,139,.1);color:var(--label);border:1px solid var(--border)';
-  resultEl.textContent = '⏳ Verificando conexión con SharePoint…';
+  resultEl.textContent = '⏳ Verificando conexión con Google Sheets…';
 
   try {
-    // Probar conectividad y obtener usuario actual
-    const userResp = await fetch(`${SP_SITE}/_api/web/currentuser`, {
-      credentials: 'include',
-      headers: { 'Accept': 'application/json;odata=verbose' }
-    });
-    if (!userResp.ok) throw new Error('No se pudo conectar al sitio SharePoint. Asegurate de estar logueado en Microsoft 365.');
-    const userData = await userResp.json();
-    const userName = userData.d.Title;
-    const userEmail = userData.d.Email;
+    const resp = await fetch(GS_API + '?accion=tecnicos');
+    if (!resp.ok) throw new Error('No se pudo conectar a la API');
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Error en la API');
 
-    // Guardar config
-    const cfg = { site, lista, loggedIn: true, user: userEmail, userName };
+    const cfg = { gsApi: GS_API, loggedIn: true };
     localStorage.setItem('cimplast_cfg', JSON.stringify(cfg));
     checkSpWarning();
 
     resultEl.style.cssText += ';background:rgba(34,197,94,.1);color:var(--ok);border:1px solid var(--ok)';
-    resultEl.textContent = `✓ Conectado correctamente a SharePoint`;
+    resultEl.textContent = '✓ Conectado a Google Sheets correctamente';
     userEl.style.display = 'block';
-    userEl.textContent   = `✓ ${userName} → lista "${lista}" en MantenimientoPlanta`;
-    showToast('Conectado a SharePoint');
-
-    // Pre-llenar nombre del operador si está vacío
-    const nombreField = document.getElementById('fNombre');
-    if (!nombreField.value) {
-      nombreField.value = userName;
-      localStorage.setItem('cimplast_nombre', userName);
-    }
+    userEl.textContent   = '✓ API activa — los reportes se guardarán en Google Sheets';
+    showToast('Conectado a Google Sheets');
   } catch(e) {
     resultEl.style.cssText += ';background:rgba(239,68,68,.1);color:var(--danger);border:1px solid var(--danger)';
     resultEl.textContent = '✕ ' + (e.message || e);
@@ -947,50 +1109,299 @@ async function loginYGuardar() {
 }
 
 async function sendToSharePoint(reporte) {
-  const cfg = getConfig();
-  const site  = cfg.site  || SP_SITE;
-  const lista = cfg.lista || 'Fallas';
-
-  // Obtener Form Digest (token anti-CSRF de SharePoint)
-  const digest = await getFormDigest();
-
-  // Crear ítem via REST API
-  const item = {
-    __metadata:  { type: `SP.Data.${lista}ListItem` },
-    Title:       reporte.id,
-    Operador:    reporte.nombre,
-    Turno:       reporte.turno,
-    Planta:      reporte.planta,
-    Equipo:      reporte.equipo,
-    Sistema:     reporte.sistema,
-    Sintoma:     reporte.sintoma,
-    Detenido:    reporte.detenido,
-    FechaFalla:  reporte.fecha + 'T' + reporte.hora + ':00Z',
-    CantFotos:   reporte.fotos
+  const body = {
+    accion:    'falla',
+    id:        reporte.id,
+    timestamp: reporte.timestamp,
+    operador:  reporte.nombre,
+    turno:     reporte.turno,
+    planta:    reporte.planta,
+    equipo:    reporte.equipo,
+    sistema:   reporte.sistema,
+    sintoma:   reporte.sintoma,
+    detenido:  reporte.detenido,
+    fecha:     reporte.fecha,
+    hora:      reporte.hora,
+    cantFotos: reporte.fotos,
+    // Enviar primera foto en base64 si existe
+    fotoBase64: fotosData.length > 0 ? fotosData[0].data : '',
+    fotoMime:   fotosData.length > 0 ? (fotosData[0].data.split(';')[0].replace('data:','') || 'image/jpeg') : 'image/jpeg'
   };
+  const resp = await fetch(GS_API, {
+    method:  'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body:    JSON.stringify(body)
+  });
+  if (!resp.ok) throw new Error('Error HTTP ' + resp.status);
+  const data = await resp.json();
+  if (!data.ok) throw new Error(data.error || 'Error en la API');
+}
 
-  const createResp = await fetch(
-    `${site}/_api/web/lists/getbytitle('${lista}')/items`,
-    {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Accept':          'application/json;odata=verbose',
-        'Content-Type':    'application/json;odata=verbose',
-        'X-RequestDigest': digest
-      },
-      body: JSON.stringify(item)
+// ── GENERAR OT ───────────────────────────────────────────
+let otFallaActual = null;
+
+async function abrirGenOT(fallaId) {
+  const fallas = getLocalFallas();
+  const f = fallas.find(x => x.id === fallaId);
+  if (!f) return;
+  otFallaActual = f;
+
+  // Prellenar datos de origen
+  document.getElementById('otOrigenEquipo').textContent = f.equipo + ' — ' + f.planta;
+  document.getElementById('otOrigenDesc').textContent   = f.sintoma.substring(0,120);
+
+  // Prellenar descripción con el síntoma
+  document.getElementById('otDescripcion').value = f.sintoma;
+
+  // Prellenar fecha con hoy
+  document.getElementById('otFecha').value = today();
+
+  // Generar N°OT automático
+  document.getElementById('otNro').value = 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4);
+
+  // Cargar técnicos desde SharePoint
+  await cargarTecnicos();
+
+  // Seleccionar Correctivo por defecto
+  const chipCorr = document.querySelector('#otTipoGroup .chip[data-val="Correctivo"]');
+  if (chipCorr) chipCorr.classList.add('selected');
+
+  // Seleccionar prioridad según detenido
+  const prio = f.detenido?.includes('parado') ? 'Alta' : f.detenido?.includes('Parcial') ? 'Media' : 'Baja';
+  const chipPrio = document.querySelector(`#otPrioGroup .chip[data-val="${prio}"]`);
+  if (chipPrio) chipPrio.classList.add('selected');
+
+  showView('genOT');
+}
+
+// Lista fija de técnicos como fallback cuando no hay conexión SP
+const TECNICOS_FALLBACK = [
+  { id: 14, nombre: 'Carlos Mongelos',  especialidad: 'Eléctrico',      planta: 'Planta 3' },
+  { id:  4, nombre: 'Claudio Cerezo',   especialidad: 'Eléctrico',      planta: 'Planta 6' },
+  { id: 11, nombre: 'Edgar Maqueda',    especialidad: 'Metricero',      planta: 'Matricería' },
+  { id: 13, nombre: 'Enrique Monges',   especialidad: 'Eléctrico',      planta: 'Planta 6' },
+  { id: 10, nombre: 'Jose Caballero',   especialidad: 'Mecánico',       planta: 'Planta 3' },
+  { id:  2, nombre: 'José González',    especialidad: 'Mecánico',       planta: 'Titese' },
+  { id: 16, nombre: 'Maximo Duarte',    especialidad: 'Eléctrico',      planta: 'Planta 6' },
+  { id: 15, nombre: 'Nicolas Vazquez',  especialidad: 'Mecánico',       planta: 'Planta 3' },
+  { id:  7, nombre: 'Oscar Duarte',     especialidad: 'Electromecánico',planta: 'Planta 3' },
+  { id:  6, nombre: 'Pablo Gomez',      especialidad: 'Herrero',        planta: 'Planta 3' },
+  { id:  8, nombre: 'Valentin Escobar', especialidad: 'Herrero',        planta: 'Planta 6' },
+  { id: 12, nombre: 'Victor Saucedo',   especialidad: 'Mecánico',       planta: 'Planta 6' },
+];
+
+async function cargarTecnicos() {
+  const sel = document.getElementById('otTecnico');
+  sel.innerHTML = '<option value="">— Cargando técnicos… —</option>';
+
+  let tecnicos = [];
+  try {
+    const resp = await fetch(`${GS_API}?accion=tecnicos`);
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.ok && data.tecnicos) tecnicos = data.tecnicos;
     }
-  );
+  } catch(e) {}
 
-  if (!createResp.ok) {
-    const err = await createResp.json().catch(() => ({}));
-    const msg = err.error?.message?.value || `Error ${createResp.status}`;
-    throw new Error(msg);
+  // Usar fallback si no se pudo cargar
+  if (!tecnicos.length) tecnicos = TECNICOS_FALLBACK;
+
+  sel.innerHTML = '<option value="">— Seleccionar técnico —</option>';
+  tecnicos.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.dataset.nombre = t.nombre;
+    opt.textContent = `${t.nombre} — ${t.especialidad}`;
+    sel.appendChild(opt);
+  });
+}
+
+async function submitOT() {
+  const nro      = document.getElementById('otNro').value.trim();
+  const tipo     = getChipVal('otTipoGroup');
+  const prio     = getChipVal('otPrioGroup');
+  const tecSel   = document.getElementById('otTecnico');
+  const tecId    = tecSel.value;
+  const tecNombre = tecSel.options[tecSel.selectedIndex]?.dataset?.nombre || '';
+  const desc     = document.getElementById('otDescripcion').value.trim();
+  const horas    = document.getElementById('otHoras').value;
+  const fecha    = document.getElementById('otFecha').value;
+  const obs      = document.getElementById('otObs').value.trim();
+
+  if (!nro)   { showToast('Ingresá el N° de OT', 'err'); return; }
+  if (!tipo)  { showToast('Seleccioná el tipo', 'err'); return; }
+  if (!prio)  { showToast('Seleccioná la prioridad', 'err'); return; }
+  if (!tecId) { showToast('Seleccioná un técnico', 'err'); return; }
+
+  const btn = document.getElementById('btnOTSubmit');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Creando OT…';
+
+  try {
+    const body = {
+      accion:          'ot',
+      nroOT:           nro,
+      fallaId:         otFallaActual?.id || '',
+      equipo:          otFallaActual?.equipo || '',
+      planta:          otFallaActual?.planta || '',
+      tipo,
+      prioridad:       prio,
+      tecnico:         tecNombre,
+      descripcion:     desc,
+      horasEstimadas:  horas || '',
+      fechaProgramada: fecha || '',
+      observaciones:   obs
+    };
+
+    const resp = await fetch(GS_API, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body:    JSON.stringify(body)
+    });
+    if (!resp.ok) throw new Error('Error HTTP ' + resp.status);
+    const result = await resp.json();
+    if (!result.ok) throw new Error(result.error || 'Error creando OT');
+
+    // Actualizar estado local de la falla a En curso
+    if (otFallaActual) {
+      otFallaActual.estado = 'En curso';
+      updateLocal(otFallaActual);
+    }
+
+    showToast(`OT ${nro} creada correctamente`);
+    btn.disabled = false;
+    btn.innerHTML = '⚙ Crear Orden de Trabajo';
+    showView('historial');
+    renderHistorial();
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '⚙ Crear Orden de Trabajo';
+    showToast('Error: ' + e.message, 'err');
+  }
+}
+// ── CERRAR OT ────────────────────────────────────────────
+let otACerrar = null;
+
+async function abrirCerrarOT(fallaId) {
+  const fallas = getLocalFallas();
+  const f = fallas.find(x => x.id === fallaId);
+  if (!f) return;
+  otACerrar = f;
+  document.getElementById('cerrarOtNro').textContent   = f.otNro || 'OT vinculada';
+  document.getElementById('cerrarOtEquipo').textContent = f.equipo + ' — ' + f.planta;
+  document.getElementById('cerrarFecha').value = today();
+  document.getElementById('cerrarHoras').value = '';
+  document.getElementById('cerrarRepuestos').value = '';
+  document.getElementById('cerrarCosto').value = '';
+  document.getElementById('cerrarObs').value = '';
+  document.querySelector('#viewCerrarOT .btn-back').onclick = () => showView('historial');
+  showView('cerrarOT');
+}
+
+async function submitCerrarOT() {
+  const horas     = document.getElementById('cerrarHoras').value;
+  const repuestos = document.getElementById('cerrarRepuestos').value.trim();
+  const costo     = document.getElementById('cerrarCosto').value;
+  const obs       = document.getElementById('cerrarObs').value.trim();
+  const fecha     = document.getElementById('cerrarFecha').value;
+
+  if (!horas) { showToast('Ingresá las horas reales', 'err'); return; }
+  if (!obs)   { showToast('Ingresá las observaciones de cierre', 'err'); return; }
+
+  const btn = document.getElementById('btnCerrarOT');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Cerrando OT…';
+
+  try {
+    const body = {
+      accion:        'cerrarOT',
+      fallaId:       otACerrar?.id || '',
+      otNro:         otACerrar?.otNro || '',
+      horasReales:   parseFloat(horas),
+      repuestos,
+      costo:         costo ? parseFloat(costo) : 0,
+      observaciones: obs,
+      fechaCierre:   fecha
+    };
+    const resp = await fetch(GS_API, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok) throw new Error('Error HTTP ' + resp.status);
+    const result = await resp.json();
+    if (!result.ok) throw new Error(result.error || 'Error cerrando OT');
+
+    // Actualizar estado local
+    if (otACerrar?.id) {
+      otACerrar.estado = 'Concluido';
+      updateLocal(otACerrar);
+    }
+    showToast('OT cerrada correctamente');
+    btn.disabled = false;
+    btn.innerHTML = '✓ Confirmar cierre de OT';
+    showView('historial');
+    renderHistorial();
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '✓ Confirmar cierre de OT';
+    showToast('Error: ' + e.message, 'err');
   }
 }
 
-// ── LOCAL STORAGE ────────────────────────────────────────
+// ── GESTIONAR OTs ─────────────────────────────────────────
+async function renderGestionOTs() {
+  const list = document.getElementById('otsList');
+  list.innerHTML = '<div class="empty-state"><div class="big">⏳</div><p>Cargando OTs…</p></div>';
+  try {
+    const resp = await fetch(`${GS_API}?accion=ots`);
+    if (!resp.ok) throw new Error();
+    const data = await resp.json();
+    const ots  = data.ots || [];
+    if (!ots.length) {
+      list.innerHTML = '<div class="empty-state"><div class="big">📋</div><p>No hay OTs registradas todavía.</p></div>';
+      return;
+    }
+    list.innerHTML = ots.map((ot, i) => {
+      const estadoCls = ot.Estado === 'Cerrada' ? 'badge-concluido' : ot.Estado === 'En curso' ? 'badge-encurso' : 'badge-pendiente';
+      return `
+      <div class="hist-card">
+        <div class="hist-card-top">
+          <span class="hist-equipo">${ot.NroOT || 'OT #'+(i+1)}</span>
+          <span class="hist-badge ${estadoCls}">${ot.Estado || 'Abierta'}</span>
+        </div>
+        <div class="hist-sintoma">${ot.Equipo} — ${(ot.Descripcion||'').substring(0,80)}</div>
+        <div class="hist-meta">
+          <span>📍 ${ot.Planta}</span>
+          <span>👤 ${ot.Tecnico}</span>
+          <span>⚡ ${ot.Prioridad}</span>
+          ${ot.HorasEstimadas ? `<span>⏱ ${ot.HorasEstimadas}h</span>` : ''}
+        </div>
+        ${ot.Estado !== 'Cerrada' ? `
+        <button class="btn-generar-ot" onclick="abrirCerrarOTdesdeGestion('${ot.NroOT}','${ot.Equipo}','${ot.Planta}')"
+          style="border-color:#22c55e;color:#22c55e;background:rgba(34,197,94,.08)">
+          ✓ Cerrar esta OT
+        </button>` : `<div style="font-size:11px;color:var(--ok);text-align:center;padding:6px">✓ Cerrada · ${ot.HorasReales||0}h reales · Gs. ${(ot.Costo||0).toLocaleString()}</div>`}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="empty-state"><div class="big">⚠</div><p>No se pudieron cargar las OTs.</p></div>';
+  }
+}
+
+function abrirCerrarOTdesdeGestion(nroOT, equipo, planta) {
+  otACerrar = { id: null, otNro: nroOT, equipo, planta };
+  document.getElementById('cerrarOtNro').textContent   = nroOT;
+  document.getElementById('cerrarOtEquipo').textContent = equipo + ' — ' + planta;
+  document.getElementById('cerrarFecha').value = today();
+  document.getElementById('cerrarHoras').value = '';
+  document.getElementById('cerrarRepuestos').value = '';
+  document.getElementById('cerrarCosto').value = '';
+  document.getElementById('cerrarObs').value = '';
+  document.querySelector('#viewCerrarOT .btn-back').onclick = () => showView('gestionOTs');
+  showView('cerrarOT');
+}
+
 function saveLocal(r) {
   const arr = JSON.parse(localStorage.getItem('cimplast_fallas') || '[]');
   arr.unshift(r);
@@ -1006,18 +1417,64 @@ function getLocalFallas() {
 }
 
 // ── HISTORIAL ────────────────────────────────────────────
-function renderHistorial() {
+async function fetchEstadosSP(ids) {
+  try {
+    const resp = await fetch(`${GS_API}?accion=estados&ids=${ids.join(',')}`);
+    if (!resp.ok) return {};
+    const data = await resp.json();
+    const estados = data.estados || {};
+    // Actualizar estado local si cambió en Google Sheets
+    const fallas = getLocalFallas();
+    let cambios = false;
+    fallas.forEach(f => {
+      if (estados[f.id] && estados[f.id] !== f.estado) {
+        f.estado = estados[f.id];
+        cambios = true;
+      }
+    });
+    if (cambios) localStorage.setItem('cimplast_fallas', JSON.stringify(fallas));
+    return estados;
+  } catch(e) { return {}; }
+}
+
+function estadoBadge(estadoSP, estadoLocal) {
+  // Priorizar estado real de SharePoint si existe
+  const e = estadoSP || estadoLocal;
+  if (e === 'Concluido')  return { cls: 'badge-concluido',  txt: '✓ Concluido' };
+  if (e === 'En curso')   return { cls: 'badge-encurso',    txt: '🔧 En curso' };
+  if (e === 'enviado' || e === 'Pendiente') return { cls: 'badge-pendiente', txt: '⏳ Pendiente' };
+  return { cls: 'badge-pendiente', txt: '⏳ Pendiente' };
+}
+
+async function renderHistorial() {
   const list = document.getElementById('histList');
   const fallas = getLocalFallas();
   if (!fallas.length) {
     list.innerHTML = `<div class="empty-state"><div class="big">📋</div><p>Todavía no hay reportes registrados en este dispositivo.</p></div>`;
     return;
   }
-  list.innerHTML = fallas.map(f => `
+
+  // Mostrar primero con datos locales
+  renderHistorialConEstados(fallas, {});
+
+  // Luego consultar SharePoint para estados actualizados
+  const ids = fallas.filter(f => f.estado === 'enviado' || f.estado === 'Pendiente').map(f => f.id);
+  if (ids.length) {
+    const estadosSP = await fetchEstadosSP(ids);
+    renderHistorialConEstados(fallas, estadosSP);
+  }
+}
+
+function renderHistorialConEstados(fallas, estadosSP) {
+  const list = document.getElementById('histList');
+  list.innerHTML = fallas.map(f => {
+    const badge = estadoBadge(estadosSP[f.id], f.estado);
+    const puedeOT = badge.cls !== 'badge-concluido';
+    return `
     <div class="hist-card">
       <div class="hist-card-top">
         <span class="hist-equipo">${f.equipo}</span>
-        <span class="hist-badge badge-${f.estado}">${f.estado === 'enviado' ? '✓ Enviado' : '⏳ Pendiente'}</span>
+        <span class="hist-badge ${badge.cls}">${badge.txt}</span>
       </div>
       <div class="hist-sintoma">${f.sintoma.substring(0,100)}${f.sintoma.length>100?'…':''}</div>
       <div class="hist-meta">
@@ -1026,8 +1483,11 @@ function renderHistorial() {
         <span>🌀 ${f.turno}</span>
         ${f.fotos ? `<span>📷 ${f.fotos}</span>` : ''}
       </div>
-    </div>
-  `).join('');
+      ${puedeOT ? `<button class="btn-generar-ot" onclick="abrirGenOT('${f.id}')">⚙ Generar Orden de Trabajo</button>` : ''}
+      ${(badge.cls === 'badge-encurso') ? `<button class="btn-generar-ot" onclick="abrirCerrarOT('${f.id}')" style="border-color:#22c55e;color:#22c55e;background:rgba(34,197,94,.08)">✓ Cerrar OT</button>` : ''}
+      ${(badge.cls === 'badge-concluido') ? `<div style="font-size:11px;color:var(--ok);text-align:center;padding:6px">✓ OT cerrada</div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 // ── CONFIG ────────────────────────────────────────────────
@@ -1041,18 +1501,15 @@ function saveNombre() {
 function checkSpWarning() {
   const cfg = getConfig();
   const warn = document.getElementById('spWarning');
-  warn.style.display = (cfg.site && cfg.loggedIn) ? 'none' : 'flex';
+  warn.style.display = cfg.loggedIn ? 'none' : 'flex';
 }
 function loadConfig() {
   const cfg = getConfig();
-  if (cfg.site)  document.getElementById('cfgSite').value  = cfg.site;
-  if (cfg.lista) document.getElementById('cfgLista').value = cfg.lista;
-  // Mostrar usuario si ya está logueado
-  if (cfg.loggedIn && cfg.user) {
+  if (cfg.loggedIn) {
     const userEl = document.getElementById('cfgUserInfo');
     if (userEl) {
       userEl.style.display = 'block';
-      userEl.textContent = `✓ Conectado como ${cfg.user} → lista "${cfg.lista}"`;
+      userEl.textContent = '✓ API activa — los reportes se guardarán en Google Sheets';
     }
   }
 }
@@ -1116,7 +1573,7 @@ window.addEventListener('online',  () => { document.body.classList.remove('offli
 window.addEventListener('offline', () => document.body.classList.add('offline'));
 async function trySendPending() {
   const cfg = getConfig();
-  if (!cfg.site || !cfg.loggedIn) return;
+  if (!cfg.loggedIn) return;
   const fallas = getLocalFallas().filter(f => f.estado === 'pendiente');
   let enviados = 0;
   for (const f of fallas) {
@@ -1127,7 +1584,7 @@ async function trySendPending() {
       enviados++;
     } catch(e) {}
   }
-  if (enviados) showToast(`${enviados} reporte(s) pendientes enviados a SharePoint`);
+  if (enviados) showToast(`${enviados} reporte(s) pendientes enviados a Google Sheets`);
 }
 
 // ── INIT ──────────────────────────────────────────────────
@@ -1144,6 +1601,13 @@ function init() {
   const turno = autoTurno();
   const chip  = document.querySelector(`#turnoGroup .chip[data-val="${turno}"]`);
   if (chip) { chip.classList.add('selected'); document.getElementById('turnoHeader').textContent = turno; }
+
+  // AUTO-CONFIGURAR Google Sheets si no está configurado
+  const cfg = getConfig();
+  if (!cfg.loggedIn) {
+    const autoCfg = { gsApi: GS_API, loggedIn: true };
+    localStorage.setItem('cimplast_cfg', JSON.stringify(autoCfg));
+  }
 
   loadConfig();
   checkSpWarning();

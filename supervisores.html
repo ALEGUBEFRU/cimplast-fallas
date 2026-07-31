@@ -711,6 +711,33 @@ a { color: inherit; text-decoration: none; }
   </div>
 </div>
 
+<!-- ══════════ MODAL: DETALLE OT ══════════ -->
+<div class="modal-overlay" id="modalDetalleOT">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <span class="modal-title" id="mDetalleOTTitulo">Orden de Trabajo</span>
+      <button class="modal-close" onclick="closeModal('modalDetalleOT')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px" id="mDetalleOTGrid"></div>
+      <div class="field" style="margin-top:12px">
+        <label>Técnico(s) asignado(s) — editable</label>
+        <select id="mDetalleOTTecnico" multiple style="height:140px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;padding:6px;width:100%;outline:none"></select>
+        <span style="font-size:11px;color:var(--muted)">Ctrl/Cmd para seleccionar más de uno</span>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Descripción / Tarea</label>
+        <textarea id="mDetalleOTDesc" style="min-height:70px"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalDetalleOT')">Cerrar</button>
+      <button class="btn-primary" id="btnGuardarDetalleOT" onclick="guardarCambiosOT()" style="background:#3b82f6">💾 Guardar cambios</button>
+      <button class="btn-primary green" id="btnCerrarDesdeDetalle" onclick="cerrarDesdeDetalle()">✓ Cerrar OT</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════ MODAL: CERRAR OT ══════════ -->
 <div class="modal-overlay" id="modalCerrar">
   <div class="modal">
@@ -759,7 +786,7 @@ a { color: inherit; text-decoration: none; }
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────
-const GS_API = 'https://script.google.com/macros/s/AKfycbxnGjO-ZPeI55fWSTWX_vdyHDSBsjXxmcjlTEZrAwW23rhllsJyWoJgWnT3geV2-XW3QA/exec';
+const GS_API = 'https://script.google.com/macros/s/AKfycbyjwsLX_NVF_IqJqA6aVbcaK2wjW2LEL8Sod322i7n5AwWzvv4xy3D0So2LhytHwyeuHw/exec';
 
 const EQUIPOS = {
   'Titese':   ['Sopladora Uniloy N°1','Sopladora Uniloy N°2','Sopladora Uniloy N°3','Inyectora N°1','Inyectora N°2','Compresor Kaeser N°1','Compresor Kaeser N°2','Chiller N°1','Chiller N°2','Molino N°1','Secador N°1'],
@@ -800,7 +827,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('mCerrarFecha').value = hoy;
   document.getElementById('nOtNro').value = 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4);
   cargarTecnicosSelects();
-  recargar();
+  // Pequeño delay para asegurar que el DOM esté listo
+  setTimeout(recargar, 500);
 });
 
 // ── VIEWS ─────────────────────────────────────────────────
@@ -937,15 +965,21 @@ function cardFalla(f) {
 
 function cardOT(o) {
   const prioClass = o.Prioridad === 'Alta' ? 'prio-alta' : o.Prioridad === 'Baja' ? 'prio-baja' : 'prio-media';
-  const cerrada   = o.Estado === 'Cerrada';
+  const cerrada   = (o.Estado||'').toLowerCase() === 'cerrada';
+  const nroEsc    = (o.NroOT||'').replace(/'/g,"\\'");
+  const equipoEsc = (o.Equipo||'').replace(/'/g,"\\'");
+  const plantaEsc = (o.Planta||'').replace(/'/g,"\\'");
+  const descEsc   = (o.Descripcion||'').substring(0,60).replace(/'/g,"\\'");
+  const tecEsc    = (o.Tecnico||'').replace(/'/g,"\\'");
+  const prioEsc   = (o.Prioridad||'').replace(/'/g,"\\'");
 
   const acciones = !cerrada ? `
-    <button class="card-btn card-btn-close" onclick="abrirModalCerrar('${o.NroOT}','${(o.Equipo||'').replace(/'/g,"\\'")}','${(o.Planta||'').replace(/'/g,"\\'")}')">✓ Cerrar</button>
-    <button class="card-btn card-btn-copy"  onclick="abrirWA('${o.NroOT}','${(o.Equipo||'').replace(/'/g,"\\'")}','${(o.Descripcion||'').substring(0,60).replace(/'/g,"\\'")}','${(o.Tecnico||'').replace(/'/g,"\\'")}','${o.Prioridad||''}')">📲 WA</button>
-  ` : `<button class="card-btn card-btn-copy" onclick="abrirWA('${o.NroOT}','${(o.Equipo||'').replace(/'/g,"\\'")}','${(o.Descripcion||'').substring(0,60).replace(/'/g,"\\'")}','${(o.Tecnico||'').replace(/'/g,"\\'")}','${o.Prioridad||''}')">📲 WA</button>`;
+    <button class="card-btn card-btn-close" onclick="event.stopPropagation();abrirModalCerrar('${nroEsc}','${equipoEsc}','${plantaEsc}')">✓ Cerrar</button>
+    <button class="card-btn card-btn-copy"  onclick="event.stopPropagation();abrirWA('${nroEsc}','${equipoEsc}','${descEsc}','${tecEsc}','${prioEsc}')">📲 WA</button>
+  ` : `<button class="card-btn card-btn-copy" onclick="event.stopPropagation();abrirWA('${nroEsc}','${equipoEsc}','${descEsc}','${tecEsc}','${prioEsc}')">📲 WA</button>`;
 
   return `
-  <div class="card">
+  <div class="card" onclick="abrirDetalleOT('${nroEsc}')" style="cursor:pointer">
     <div class="card-top">
       <span class="card-num">${o.NroOT || '—'}</span>
       <span class="card-prio ${prioClass}">${o.Prioridad || '—'}</span>
@@ -959,8 +993,92 @@ function cardOT(o) {
       ${cerrada && o.HorasReales ? `<span>✓ ${o.HorasReales}h reales</span>` : ''}
       ${cerrada && o.Costo ? `<span>💰 Gs. ${Number(o.Costo).toLocaleString()}</span>` : ''}
     </div>
-    <div class="card-actions">${acciones}</div>
+    <div class="card-actions" onclick="event.stopPropagation()">${acciones}</div>
   </div>`;
+}
+
+// ── DETALLE OT ────────────────────────────────────────────
+let otDetalleActual = null;
+
+function abrirDetalleOT(nroOT) {
+  const o = otsTodas.find(x => x.NroOT === nroOT);
+  if (!o) return;
+  otDetalleActual = o;
+  const cerrada = (o.Estado||'').toLowerCase() === 'cerrada';
+
+  document.getElementById('mDetalleOTTitulo').textContent = o.NroOT + ' — ' + o.Equipo;
+
+  document.getElementById('mDetalleOTGrid').innerHTML = `
+    <div><span style="color:var(--muted);font-size:11px">EQUIPO</span><div style="font-weight:700;margin-top:2px">${o.Equipo||'—'}</div></div>
+    <div><span style="color:var(--muted);font-size:11px">PLANTA</span><div style="font-weight:700;margin-top:2px">${o.Planta||'—'}</div></div>
+    <div><span style="color:var(--muted);font-size:11px">TIPO</span><div style="margin-top:2px">${o.Tipo||'—'}</div></div>
+    <div><span style="color:var(--muted);font-size:11px">PRIORIDAD</span><div style="margin-top:2px">${o.Prioridad||'—'}</div></div>
+    <div><span style="color:var(--muted);font-size:11px">HORAS EST.</span><div style="margin-top:2px">${o.HorasEstimadas||'—'}</div></div>
+    <div><span style="color:var(--muted);font-size:11px">FECHA PROG.</span><div style="margin-top:2px;font-family:var(--mono);font-size:12px">${(o.FechaProgramada||'').slice(0,10)||'—'}</div></div>
+    ${cerrada ? `
+    <div><span style="color:var(--muted);font-size:11px">HORAS REALES</span><div style="margin-top:2px;color:var(--ok);font-weight:700">${o.HorasReales||'—'}</div></div>
+    <div><span style="color:var(--muted);font-size:11px">COSTO</span><div style="margin-top:2px;color:var(--ok);font-weight:700">Gs. ${Number(o.Costo||0).toLocaleString()}</div></div>
+    <div style="grid-column:span 2"><span style="color:var(--muted);font-size:11px">REPUESTOS</span><div style="margin-top:2px">${o.Repuestos||'—'}</div></div>
+    <div style="grid-column:span 2"><span style="color:var(--muted);font-size:11px">OBS. CIERRE</span><div style="margin-top:2px">${o.ObservacionesCierre||'—'}</div></div>
+    ` : ''}
+  `;
+
+  // Cargar técnicos en el select múltiple
+  const sel = document.getElementById('mDetalleOTTecnico');
+  sel.innerHTML = '';
+  TECNICOS.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = `${t.nombre} — ${t.esp}`;
+    // Pre-seleccionar si está asignado
+    if ((o.Tecnico||'').includes(t.nombre)) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  document.getElementById('mDetalleOTDesc').value = o.Descripcion || '';
+
+  // Mostrar/ocultar botones según estado
+  const btnCerrar = document.getElementById('btnCerrarDesdeDetalle');
+  const btnGuardar = document.getElementById('btnGuardarDetalleOT');
+  btnCerrar.style.display  = cerrada ? 'none' : 'block';
+  btnGuardar.style.display = cerrada ? 'none' : 'block';
+
+  openModal('modalDetalleOT');
+}
+
+async function guardarCambiosOT() {
+  const tecSel = document.getElementById('mDetalleOTTecnico');
+  const tecnicos = Array.from(tecSel.selectedOptions).map(o => o.text.split(' — ')[0].trim()).join(', ');
+  const desc = document.getElementById('mDetalleOTDesc').value.trim();
+
+  if (!tecnicos) { showToast('Seleccioná al menos un técnico', 'err'); return; }
+
+  const btn = document.getElementById('btnGuardarDetalleOT');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  try {
+    const body = {
+      accion:      'actualizarOT',
+      otNro:       otDetalleActual.NroOT,
+      tecnico:     tecnicos,
+      descripcion: desc
+    };
+    const resp = await fetch(GS_API, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+    showToast('OT actualizada correctamente');
+    closeModal('modalDetalleOT');
+    btn.disabled = false; btn.textContent = '💾 Guardar cambios';
+    recargar();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '💾 Guardar cambios';
+    showToast('Error: ' + e.message, 'err');
+  }
+}
+
+function cerrarDesdeDetalle() {
+  closeModal('modalDetalleOT');
+  abrirModalCerrar(otDetalleActual.NroOT, otDetalleActual.Equipo, otDetalleActual.Planta);
 }
 
 // ── DETALLE FALLA ─────────────────────────────────────────
