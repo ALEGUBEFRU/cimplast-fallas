@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cimplast · Supervisores</title>
+<style>
+/* ── TOKENS ──────────────────────────────────────────────── */
+:root {
+  --bg:        #0d1117;
+  --surface:   #161b22;
+  --surface2:  #21262d;
+  --border:    #30363d;
+  --accent:    #f59e0b;
+  --accent-dk: #b45309;
+  --blue:      #3b82f6;
+  --ok:        #22c55e;
+  --danger:    #ef4444;
+  --muted:     #8b949e;
+  --label:     #c9d1d9;
+  --text:      #f0f6fc;
+  --col-pend:  #f59e0b;
+  --col-curso: #3b82f6;
+  --col-done:  #22c55e;
+  --font:      'Inter', system-ui, sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+  --r:         8px;
+  --r-lg:      12px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; display: flex; flex-direction: column; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; }
+input, select, textarea { font-family: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* ── TOPBAR ────────────────────────────────────────────── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 2px solid var(--accent);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-mark {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 6px;
+  display: grid; place-items: center;
+  font-size: 16px; font-weight: 900; color: #000;
+}
+.logo-text { font-size: 14px; font-weight: 700; }
+.logo-sub  { font-size: 10px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+
+.topbar-nav {
+  display: flex;
+  gap: 2px;
+  margin-left: 24px;
+}
+.nav-btn {
+  padding: 6px 14px;
+  border-radius: var(--r);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: background .15s, color .15s;
+}
+.nav-btn:hover  { background: var(--surface2); color: var(--text); }
+.nav-btn.active { background: var(--surface2); color: var(--accent); }
+
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.badge-count {
+  background: var(--danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 2px 7px;
+  min-width: 20px;
+  text-align: center;
+}
+.btn-refresh {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--label);
+  display: flex; align-items: center; gap: 6px;
+  transition: border-color .15s;
+}
+.btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+.spin { display: inline-block; }
+.spin.loading { animation: spin .6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── VIEWS ─────────────────────────────────────────────── */
+.view { display: none; flex: 1; flex-direction: column; }
+.view.active { display: flex; }
+
+/* ── FILTERS BAR ────────────────────────────────────────── */
+.filters {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.filter-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.filter-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--text);
+  font-size: 13px;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color .15s;
+}
+.filter-input:focus { border-color: var(--accent); }
+.filter-input[type=date] { width: 140px; }
+.filter-input[type=text] { width: 200px; }
+.filter-sep { color: var(--border); font-size: 18px; }
+.btn-clear {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--muted);
+  transition: all .15s;
+}
+.btn-clear:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ── KANBAN ─────────────────────────────────────────────── */
+.kanban-wrap {
+  flex: 1;
+  overflow-x: auto;
+  padding: 20px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.kanban-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kanban-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  min-width: 900px;
+}
+.kanban-col {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+  max-height: calc(100vh - 260px);
+  overflow: hidden;
+}
+.kanban-col-header {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+.col-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.col-title { font-size: 13px; font-weight: 700; flex: 1; }
+.col-count {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 2px 8px;
+  font-family: var(--mono);
+}
+.kanban-col-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kanban-col-body::-webkit-scrollbar { width: 4px; }
+.kanban-col-body::-webkit-scrollbar-track { background: transparent; }
+.kanban-col-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── CARDS ──────────────────────────────────────────────── */
+.card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color .15s, box-shadow .15s;
+  cursor: default;
+}
+.card:hover { border-color: #484f58; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+.card.urgent { border-left: 3px solid var(--danger); }
+.card.parado { border-left: 3px solid var(--danger); }
+
+.card-top { display: flex; align-items: flex-start; gap: 6px; justify-content: space-between; }
+.card-num { font-size: 11px; font-weight: 700; color: var(--accent); font-family: var(--mono); }
+.card-prio {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px;
+  white-space: nowrap;
+}
+.prio-alta   { background: rgba(239,68,68,.15);  color: #fca5a5; }
+.prio-media  { background: rgba(245,158,11,.15); color: var(--accent); }
+.prio-baja   { background: rgba(34,197,94,.15);  color: var(--ok); }
+.prio-parado { background: rgba(239,68,68,.2);   color: #ff6b6b; }
+
+.card-equipo { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+.card-desc   { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.card-meta   { display: flex; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.card-meta span { display: flex; align-items: center; gap: 3px; }
+
+.card-actions { display: flex; gap: 6px; margin-top: 2px; }
+.card-btn {
+  flex: 1;
+  padding: 7px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid;
+  transition: all .15s;
+  text-align: center;
+}
+.card-btn-ot     { border-color: var(--accent);  color: var(--accent);  background: rgba(245,158,11,.06); }
+.card-btn-ot:hover { background: rgba(245,158,11,.15); }
+.card-btn-close  { border-color: var(--ok);      color: var(--ok);      background: rgba(34,197,94,.06); }
+.card-btn-close:hover { background: rgba(34,197,94,.15); }
+.card-btn-copy   { border-color: var(--blue);    color: var(--blue);    background: rgba(59,130,246,.06); }
+.card-btn-copy:hover { background: rgba(59,130,246,.15); }
+
+/* empty col */
+.col-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--border);
+  padding: 20px;
+  text-align: center;
+}
+
+/* ── MODAL ──────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-close {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 16px;
+  display: grid; place-items: center;
+  transition: background .15s;
+}
+.modal-close:hover { background: var(--border); color: var(--text); }
+.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* form fields in modal */
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--label); }
+.field input, .field textarea, .field select {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  color: var(--text);
+  font-size: 14px;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color .15s;
+  width: 100%;
+}
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
+.field textarea { min-height: 80px; resize: vertical; }
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.origen-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r);
+  padding: 10px 12px;
+}
+.origen-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.origen-equipo { font-size: 15px; font-weight: 700; margin-top: 2px; }
+.origen-desc   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.chip-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: all .15s;
+}
+.chip.selected { background: rgba(245,158,11,.12); border-color: var(--accent); color: var(--accent); }
+
+/* modal buttons */
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px 20px;
+  border-radius: var(--r);
+  transition: background .15s;
+}
+.btn-primary:disabled { background: var(--border); color: var(--muted); }
+.btn-primary.green { background: var(--ok); color: #fff; }
+.btn-secondary {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--label);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: var(--r);
+  transition: all .15s;
+}
+.btn-secondary:hover { border-color: var(--muted); }
+
+/* ── TOAST ──────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+  opacity: 0; pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity .25s, transform .25s;
+  z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.ok  { border-color: var(--ok);    color: var(--ok); }
+.toast.err { border-color: var(--danger); color: var(--danger); }
+
+/* ── WHATSAPP COPY ──────────────────────────────────────── */
+.wa-preview {
+  background: #1a2b1a;
+  border: 1px solid #2d4a2d;
+  border-radius: var(--r);
+  padding: 14px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: #a3d9a5;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  user-select: all;
+}
+
+/* ── LOADING ────────────────────────────────────────────── */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(13,17,23,.8);
+  z-index: 300;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.loading-overlay.show { display: flex; }
+.loader {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+
+/* ── select arrow ───────────────────────────────────────── */
+.select-wrap { position: relative; }
+.select-wrap::after {
+  content: '▾'; position: absolute; right: 10px; top: 50%;
+  transform: translateY(-50%); color: var(--muted); pointer-events: none;
+}
+.select-wrap select { padding-right: 28px; appearance: none; -webkit-appearance: none; }
+
+@media (max-width: 900px) {
+  .kanban-board { grid-template-columns: 1fr; min-width: unset; }
+  .kanban-col { max-height: 400px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader"></div>
+  <span id="loadingMsg">Cargando datos…</span>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-mark">C</div>
+    <div>
+      <div class="logo-text">Cimplast</div>
+      <div class="logo-sub">Panel de supervisores</div>
+    </div>
+  </div>
+  <nav class="topbar-nav">
+    <button class="nav-btn active" onclick="switchView('kanban')">⬛ Kanban</button>
+    <button class="nav-btn" onclick="switchView('nueva-ot')">+ Nueva OT</button>
+  </nav>
+  <div class="topbar-right">
+    <span id="pendCount" class="badge-count" style="display:none">0</span>
+    <button class="btn-refresh" onclick="recargar()">
+      <span class="spin" id="refreshIcon">↻</span> Actualizar
+    </button>
+  </div>
+</header>
+
+<!-- ══════════ VIEW: KANBAN ══════════ -->
+<div class="view active" id="viewKanban">
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <span class="filter-label">Filtrar</span>
+    <input type="date" class="filter-input" id="fDesde" onchange="aplicarFiltros()">
+    <span style="color:var(--muted);font-size:12px">→</span>
+    <input type="date" class="filter-input" id="fHasta" onchange="aplicarFiltros()">
+    <span class="filter-sep">|</span>
+    <input type="text" class="filter-input" id="fEquipo" placeholder="🔍 Buscar equipo…" oninput="aplicarFiltros()">
+    <button class="btn-clear" onclick="limpiarFiltros()">✕ Limpiar</button>
+  </div>
+
+  <div class="kanban-wrap">
+
+    <!-- SECCIÓN FALLAS -->
+    <div>
+      <div class="kanban-section-title">📋 Reportes de fallas</div>
+      <div class="kanban-board">
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <div class="col-dot" style="background:var(--col-pend)"></div>
+            <span class="col-title">Pendiente</span>
+            <span class="col-count" id="cnt-f-pend">0</span>
+          </div>
+          <div class="kanban-col-body" id="col-fallas-pend"></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <div class="col-dot" style="background:var(--col-curso)"></div>
+            <span class="col-title">Con OT generada</span>
+            <span class="col-count" id="cnt-f-ot">0</span>
+          </div>
+          <div class="kanban-col-body" id="col-fallas-ot"></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <div class="col-dot" style="background:var(--col-done)"></div>
+            <span class="col-title">Atendido</span>
+            <span class="col-count" id="cnt-f-done">0</span>
+          </div>
+          <div class="kanban-col-body" id="col-fallas-done"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN OTs -->
+    <div>
+      <div class="kanban-section-title">⚙ Órdenes de trabajo</div>
+      <div class="kanban-board" style="grid-template-columns: 1fr 1fr;">
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <div class="col-dot" style="background:var(--col-pend)"></div>
+            <span class="col-title">Abierta</span>
+            <span class="col-count" id="cnt-ot-abierta">0</span>
+          </div>
+          <div class="kanban-col-body" id="col-ots-abierta"></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <div class="col-dot" style="background:var(--col-done)"></div>
+            <span class="col-title">Cerrada</span>
+            <span class="col-count" id="cnt-ot-cerrada">0</span>
+          </div>
+          <div class="kanban-col-body" id="col-ots-cerrada"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /viewKanban -->
+
+<!-- ══════════ VIEW: NUEVA OT ══════════ -->
+<div class="view" id="viewNuevaOt" style="padding:24px;overflow-y:auto">
+  <div style="max-width:560px">
+    <h2 style="font-size:18px;font-weight:800;margin-bottom:20px">Nueva Orden de Trabajo</h2>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="field">
+        <label>N° OT *</label>
+        <input type="text" id="nOtNro" placeholder="OT-2026-001">
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Planta *</label>
+          <div class="select-wrap">
+            <select id="nOtPlanta" onchange="updateEquiposModal()">
+              <option value="">— Seleccionar —</option>
+              <option>Titese</option><option>Planta 2</option>
+              <option>Planta 3</option><option>Planta 4</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Equipo *</label>
+          <div class="select-wrap">
+            <select id="nOtEquipo"><option value="">— Planta primero —</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tipo *</label>
+        <div class="chip-group" id="nOtTipoGroup">
+          <button class="chip" data-val="Correctivo" onclick="selChip(this,'nOtTipoGroup')">🔧 Correctivo</button>
+          <button class="chip" data-val="Preventivo" onclick="selChip(this,'nOtTipoGroup')">📋 Preventivo</button>
+          <button class="chip" data-val="Mejora"     onclick="selChip(this,'nOtTipoGroup')">⬆ Mejora</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Prioridad *</label>
+        <div class="chip-group" id="nOtPrioGroup">
+          <button class="chip" data-val="Alta"  onclick="selChip(this,'nOtPrioGroup')">🔴 Alta</button>
+          <button class="chip" data-val="Media" onclick="selChip(this,'nOtPrioGroup')">🟡 Media</button>
+          <button class="chip" data-val="Baja"  onclick="selChip(this,'nOtPrioGroup')">🟢 Baja</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Técnico(s) asignado(s) *</label>
+        <select id="nOtTecnico" multiple style="height:140px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;padding:6px;width:100%;outline:none">
+        </select>
+        <span style="font-size:11px;color:var(--muted)">Mantené Ctrl (o Cmd en Mac) para seleccionar más de uno</span>
+      </div>
+      <div class="field">
+        <label>Descripción / Tarea *</label>
+        <textarea id="nOtDesc" placeholder="Describir el trabajo a realizar…"></textarea>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Horas estimadas</label>
+          <input type="number" id="nOtHoras" placeholder="Ej: 2" min="0" step="0.5">
+        </div>
+        <div class="field">
+          <label>Fecha programada</label>
+          <input type="date" id="nOtFecha">
+        </div>
+      </div>
+      <div class="field">
+        <label>Observaciones</label>
+        <textarea id="nOtObs" placeholder="Repuestos, precauciones…" style="min-height:60px"></textarea>
+      </div>
+      <button class="btn-primary" id="btnNuevaOT" onclick="crearOTDirecta()" style="width:100%;padding:14px;font-size:14px">⚙ Crear Orden de Trabajo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: DETALLE FALLA ══════════ -->
+<div class="modal-overlay" id="modalDetalle">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <span class="modal-title" id="mDetalleTitulo">Detalle de falla</span>
+      <button class="modal-close" onclick="closeModal('modalDetalle')">✕</button>
+    </div>
+    <div class="modal-body" id="mDetalleBody">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalDetalle')">Cerrar</button>
+      <button class="btn-primary" id="btnDetalleOT" onclick="generarOTdesdeDetalle()" style="display:none">⚙ Generar OT</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: GENERAR OT DESDE FALLA ══════════ -->
+<div class="modal-overlay" id="modalGenOT">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Generar Orden de Trabajo</span>
+      <button class="modal-close" onclick="closeModal('modalGenOT')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="origen-card">
+        <div class="origen-label">Falla origen</div>
+        <div class="origen-equipo" id="mOtEquipo">—</div>
+        <div class="origen-desc" id="mOtDesc">—</div>
+      </div>
+      <div class="field"><label>N° OT *</label><input type="text" id="mOtNro"></div>
+      <div class="field">
+        <label>Tipo *</label>
+        <div class="chip-group" id="mOtTipoGroup">
+          <button class="chip" data-val="Correctivo" onclick="selChip(this,'mOtTipoGroup')">🔧 Correctivo</button>
+          <button class="chip" data-val="Preventivo" onclick="selChip(this,'mOtTipoGroup')">📋 Preventivo</button>
+          <button class="chip" data-val="Mejora"     onclick="selChip(this,'mOtTipoGroup')">⬆ Mejora</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Prioridad *</label>
+        <div class="chip-group" id="mOtPrioGroup">
+          <button class="chip" data-val="Alta"  onclick="selChip(this,'mOtPrioGroup')">🔴 Alta</button>
+          <button class="chip" data-val="Media" onclick="selChip(this,'mOtPrioGroup')">🟡 Media</button>
+          <button class="chip" data-val="Baja"  onclick="selChip(this,'mOtPrioGroup')">🟢 Baja</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Técnico(s) asignado(s) *</label>
+        <select id="mOtTecnico" multiple style="height:140px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;padding:6px;width:100%;outline:none">
+        </select>
+        <span style="font-size:11px;color:var(--muted)">Mantené Ctrl (o Cmd en Mac) para seleccionar más de uno</span>
+      </div>
+      <div class="row-2">
+        <div class="field"><label>Horas estimadas</label><input type="number" id="mOtHoras" min="0" step="0.5"></div>
+        <div class="field"><label>Fecha programada</label><input type="date" id="mOtFecha"></div>
+      </div>
+      <div class="field"><label>Observaciones</label><textarea id="mOtObs" style="min-height:60px"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalGenOT')">Cancelar</button>
+      <button class="btn-primary" id="btnModalOT" onclick="submitModalOT()">⚙ Crear OT</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: CERRAR OT ══════════ -->
+<div class="modal-overlay" id="modalCerrar">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Cerrar Orden de Trabajo</span>
+      <button class="modal-close" onclick="closeModal('modalCerrar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="origen-card">
+        <div class="origen-label">OT</div>
+        <div class="origen-equipo" id="mCerrarNro">—</div>
+        <div class="origen-desc" id="mCerrarEquipo">—</div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label>Horas reales *</label><input type="number" id="mCerrarHoras" min="0" step="0.5" placeholder="Ej: 3.5"></div>
+        <div class="field"><label>Fecha de cierre</label><input type="date" id="mCerrarFecha"></div>
+      </div>
+      <div class="field"><label>Repuestos utilizados</label><textarea id="mCerrarRepuestos" placeholder="Ej: Rodamiento 6205 x1, retén 40x60 x2…" style="min-height:60px"></textarea></div>
+      <div class="field"><label>Costo total (Gs.)</label><input type="number" id="mCerrarCosto" min="0" placeholder="Ej: 150000"></div>
+      <div class="field"><label>Observaciones del cierre *</label><textarea id="mCerrarObs" placeholder="Causa raíz, trabajo realizado, recomendaciones…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalCerrar')">Cancelar</button>
+      <button class="btn-primary green" id="btnModalCerrar" onclick="submitCerrar()">✓ Confirmar cierre</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: WHATSAPP ══════════ -->
+<div class="modal-overlay" id="modalWA">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">📲 Compartir por WhatsApp</span>
+      <button class="modal-close" onclick="closeModal('modalWA')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--muted)">Tocá el texto para seleccionarlo, luego copiá y pegá en WhatsApp.</p>
+      <div class="wa-preview" id="waText" onclick="selectWAText()"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalWA')">Cerrar</button>
+      <button class="btn-primary" onclick="copyWAText()">📋 Copiar texto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────
+const GS_API = 'https://script.google.com/macros/s/AKfycbxnGjO-ZPeI55fWSTWX_vdyHDSBsjXxmcjlTEZrAwW23rhllsJyWoJgWnT3geV2-XW3QA/exec';
+
+const EQUIPOS = {
+  'Titese':   ['Sopladora Uniloy N°1','Sopladora Uniloy N°2','Sopladora Uniloy N°3','Inyectora N°1','Inyectora N°2','Compresor Kaeser N°1','Compresor Kaeser N°2','Chiller N°1','Chiller N°2','Molino N°1','Secador N°1'],
+  'Planta 2': ['Inyecto-sopladora N°1','Inyecto-sopladora N°2','Extrusora PEAD N°1','Extrusora COEX N°1','Compresor N°1','Chiller N°1','Molino N°2'],
+  'Planta 3': ['Línea extrusión N°1','Línea extrusión N°2','Compresor Atlas Copco','Chiller N°3','Molino N°3','Mezclador N°1'],
+  'Planta 4': ['Inyectora grande N°1','Inyectora grande N°2','Sopladora PET N°1','Compresor N°2','Chiller N°4','Molino N°4']
+};
+
+const TECNICOS = [
+  { id: 14, nombre: 'Carlos Mongelos',  esp: 'Eléctrico' },
+  { id:  4, nombre: 'Claudio Cerezo',   esp: 'Eléctrico' },
+  { id: 11, nombre: 'Edgar Maqueda',    esp: 'Metricero' },
+  { id: 13, nombre: 'Enrique Monges',   esp: 'Eléctrico' },
+  { id: 10, nombre: 'Jose Caballero',   esp: 'Mecánico' },
+  { id:  2, nombre: 'José González',    esp: 'Mecánico' },
+  { id: 16, nombre: 'Maximo Duarte',    esp: 'Eléctrico' },
+  { id: 15, nombre: 'Nicolas Vazquez',  esp: 'Mecánico' },
+  { id:  7, nombre: 'Oscar Duarte',     esp: 'Electromecánico' },
+  { id:  6, nombre: 'Pablo Gomez',      esp: 'Herrero' },
+  { id:  8, nombre: 'Valentin Escobar', esp: 'Herrero' },
+  { id: 12, nombre: 'Victor Saucedo',   esp: 'Mecánico' },
+];
+
+// ── STATE ─────────────────────────────────────────────────
+let fallasTodas = [];
+let otsTodas    = [];
+let fallaActual = null;
+let otActual    = null;
+
+// ── INIT ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const hoy = new Date().toISOString().slice(0,10);
+  const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0,10);
+  document.getElementById('fDesde').value = hace30;
+  document.getElementById('fHasta').value = hoy;
+  document.getElementById('mOtFecha').value = hoy;
+  document.getElementById('nOtFecha').value = hoy;
+  document.getElementById('mCerrarFecha').value = hoy;
+  document.getElementById('nOtNro').value = 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4);
+  cargarTecnicosSelects();
+  recargar();
+});
+
+// ── VIEWS ─────────────────────────────────────────────────
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view' + name.charAt(0).toUpperCase() + name.slice(1).replace('-','') ).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ── CARGA DE DATOS ────────────────────────────────────────
+async function recargar() {
+  const icon = document.getElementById('refreshIcon');
+  icon.classList.add('loading');
+  showLoading('Cargando datos…');
+  try {
+    const [rFallas, rOTs] = await Promise.all([
+      fetch(`${GS_API}?accion=fallas`).then(r => r.json()),
+      fetch(`${GS_API}?accion=ots`).then(r => r.json())
+    ]);
+    fallasTodas = rFallas.fallas || [];
+    otsTodas    = rOTs.ots    || [];
+    aplicarFiltros();
+  } catch(e) {
+    showToast('Error cargando datos', 'err');
+  } finally {
+    icon.classList.remove('loading');
+    hideLoading();
+  }
+}
+
+// ── FILTROS ───────────────────────────────────────────────
+function aplicarFiltros() {
+  const desde  = document.getElementById('fDesde').value;
+  const hasta  = document.getElementById('fHasta').value;
+  const equipo = document.getElementById('fEquipo').value.toLowerCase().trim();
+
+  const filtrarFalla = f => {
+    const fecha = (f.Fecha || '').toString().slice(0,10);
+    if (desde && fecha && fecha < desde) return false;
+    if (hasta && fecha && fecha > hasta) return false;
+    if (equipo && !f.Equipo?.toLowerCase().includes(equipo)) return false;
+    return true;
+  };
+  const filtrarOT = o => {
+    const fecha = (o.FechaProgramada || o.FechaCreacion || '').toString().slice(0,10);
+    if (desde && fecha && fecha < desde) return false;
+    if (hasta && fecha && fecha > hasta) return false;
+    if (equipo && !o.Equipo?.toLowerCase().includes(equipo)) return false;
+    return true;
+  };
+
+  renderKanban(fallasTodas.filter(filtrarFalla), otsTodas.filter(filtrarOT));
+}
+
+function limpiarFiltros() {
+  const hoy   = new Date().toISOString().slice(0,10);
+  const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0,10);
+  document.getElementById('fDesde').value  = hace30;
+  document.getElementById('fHasta').value  = hoy;
+  document.getElementById('fEquipo').value = '';
+  aplicarFiltros();
+}
+
+// ── RENDER KANBAN ─────────────────────────────────────────
+function renderKanban(fallas, ots) {
+  // Fallas — normalizar estado
+  const fPend = fallas.filter(f => (f.Estado||'').trim().toLowerCase() === 'pendiente');
+  const fOT   = fallas.filter(f => (f.Estado||'').trim().toLowerCase() === 'en curso');
+  const fDone = fallas.filter(f => (f.Estado||'').trim().toLowerCase() === 'concluido');
+
+  document.getElementById('cnt-f-pend').textContent = fPend.length;
+  document.getElementById('cnt-f-ot').textContent   = fOT.length;
+  document.getElementById('cnt-f-done').textContent = fDone.length;
+
+  document.getElementById('col-fallas-pend').innerHTML = fPend.length ? fPend.map(cardFalla).join('') : emptyCol('Sin fallas pendientes');
+  document.getElementById('col-fallas-ot').innerHTML   = fOT.length   ? fOT.map(cardFalla).join('')   : emptyCol('Sin fallas con OT');
+  document.getElementById('col-fallas-done').innerHTML = fDone.length ? fDone.map(cardFalla).join('')  : emptyCol('Sin fallas atendidas');
+
+  // OTs — normalizar estado para comparación
+  const otAb   = ots.filter(o => (o.Estado||'').trim().toLowerCase() === 'abierta');
+  const otCerr = ots.filter(o => (o.Estado||'').trim().toLowerCase() === 'cerrada');
+
+  document.getElementById('cnt-ot-abierta').textContent = otAb.length;
+  document.getElementById('cnt-ot-cerrada').textContent = otCerr.length;
+
+  document.getElementById('col-ots-abierta').innerHTML = otAb.length   ? otAb.map(cardOT).join('')   : emptyCol('Sin OTs abiertas');
+  document.getElementById('col-ots-cerrada').innerHTML = otCerr.length ? otCerr.map(cardOT).join('')  : emptyCol('Sin OTs cerradas');
+
+  // Badge pendientes
+  const pend = fPend.length;
+  const badge = document.getElementById('pendCount');
+  badge.textContent = pend;
+  badge.style.display = pend > 0 ? 'inline-block' : 'none';
+}
+
+function emptyCol(msg) {
+  return `<div class="col-empty">${msg}</div>`;
+}
+
+function cardFalla(f) {
+  const parado  = (f.Detenido||'').includes('parado');
+  const urgente = parado ? 'parado' : '';
+  const prioTag = parado
+    ? `<span class="card-prio prio-parado">🔴 PARADO</span>`
+    : `<span class="card-prio prio-media">En operación</span>`;
+
+  // Formatear fecha y hora correctamente
+  const fecha = (f.Fecha||'').toString().slice(0,10);
+  const hora  = (f.Hora||'').toString().slice(0,5);
+
+  const acciones = (f.Estado||'').toLowerCase() === 'pendiente'
+    ? `<button class="card-btn card-btn-ot" onclick="abrirModalOT('${f.ID}')">⚙ Generar OT</button>`
+    : '';
+
+  return `
+  <div class="card ${urgente}" onclick="abrirDetalleFalla('${f.ID}')" style="cursor:pointer">
+    <div class="card-top">
+      <span class="card-num">${(f.ID||'').slice(-8) || '—'}</span>
+      ${prioTag}
+    </div>
+    <div class="card-equipo">${f.Equipo || '—'}</div>
+    <div class="card-desc">${(f.Sintoma || '').substring(0,90)}${(f.Sintoma||'').length>90?'…':''}</div>
+    <div class="card-meta">
+      <span>📍 ${f.Planta || '—'}</span>
+      <span>👤 ${f.Operador || '—'}</span>
+      <span>🕐 ${fecha} ${hora}</span>
+      <span>🌀 ${f.Turno || ''}</span>
+      ${f.CantFotos > 0 ? `<span>📷 ${f.CantFotos}</span>` : ''}
+    </div>
+    ${acciones ? `<div class="card-actions" onclick="event.stopPropagation()">${acciones}</div>` : ''}
+  </div>`;
+}
+
+function cardOT(o) {
+  const prioClass = o.Prioridad === 'Alta' ? 'prio-alta' : o.Prioridad === 'Baja' ? 'prio-baja' : 'prio-media';
+  const cerrada   = o.Estado === 'Cerrada';
+
+  const acciones = !cerrada ? `
+    <button class="card-btn card-btn-close" onclick="abrirModalCerrar('${o.NroOT}','${(o.Equipo||'').replace(/'/g,"\\'")}','${(o.Planta||'').replace(/'/g,"\\'")}')">✓ Cerrar</button>
+    <button class="card-btn card-btn-copy"  onclick="abrirWA('${o.NroOT}','${(o.Equipo||'').replace(/'/g,"\\'")}','${(o.Descripcion||'').substring(0,60).replace(/'/g,"\\'")}','${(o.Tecnico||'').replace(/'/g,"\\'")}','${o.Prioridad||''}')">📲 WA</button>
+  ` : `<button class="card-btn card-btn-copy" onclick="abrirWA('${o.NroOT}','${(o.Equipo||'').replace(/'/g,"\\'")}','${(o.Descripcion||'').substring(0,60).replace(/'/g,"\\'")}','${(o.Tecnico||'').replace(/'/g,"\\'")}','${o.Prioridad||''}')">📲 WA</button>`;
+
+  return `
+  <div class="card">
+    <div class="card-top">
+      <span class="card-num">${o.NroOT || '—'}</span>
+      <span class="card-prio ${prioClass}">${o.Prioridad || '—'}</span>
+    </div>
+    <div class="card-equipo">${o.Equipo || '—'}</div>
+    <div class="card-desc">${(o.Descripcion||'').substring(0,80)}${(o.Descripcion||'').length>80?'…':''}</div>
+    <div class="card-meta">
+      <span>📍 ${o.Planta || '—'}</span>
+      <span>👤 ${o.Tecnico || '—'}</span>
+      ${o.HorasEstimadas ? `<span>⏱ ${o.HorasEstimadas}h est.</span>` : ''}
+      ${cerrada && o.HorasReales ? `<span>✓ ${o.HorasReales}h reales</span>` : ''}
+      ${cerrada && o.Costo ? `<span>💰 Gs. ${Number(o.Costo).toLocaleString()}</span>` : ''}
+    </div>
+    <div class="card-actions">${acciones}</div>
+  </div>`;
+}
+
+// ── DETALLE FALLA ─────────────────────────────────────────
+function abrirDetalleFalla(fallaId) {
+  const f = fallasTodas.find(x => x.ID === fallaId);
+  if (!f) return;
+
+  const fecha  = (f.Fecha||'').toString().slice(0,10);
+  const hora   = (f.Hora||'').toString().slice(0,5);
+  const parado = (f.Detenido||'').includes('parado');
+
+  document.getElementById('mDetalleTitulo').textContent = f.Equipo + ' — ' + f.Planta;
+
+  const fotoHtml = f.FotoURL
+    ? `<div style="margin-top:4px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Foto de evidencia</div>
+        <img src="${f.FotoURL}" alt="Evidencia" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:300px;object-fit:contain;background:#000"
+          onerror="this.parentElement.innerHTML='<div style=\\'font-size:12px;color:var(--muted)\\'>No se pudo cargar la imagen</div>'">
+       </div>`
+    : (f.CantFotos > 0 ? `<div style="font-size:12px;color:var(--muted);padding:10px;background:var(--surface2);border-radius:8px">📷 ${f.CantFotos} foto(s) adjunta(s) — subí la app actualizada para ver imágenes</div>` : '');
+
+  document.getElementById('mDetalleBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+      <div><span style="color:var(--muted);font-size:11px">EQUIPO</span><div style="font-weight:700;margin-top:2px">${f.Equipo||'—'}</div></div>
+      <div><span style="color:var(--muted);font-size:11px">PLANTA</span><div style="font-weight:700;margin-top:2px">${f.Planta||'—'}</div></div>
+      <div><span style="color:var(--muted);font-size:11px">SISTEMA</span><div style="margin-top:2px">${f.Sistema||'—'}</div></div>
+      <div><span style="color:var(--muted);font-size:11px">OPERADOR</span><div style="margin-top:2px">${f.Operador||'—'}</div></div>
+      <div><span style="color:var(--muted);font-size:11px">TURNO</span><div style="margin-top:2px">${f.Turno||'—'}</div></div>
+      <div><span style="color:var(--muted);font-size:11px">FECHA / HORA</span><div style="margin-top:2px;font-family:var(--mono);font-size:12px">${fecha} ${hora}</div></div>
+    </div>
+    <div style="margin-top:12px">
+      <span style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Estado del equipo</span>
+      <div style="margin-top:4px;padding:8px 12px;border-radius:6px;font-weight:700;font-size:13px;
+        background:${parado ? 'rgba(239,68,68,.12)' : 'rgba(34,197,94,.08)'};
+        color:${parado ? '#fca5a5' : 'var(--ok)'}">
+        ${f.Detenido||'—'}
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <span style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Descripción del síntoma</span>
+      <div style="margin-top:4px;padding:10px 12px;background:var(--surface2);border-radius:8px;font-size:13px;line-height:1.6;color:var(--label)">${f.Sintoma||'—'}</div>
+    </div>
+    ${fotoHtml}
+  `;
+
+  // Mostrar botón OT solo si está pendiente
+  const btnOT = document.getElementById('btnDetalleOT');
+  btnOT.style.display = (f.Estado||'').toLowerCase() === 'pendiente' ? 'block' : 'none';
+
+  // Guardar falla actual para generar OT
+  fallaActual = f;
+
+  openModal('modalDetalle');
+}
+
+function generarOTdesdeDetalle() {
+  closeModal('modalDetalle');
+  abrirModalOT(fallaActual.ID);
+}
+
+// ── MODAL: GENERAR OT ─────────────────────────────────────
+function abrirModalOT(fallaId) {
+  fallaActual = fallasTodas.find(f => f.ID === fallaId);
+  if (!fallaActual) return;
+
+  document.getElementById('mOtEquipo').textContent = (fallaActual.Equipo || '') + ' — ' + (fallaActual.Planta || '');
+  document.getElementById('mOtDesc').textContent   = (fallaActual.Sintoma || '').substring(0,100);
+  document.getElementById('mOtNro').value  = 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4);
+  document.getElementById('mOtHoras').value = '';
+  document.getElementById('mOtObs').value   = fallaActual.Sintoma || '';
+
+  // Prioridad automática
+  const prio = (fallaActual.Detenido||'').includes('parado') ? 'Alta' : (fallaActual.Detenido||'').includes('Parcial') ? 'Media' : 'Baja';
+  document.querySelectorAll('#mOtPrioGroup .chip').forEach(c => { c.classList.toggle('selected', c.dataset.val === prio); });
+  document.querySelectorAll('#mOtTipoGroup .chip').forEach(c => { c.classList.toggle('selected', c.dataset.val === 'Correctivo'); });
+
+  openModal('modalGenOT');
+}
+
+async function submitModalOT() {
+  const nro    = document.getElementById('mOtNro').value.trim();
+  const tipo   = getChipVal('mOtTipoGroup');
+  const prio   = getChipVal('mOtPrioGroup');
+  const tecSel  = document.getElementById('mOtTecnico');
+  const tecSeleccionados = Array.from(tecSel.selectedOptions).map(o => o.text.split(' — ')[0].trim());
+  const tec = tecSeleccionados.join(', ');
+  if (!tec) { showToast('Seleccioná al menos un técnico', 'err'); return; }
+  const horas  = document.getElementById('mOtHoras').value;
+  const fecha  = document.getElementById('mOtFecha').value;
+  const obs    = document.getElementById('mOtObs').value.trim();
+
+  if (!nro || !tipo || !prio) { showToast('Completar campos obligatorios', 'err'); return; }
+
+  const btn = document.getElementById('btnModalOT');
+  btn.disabled = true; btn.textContent = 'Creando…';
+
+  try {
+    const body = {
+      accion: 'ot', nroOT: nro,
+      fallaId: fallaActual?.ID || '',
+      equipo: fallaActual?.Equipo || '',
+      planta: fallaActual?.Planta || '',
+      tipo, prioridad: prio, tecnico: tec,
+      descripcion: obs, horasEstimadas: horas || '',
+      fechaProgramada: fecha, observaciones: ''
+    };
+    const resp = await fetch(GS_API, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+
+    showToast('OT ' + nro + ' creada');
+    closeModal('modalGenOT');
+    btn.disabled = false; btn.textContent = '⚙ Crear OT';
+    recargar();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '⚙ Crear OT';
+    showToast('Error: ' + e.message, 'err');
+  }
+}
+
+// ── MODAL: CERRAR OT ──────────────────────────────────────
+function abrirModalCerrar(nroOT, equipo, planta) {
+  otActual = { nroOT, equipo, planta };
+  document.getElementById('mCerrarNro').textContent    = nroOT;
+  document.getElementById('mCerrarEquipo').textContent = equipo + ' — ' + planta;
+  document.getElementById('mCerrarHoras').value    = '';
+  document.getElementById('mCerrarRepuestos').value = '';
+  document.getElementById('mCerrarCosto').value    = '';
+  document.getElementById('mCerrarObs').value      = '';
+  openModal('modalCerrar');
+}
+
+async function submitCerrar() {
+  const horas = document.getElementById('mCerrarHoras').value;
+  const obs   = document.getElementById('mCerrarObs').value.trim();
+  if (!horas) { showToast('Ingresá las horas reales', 'err'); return; }
+  if (!obs)   { showToast('Ingresá las observaciones de cierre', 'err'); return; }
+
+  const btn = document.getElementById('btnModalCerrar');
+  btn.disabled = true; btn.textContent = 'Cerrando…';
+
+  try {
+    const body = {
+      accion: 'cerrarOT',
+      otNro:  otActual.nroOT,
+      fallaId: '',
+      horasReales:   parseFloat(horas),
+      repuestos:     document.getElementById('mCerrarRepuestos').value.trim(),
+      costo:         parseFloat(document.getElementById('mCerrarCosto').value) || 0,
+      observaciones: obs,
+      fechaCierre:   document.getElementById('mCerrarFecha').value
+    };
+    const resp = await fetch(GS_API, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+
+    showToast('OT ' + otActual.nroOT + ' cerrada');
+    closeModal('modalCerrar');
+    btn.disabled = false; btn.textContent = '✓ Confirmar cierre';
+    recargar();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '✓ Confirmar cierre';
+    showToast('Error: ' + e.message, 'err');
+  }
+}
+
+// ── WHATSAPP ──────────────────────────────────────────────
+function abrirWA(nroOT, equipo, desc, tecnico, prioridad) {
+  const texto = `*${nroOT}*\n📍 ${equipo}\n🔧 ${desc}\n👤 Técnico: ${tecnico}\n⚡ Prioridad: ${prioridad}\n\n_Cimplast · Sistema de Mantenimiento_`;
+  document.getElementById('waText').textContent = texto;
+  openModal('modalWA');
+}
+function selectWAText() {
+  const el = document.getElementById('waText');
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+}
+function copyWAText() {
+  const text = document.getElementById('waText').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Texto copiado'));
+}
+
+// ── NUEVA OT DIRECTA ──────────────────────────────────────
+async function crearOTDirecta() {
+  const planta = document.getElementById('nOtPlanta').value;
+  const equipo = document.getElementById('nOtEquipo').value;
+  const tipo   = getChipVal('nOtTipoGroup');
+  const prio   = getChipVal('nOtPrioGroup');
+  const tecSel  = document.getElementById('nOtTecnico');
+  const tecSeleccionados = Array.from(tecSel.selectedOptions).map(o => o.text.split(' — ')[0].trim());
+  const tec = tecSeleccionados.join(', ');
+  const desc   = document.getElementById('nOtDesc').value.trim();
+  const nro    = document.getElementById('nOtNro').value.trim();
+
+  if (!nro || !planta || !equipo || !tipo || !prio || !tecSel.value || !desc) {
+    showToast('Completar todos los campos obligatorios', 'err'); return;
+  }
+
+  const btn = document.getElementById('btnNuevaOT');
+  btn.disabled = true; btn.textContent = 'Creando…';
+
+  try {
+    const body = {
+      accion: 'ot', nroOT: nro, fallaId: '',
+      equipo, planta, tipo, prioridad: prio, tecnico: tec,
+      descripcion: desc,
+      horasEstimadas: document.getElementById('nOtHoras').value || '',
+      fechaProgramada: document.getElementById('nOtFecha').value,
+      observaciones: document.getElementById('nOtObs').value.trim()
+    };
+    const resp = await fetch(GS_API, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+
+    showToast('OT ' + nro + ' creada correctamente');
+    btn.disabled = false; btn.textContent = '⚙ Crear Orden de Trabajo';
+    // Reset form
+    document.getElementById('nOtDesc').value = '';
+    document.getElementById('nOtObs').value  = '';
+    document.getElementById('nOtNro').value  = 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4);
+    document.querySelectorAll('#viewNuevaOt .chip').forEach(c => c.classList.remove('selected'));
+    switchView('kanban');
+    document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    document.querySelectorAll('.nav-btn')[1].classList.remove('active');
+    recargar();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '⚙ Crear Orden de Trabajo';
+    showToast('Error: ' + e.message, 'err');
+  }
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+function selChip(el, groupId) {
+  document.querySelectorAll(`#${groupId} .chip`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function getChipVal(groupId) {
+  return document.querySelector(`#${groupId} .chip.selected`)?.dataset.val || '';
+}
+function openModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function cargarTecnicosSelects() {
+  ['mOtTecnico','nOtTecnico'].forEach(selId => {
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '';
+    TECNICOS.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.id;
+      opt.textContent = `${t.nombre} — ${t.esp}`;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function updateEquiposModal() {
+  const planta = document.getElementById('nOtPlanta').value;
+  const sel    = document.getElementById('nOtEquipo');
+  sel.innerHTML = '<option value="">— Seleccionar equipo —</option>';
+  if (planta && EQUIPOS[planta]) {
+    EQUIPOS[planta].forEach(eq => {
+      const opt = document.createElement('option');
+      opt.value = eq; opt.textContent = eq;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+let toastTimer;
+function showToast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'ok' ? '✓ ' : '⚠ ') + msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+function showLoading(msg) {
+  document.getElementById('loadingMsg').textContent = msg;
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
+
+// Cerrar modales con click fuera
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
+});
+
+// Auto-refresh cada 2 minutos
+setInterval(recargar, 120000);
+</script>
+</body>
+</html>
