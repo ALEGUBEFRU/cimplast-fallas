@@ -725,7 +725,16 @@
   <div class="hist-header">
     <button class="btn-back" onclick="showView('form')">← Volver</button>
     <span class="hist-title">Mis reportes</span>
-    <button class="btn-historial" onclick="showView('gestionOTs')" style="margin-left:auto">📋 Gestionar OTs</button>
+    <button class="btn-historial" onclick="showView('gestionOTs')" style="margin-left:auto">📋 OTs</button>
+  </div>
+  <!-- Filtros móvil -->
+  <div style="padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="date" id="hDesde" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:6px 8px;outline:none" onchange="filtrarHistorial()">
+      <span style="color:var(--muted);font-size:12px">→</span>
+      <input type="date" id="hHasta" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:6px 8px;outline:none" onchange="filtrarHistorial()">
+    </div>
+    <input type="text" id="hEquipo" placeholder="🔍 Buscar equipo…" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:6px 10px;outline:none;width:100%" oninput="filtrarHistorial()">
   </div>
   <div class="hist-list" id="histList"></div>
 </div>
@@ -1076,7 +1085,7 @@ async function submitForm() {
 }
 
 // ── GOOGLE SHEETS API ────────────────────────────────────
-const GS_API = 'https://script.google.com/macros/s/AKfycbzlkoZKQPjoACq9XNJ0s9RxbFcIP0iK3JWxZ10HHdteyRebvsBhl_rX-bxUIRaQZeBvbw/exec';
+const GS_API = 'https://script.google.com/macros/s/AKfycbzkwzJHmxxi3t2BuB-Fi7jHWHyY-rlsql8Jr57Dyqns9pitvzPkpWUF1ZS0XJr1dM7sbw/exec';
 
 async function loginYGuardar() {
   const resultEl = document.getElementById('cfgTestResult');
@@ -1417,6 +1426,22 @@ function getLocalFallas() {
 }
 
 // ── HISTORIAL ────────────────────────────────────────────
+function filtrarHistorial() {
+  const desde  = document.getElementById('hDesde')?.value || '';
+  const hasta  = document.getElementById('hHasta')?.value || '';
+  const equipo = document.getElementById('hEquipo')?.value.toLowerCase().trim() || '';
+  const fallas = getLocalFallas().filter(f => {
+    const fecha = (f.fecha || '').slice(0,10);
+    if (desde && fecha < desde) return false;
+    if (hasta && fecha > hasta + 'z') return false;
+    if (equipo && !f.equipo?.toLowerCase().includes(equipo)) return false;
+    return true;
+  });
+  renderHistorialConEstados(fallas, {});
+  // Actualizar estados desde GS
+  const ids = fallas.filter(f => f.estado === 'enviado' || f.estado === 'En curso').map(f => f.id);
+  if (ids.length) fetchEstadosSP(ids).then(estados => renderHistorialConEstados(fallas, estados));
+}
 async function fetchEstadosSP(ids) {
   try {
     const resp = await fetch(`${GS_API}?accion=estados&ids=${ids.join(',')}`);
@@ -1438,35 +1463,33 @@ async function fetchEstadosSP(ids) {
 }
 
 function estadoBadge(estadoSP, estadoLocal) {
-  // Priorizar estado real de SharePoint si existe
-  const e = estadoSP || estadoLocal;
-  if (e === 'Concluido')  return { cls: 'badge-concluido',  txt: '✓ Concluido' };
-  if (e === 'En curso')   return { cls: 'badge-encurso',    txt: '🔧 En curso' };
-  if (e === 'enviado' || e === 'Pendiente') return { cls: 'badge-pendiente', txt: '⏳ Pendiente' };
+  const e = (estadoSP || estadoLocal || '').toLowerCase().trim();
+  if (e === 'concluido' || e === 'cerrado' || e === 'cerrada') return { cls: 'badge-concluido', txt: '✓ Concluido' };
+  if (e === 'en curso')  return { cls: 'badge-encurso',   txt: '🔧 En curso' };
+  if (e === 'enviado' || e === 'pendiente') return { cls: 'badge-pendiente', txt: '⏳ Pendiente' };
   return { cls: 'badge-pendiente', txt: '⏳ Pendiente' };
 }
 
 async function renderHistorial() {
-  const list = document.getElementById('histList');
-  const fallas = getLocalFallas();
-  if (!fallas.length) {
-    list.innerHTML = `<div class="empty-state"><div class="big">📋</div><p>Todavía no hay reportes registrados en este dispositivo.</p></div>`;
-    return;
-  }
-
-  // Mostrar primero con datos locales
-  renderHistorialConEstados(fallas, {});
-
-  // Luego consultar SharePoint para estados actualizados
-  const ids = fallas.filter(f => f.estado === 'enviado' || f.estado === 'Pendiente').map(f => f.id);
-  if (ids.length) {
-    const estadosSP = await fetchEstadosSP(ids);
-    renderHistorialConEstados(fallas, estadosSP);
-  }
+  // Inicializar filtros con valores por defecto
+  const hoy    = today();
+  const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0,10);
+  const desdeEl = document.getElementById('hDesde');
+  const hastaEl = document.getElementById('hHasta');
+  if (desdeEl && !desdeEl.value) desdeEl.value = hace30;
+  if (hastaEl && !hastaEl.value) hastaEl.value = hoy;
+  filtrarHistorial();
 }
 
 function renderHistorialConEstados(fallas, estadosSP) {
   const list = document.getElementById('histList');
+  if (!fallas.length) {
+    const totalLocal = getLocalFallas().length;
+    list.innerHTML = totalLocal > 0
+      ? `<div class="empty-state"><div class="big">🔍</div><p>Sin reportes para los filtros aplicados.</p></div>`
+      : `<div class="empty-state"><div class="big">📋</div><p>Todavía no hay reportes registrados en este dispositivo.</p></div>`;
+    return;
+  }
   list.innerHTML = fallas.map(f => {
     const badge = estadoBadge(estadosSP[f.id], f.estado);
     const puedeOT = badge.cls !== 'badge-concluido';

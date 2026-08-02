@@ -511,6 +511,16 @@ a { color: inherit; text-decoration: none; }
     <span style="color:var(--muted);font-size:12px">→</span>
     <input type="date" class="filter-input" id="fHasta" onchange="aplicarFiltros()">
     <span class="filter-sep">|</span>
+    <select class="filter-input" id="fPlanta" onchange="aplicarFiltros()" style="width:140px">
+      <option value="">🏭 Todas las plantas</option>
+      <option>Titese</option>
+      <option>Planta 3</option>
+      <option>Planta 4</option>
+      <option>Planta 5</option>
+      <option>Matricería</option>
+      <option>Otros</option>
+    </select>
+    <span class="filter-sep">|</span>
     <input type="text" class="filter-input" id="fEquipo" placeholder="🔍 Buscar equipo…" oninput="aplicarFiltros()">
     <button class="btn-clear" onclick="limpiarFiltros()">✕ Limpiar</button>
   </div>
@@ -589,8 +599,12 @@ a { color: inherit; text-decoration: none; }
           <div class="select-wrap">
             <select id="nOtPlanta" onchange="updateEquiposModal()">
               <option value="">— Seleccionar —</option>
-              <option>Titese</option><option>Planta 2</option>
-              <option>Planta 3</option><option>Planta 4</option>
+              <option>Titese</option>
+              <option>Planta 3</option>
+              <option>Planta 4</option>
+              <option>Planta 5</option>
+              <option>Matricería</option>
+              <option>Otros</option>
             </select>
           </div>
         </div>
@@ -786,7 +800,7 @@ a { color: inherit; text-decoration: none; }
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────
-const GS_API = 'https://script.google.com/macros/s/AKfycbzlkoZKQPjoACq9XNJ0s9RxbFcIP0iK3JWxZ10HHdteyRebvsBhl_rX-bxUIRaQZeBvbw/exec';
+const GS_API = 'https://script.google.com/macros/s/AKfycbzkwzJHmxxi3t2BuB-Fi7jHWHyY-rlsql8Jr57Dyqns9pitvzPkpWUF1ZS0XJr1dM7sbw/exec';
 
 const EQUIPOS = {
   'Titese':   ['Sopladora Uniloy N°1','Sopladora Uniloy N°2','Sopladora Uniloy N°3','Inyectora N°1','Inyectora N°2','Compresor Kaeser N°1','Compresor Kaeser N°2','Chiller N°1','Chiller N°2','Molino N°1','Secador N°1'],
@@ -834,9 +848,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── VIEWS ─────────────────────────────────────────────────
 function switchView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view' + name.charAt(0).toUpperCase() + name.slice(1).replace('-','') ).classList.add('active');
+  const id = 'view' + name.charAt(0).toUpperCase() + name.slice(1).replace(/-([a-z])/g, g => g[1].toUpperCase());
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
+  if (event?.target) event.target.classList.add('active');
+  // Resetear N°OT al abrir Nueva OT
+  if (name === 'nueva-ot') {
+    document.getElementById('nOtNro').value = 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4);
+  }
 }
 
 // ── CARGA DE DATOS ────────────────────────────────────────
@@ -864,19 +884,25 @@ async function recargar(silencioso = false) {
 function aplicarFiltros() {
   const desde  = document.getElementById('fDesde').value;
   const hasta  = document.getElementById('fHasta').value;
+  const planta = document.getElementById('fPlanta').value;
   const equipo = document.getElementById('fEquipo').value.toLowerCase().trim();
 
   const filtrarFalla = f => {
+    // Fecha de la falla — normalizar a yyyy-MM-dd
     const fecha = (f.Fecha || '').toString().slice(0,10);
+    // Comparar fechas correctamente — hasta debe incluir el día completo
     if (desde && fecha && fecha < desde) return false;
-    if (hasta && fecha && fecha > hasta) return false;
+    if (hasta && fecha && fecha > hasta + 'z') return false;
+    if (planta && f.Planta !== planta) return false;
     if (equipo && !f.Equipo?.toLowerCase().includes(equipo)) return false;
     return true;
   };
   const filtrarOT = o => {
-    const fecha = (o.FechaProgramada || o.FechaCreacion || '').toString().slice(0,10);
+    // Para OTs usar FechaCreacion que es la más confiable
+    const fecha = (o.FechaCreacion || o.FechaProgramada || '').toString().slice(0,10);
     if (desde && fecha && fecha < desde) return false;
-    if (hasta && fecha && fecha > hasta) return false;
+    if (hasta && fecha && fecha > hasta + 'z') return false;
+    if (planta && o.Planta !== planta) return false;
     if (equipo && !o.Equipo?.toLowerCase().includes(equipo)) return false;
     return true;
   };
@@ -885,11 +911,12 @@ function aplicarFiltros() {
 }
 
 function limpiarFiltros() {
-  const hoy   = new Date().toISOString().slice(0,10);
+  const hoy    = new Date().toISOString().slice(0,10);
   const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0,10);
   document.getElementById('fDesde').value  = hace30;
   document.getElementById('fHasta').value  = hoy;
   document.getElementById('fEquipo').value = '';
+  document.getElementById('fPlanta').value = '';
   aplicarFiltros();
 }
 
@@ -1095,10 +1122,12 @@ function abrirDetalleFalla(fallaId) {
   const fotoHtml = f.FotoURL
     ? `<div style="margin-top:4px">
         <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Foto de evidencia</div>
-        <img src="${f.FotoURL}" alt="Evidencia" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:300px;object-fit:contain;background:#000"
-          onerror="this.parentElement.innerHTML='<div style=\\'font-size:12px;color:var(--muted)\\'>No se pudo cargar la imagen</div>'">
+        <a href="${f.FotoURL}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:8px;color:#60a5fa;font-size:13px;font-weight:600;text-decoration:none;transition:background .15s"
+          onmouseover="this.style.background='rgba(59,130,246,.2)'" onmouseout="this.style.background='rgba(59,130,246,.1)'">
+          📷 Ver foto en Google Drive
+        </a>
        </div>`
-    : (f.CantFotos > 0 ? `<div style="font-size:12px;color:var(--muted);padding:10px;background:var(--surface2);border-radius:8px">📷 ${f.CantFotos} foto(s) adjunta(s) — subí la app actualizada para ver imágenes</div>` : '');
+    : (f.CantFotos > 0 ? `<div style="font-size:12px;color:var(--muted);padding:10px;background:var(--surface2);border-radius:8px">📷 ${f.CantFotos} foto(s) — reporte cargado antes del sistema de Drive</div>` : '');
 
   document.getElementById('mDetalleBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
