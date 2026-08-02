@@ -1096,7 +1096,7 @@ async function guardarCambiosOT() {
     showToast('OT actualizada correctamente');
     closeModal('modalDetalleOT');
     btn.disabled = false; btn.textContent = '💾 Guardar cambios';
-    recargar();
+    setTimeout(() => recargar(true), 1500);
   } catch(e) {
     btn.disabled = false; btn.textContent = '💾 Guardar cambios';
     showToast('Error: ' + e.message, 'err');
@@ -1221,7 +1221,7 @@ async function submitModalOT() {
     showToast('OT ' + nro + ' creada');
     closeModal('modalGenOT');
     btn.disabled = false; btn.textContent = '⚙ Crear OT';
-    recargar();
+    setTimeout(() => recargar(true), 1500);
   } catch(e) {
     btn.disabled = false; btn.textContent = '⚙ Crear OT';
     showToast('Error: ' + e.message, 'err');
@@ -1267,7 +1267,8 @@ async function submitCerrar() {
     showToast('OT ' + otActual.nroOT + ' cerrada');
     closeModal('modalCerrar');
     btn.disabled = false; btn.textContent = '✓ Confirmar cierre';
-    recargar();
+    // Esperar 1.5 segundos para que Google Sheets procese antes de recargar
+    setTimeout(() => recargar(true), 1500);
   } catch(e) {
     btn.disabled = false; btn.textContent = '✓ Confirmar cierre';
     showToast('Error: ' + e.message, 'err');
@@ -1334,7 +1335,7 @@ async function crearOTDirecta() {
     switchView('kanban');
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     document.querySelectorAll('.nav-btn')[1].classList.remove('active');
-    recargar();
+    setTimeout(() => recargar(true), 1500);
   } catch(e) {
     btn.disabled = false; btn.textContent = '⚙ Crear Orden de Trabajo';
     showToast('Error: ' + e.message, 'err');
