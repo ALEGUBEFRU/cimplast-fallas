@@ -1085,7 +1085,7 @@ async function submitForm() {
 }
 
 // ── GOOGLE SHEETS API ────────────────────────────────────
-const GS_API = 'https://script.google.com/macros/s/AKfycbzkwzJHmxxi3t2BuB-Fi7jHWHyY-rlsql8Jr57Dyqns9pitvzPkpWUF1ZS0XJr1dM7sbw/exec';
+const GS_API = 'https://script.google.com/macros/s/AKfycbwaw-wAoQh7iEv-tdNmnT7X17jvY3ZDx7x-WN3upqv0aq8uUSZSOFcP4pqwv9vdIqmTkA/exec';
 
 async function loginYGuardar() {
   const resultEl = document.getElementById('cfgTestResult');
@@ -1271,9 +1271,10 @@ async function submitOT() {
     const result = await resp.json();
     if (!result.ok) throw new Error(result.error || 'Error creando OT');
 
-    // Actualizar estado local de la falla a En curso
+    // Actualizar estado local de la falla a En curso y guardar nroOT
     if (otFallaActual) {
       otFallaActual.estado = 'En curso';
+      otFallaActual.otNro = nro;
       updateLocal(otFallaActual);
     }
 
