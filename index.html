@@ -570,6 +570,41 @@
   .btn-ot-submit:active { transform: scale(.98); }
   .btn-ot-submit:disabled { background: var(--border); color: var(--muted); }
 
+  /* ── BIENVENIDA ─────────────────────────────────────── */
+  .welcome-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    gap: 24px;
+    text-align: center;
+  }
+  .welcome-logo {
+    width: 72px; height: 72px;
+    background: var(--accent);
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    font-size: 38px;
+    font-weight: 900;
+    color: #000;
+  }
+  .welcome-title { font-size: 22px; font-weight: 800; }
+  .welcome-sub   { font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .welcome-form  { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  .btn-welcome {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 16px;
+    border-radius: var(--r-lg);
+    transition: background .15s;
+  }
+
   @media (min-width: 480px) {
     .form-scroll { max-width: 480px; margin: 0 auto; width: 100%; }
     .submit-bar  { max-width: 480px; left: 50%; transform: translateX(-50%); right: auto; width: 100%; }
@@ -606,6 +641,25 @@
   <p>El equipo de mantenimiento fue notificado. El registro quedó guardado en SharePoint.</p>
   <div class="ref" id="successRef"></div>
   <button class="btn-nueva" onclick="resetForm()">+ Nueva falla</button>
+</div>
+
+<!-- ══════════ VIEW: BIENVENIDA ══════════ -->
+<div class="view" id="viewBienvenida">
+  <div class="welcome-view">
+    <div class="welcome-logo">C</div>
+    <div>
+      <div class="welcome-title">Bienvenido a Cimplast</div>
+      <div class="welcome-sub">Sistema de Reporte de Fallas<br>Ingresá tu nombre para continuar</div>
+    </div>
+    <div class="welcome-form">
+      <div class="field">
+        <label>Tu nombre completo <span class="req">*</span></label>
+        <input type="text" id="welcomeNombre" placeholder="Ej: Carlos Medina" autocomplete="name"
+          style="font-size:18px;padding:16px;" onkeydown="if(event.key==='Enter') guardarNombreYEntrar()">
+      </div>
+      <button class="btn-welcome" onclick="guardarNombreYEntrar()">Entrar →</button>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════ VIEW: FORMULARIO ══════════ -->
@@ -724,8 +778,19 @@
 <div class="view" id="viewHistorial">
   <div class="hist-header">
     <button class="btn-back" onclick="showView('form')">← Volver</button>
-    <span class="hist-title">Mis reportes</span>
+    <span class="hist-title">Reportes</span>
     <button class="btn-historial" onclick="showView('gestionOTs')" style="margin-left:auto">📋 OTs</button>
+  </div>
+  <!-- Toggle Mis / Todos -->
+  <div style="padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:8px">
+    <button id="toggleMios" onclick="setFiltroReportes('mios')"
+      style="flex:1;padding:8px;border-radius:8px;font-size:13px;font-weight:700;background:var(--accent);color:#000;border:none">
+      👤 Mis reportes
+    </button>
+    <button id="toggleTodos" onclick="setFiltroReportes('todos')"
+      style="flex:1;padding:8px;border-radius:8px;font-size:13px;font-weight:600;background:var(--surface2);color:var(--label);border:1px solid var(--border)">
+      👥 Todos
+    </button>
   </div>
   <!-- Filtros móvil -->
   <div style="padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px">
@@ -1426,22 +1491,113 @@ function getLocalFallas() {
   return JSON.parse(localStorage.getItem('cimplast_fallas') || '[]');
 }
 
+// ── BIENVENIDA ────────────────────────────────────────────
+function guardarNombreYEntrar() {
+  const nombre = document.getElementById('welcomeNombre').value.trim();
+  if (!nombre) { 
+    document.getElementById('welcomeNombre').style.borderColor = 'var(--danger)';
+    return; 
+  }
+  localStorage.setItem('cimplast_nombre', nombre);
+  document.getElementById('fNombre').value = nombre;
+  showView('form');
+}
+
+// ── FILTRO MIOS / TODOS ───────────────────────────────────
+let filtroReportes = 'mios'; // 'mios' o 'todos'
+let fallasTodosGS  = []; // cache de todas las fallas desde GS
+
+function setFiltroReportes(tipo) {
+  filtroReportes = tipo;
+  // Actualizar estilos botones
+  const btnMios  = document.getElementById('toggleMios');
+  const btnTodos = document.getElementById('toggleTodos');
+  if (tipo === 'mios') {
+    btnMios.style.cssText  += ';background:var(--accent);color:#000;border:none';
+    btnTodos.style.cssText += ';background:var(--surface2);color:var(--label);border:1px solid var(--border)';
+  } else {
+    btnTodos.style.cssText += ';background:var(--accent);color:#000;border:none';
+    btnMios.style.cssText  += ';background:var(--surface2);color:var(--label);border:1px solid var(--border)';
+  }
+  filtrarHistorial();
+}
+
 // ── HISTORIAL ────────────────────────────────────────────
 function filtrarHistorial() {
   const desde  = document.getElementById('hDesde')?.value || '';
   const hasta  = document.getElementById('hHasta')?.value || '';
   const equipo = document.getElementById('hEquipo')?.value.toLowerCase().trim() || '';
-  const fallas = getLocalFallas().filter(f => {
-    const fecha = (f.fecha || '').slice(0,10);
-    if (desde && fecha < desde) return false;
-    if (hasta && fecha > hasta + 'z') return false;
-    if (equipo && !f.equipo?.toLowerCase().includes(equipo)) return false;
-    return true;
-  });
+  const miNombre = (localStorage.getItem('cimplast_nombre') || '').toLowerCase();
+
+  let fallas;
+  if (filtroReportes === 'todos' && fallasTodosGS.length > 0) {
+    // Usar datos de Google Sheets
+    fallas = fallasTodosGS.filter(f => {
+      const fecha = (f.Fecha || '').toString().slice(0,10);
+      if (desde && fecha && fecha < desde) return false;
+      if (hasta && fecha && fecha > hasta + 'z') return false;
+      if (equipo && !f.Equipo?.toLowerCase().includes(equipo)) return false;
+      return true;
+    });
+    renderHistorialTodos(fallas);
+    return;
+  } else {
+    // Usar datos locales filtrados por nombre si es 'mios'
+    fallas = getLocalFallas().filter(f => {
+      const fecha = (f.fecha || '').slice(0,10);
+      if (desde && fecha < desde) return false;
+      if (hasta && fecha > hasta + 'z') return false;
+      if (equipo && !f.equipo?.toLowerCase().includes(equipo)) return false;
+      if (filtroReportes === 'mios' && miNombre && f.nombre?.toLowerCase() !== miNombre) return false;
+      return true;
+    });
+  }
   renderHistorialConEstados(fallas, {});
-  // Actualizar estados desde GS
   const ids = fallas.filter(f => f.estado === 'enviado' || f.estado === 'En curso').map(f => f.id);
   if (ids.length) fetchEstadosSP(ids).then(estados => renderHistorialConEstados(fallas, estados));
+}
+
+function renderHistorialTodos(fallas) {
+  const list = document.getElementById('histList');
+  if (!fallas.length) {
+    list.innerHTML = `<div class="empty-state"><div class="big">🔍</div><p>Sin reportes para los filtros aplicados.</p></div>`;
+    return;
+  }
+  const miNombre = (localStorage.getItem('cimplast_nombre') || '').toLowerCase();
+  list.innerHTML = fallas.map(f => {
+    const esMio = f.Operador?.toLowerCase() === miNombre;
+    const estadoGS = (f.Estado || 'Pendiente').toLowerCase();
+    let badge, cls;
+    if (estadoGS === 'concluido') { badge = '✓ Concluido'; cls = 'badge-concluido'; }
+    else if (estadoGS === 'en curso') { badge = '🔧 En curso'; cls = 'badge-encurso'; }
+    else { badge = '⏳ Pendiente'; cls = 'badge-pendiente'; }
+
+    return `
+    <div class="hist-card" ${esMio ? 'style="border-left:3px solid var(--accent)"' : ''}>
+      <div class="hist-card-top">
+        <span class="hist-equipo">${f.Equipo || '—'}</span>
+        <span class="hist-badge ${cls}">${badge}</span>
+      </div>
+      <div class="hist-sintoma">${(f.Sintoma||'').substring(0,100)}${(f.Sintoma||'').length>100?'…':''}</div>
+      <div class="hist-meta">
+        <span>📍 ${f.Planta||'—'}</span>
+        <span>👤 ${f.Operador||'—'}</span>
+        <span>🕐 ${(f.Fecha||'').slice(0,10)} ${f.Hora||''}</span>
+        <span>🌀 ${f.Turno||''}</span>
+        ${f.CantFotos > 0 ? `<span>📷 ${f.CantFotos}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function cargarTodosDesdeGS() {
+  try {
+    const resp = await fetch(`${GS_API}?accion=fallas`);
+    if (!resp.ok) return;
+    const data = await resp.json();
+    fallasTodosGS = data.fallas || [];
+    if (filtroReportes === 'todos') filtrarHistorial();
+  } catch(e) {}
 }
 async function fetchEstadosSP(ids) {
   try {
@@ -1472,7 +1628,6 @@ function estadoBadge(estadoSP, estadoLocal) {
 }
 
 async function renderHistorial() {
-  // Inicializar filtros con valores por defecto
   const hoy    = today();
   const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0,10);
   const desdeEl = document.getElementById('hDesde');
@@ -1480,6 +1635,8 @@ async function renderHistorial() {
   if (desdeEl && !desdeEl.value) desdeEl.value = hace30;
   if (hastaEl && !hastaEl.value) hastaEl.value = hoy;
   filtrarHistorial();
+  // Cargar todos desde GS en background
+  cargarTodosDesdeGS();
 }
 
 function renderHistorialConEstados(fallas, estadosSP) {
@@ -1619,14 +1776,20 @@ function init() {
 
   // Nombre guardado
   const nombre = localStorage.getItem('cimplast_nombre');
-  if (nombre) document.getElementById('fNombre').value = nombre;
+  if (nombre) {
+    document.getElementById('fNombre').value = nombre;
+  } else {
+    // Primera vez — mostrar bienvenida
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('viewBienvenida').classList.add('active');
+  }
 
   // Turno automático
   const turno = autoTurno();
   const chip  = document.querySelector(`#turnoGroup .chip[data-val="${turno}"]`);
   if (chip) { chip.classList.add('selected'); document.getElementById('turnoHeader').textContent = turno; }
 
-  // AUTO-CONFIGURAR Google Sheets si no está configurado
+  // AUTO-CONFIGURAR Google Sheets
   const cfg = getConfig();
   if (!cfg.loggedIn) {
     const autoCfg = { gsApi: GS_API, loggedIn: true };
