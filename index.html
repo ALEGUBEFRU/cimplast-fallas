@@ -2,1406 +2,746 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0a0f1a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14110e">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="Reporte de fallas Cimplast">
-<title>Cimplast · Fallas</title>
+<meta name="description" content="Reporte de fallas — Cimplast Mantenimiento">
+<title>Cimplast · Reporte de fallas</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 
 <style>
-  /* ── TOKENS ─────────────────────────────────────────── */
-  :root {
-    --bg:        #0a0f1a;
-    --surface:   #111827;
-    --surface2:  #1c2636;
-    --border:    #253048;
-    --accent:    #f59e0b;   /* ámbar industrial */
-    --accent-dk: #b45309;
-    --danger:    #ef4444;
-    --ok:        #22c55e;
-    --text:      #f1f5f9;
-    --muted:     #64748b;
-    --label:     #94a3b8;
-    --font-ui:   'Inter', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
-    --r:         10px;
-    --r-lg:      16px;
-  }
+:root{
+  --bg:#14110e; --surface:#1d1915; --surface2:#282219; --surface3:#332b21;
+  --border:#3a3126; --border-hi:#544736;
+  --accent:#f0a92c; --accent-soft:rgba(240,169,44,.13);
+  --danger:#e5574f; --warn:#e0a33a; --ok:#5cb46b; --info:#5b9bd5;
+  --text:#f6f1e8; --label:#c4b8a8; --muted:#8d8175;
+  --font:'Archivo',system-ui,-apple-system,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --r:12px; --r-lg:18px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100dvh;display:flex;flex-direction:column;overscroll-behavior-y:none}
+button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:#ffc35c}
+::selection{background:var(--accent);color:#000}
 
-  /* ── RESET ──────────────────────────────────────────── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-ui);
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-  }
-  button { cursor: pointer; font-family: inherit; border: none; background: none; }
-  input, textarea, select { font-family: inherit; }
+/* ── HEADER ── */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:11px;min-width:0}
+.logo-mark{width:36px;height:36px;background:var(--accent);border-radius:9px;display:grid;place-items:center;font-size:19px;font-weight:800;color:#1a1409;letter-spacing:-.04em;flex-shrink:0}
+.logo-text{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.logo-text b{font-size:14px;font-weight:700;letter-spacing:-.01em}
+.logo-text span{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.header-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.pill{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:5px 11px;font-size:11px;color:var(--label);font-family:var(--mono);font-weight:600;white-space:nowrap}
+.icon-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;width:38px;height:38px;display:grid;place-items:center;font-size:16px;color:var(--label);transition:border-color .15s,color .15s,background .15s;position:relative}
+.icon-btn:hover{border-color:var(--border-hi);color:var(--text)}
+.icon-btn .dot{position:absolute;top:-3px;right:-3px;min-width:17px;height:17px;padding:0 4px;border-radius:100px;background:var(--accent);color:#1a1409;font-size:10px;font-weight:800;display:grid;place-items:center;border:2px solid var(--surface)}
 
-  /* ── HEADER ─────────────────────────────────────────── */
-  header {
-    background: var(--surface);
-    border-bottom: 2px solid var(--accent);
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .logo-mark {
-    width: 34px; height: 34px;
-    background: var(--accent);
-    border-radius: 6px;
-    display: grid;
-    place-items: center;
-    font-size: 18px;
-    font-weight: 900;
-    color: #000;
-    letter-spacing: -1px;
-  }
-  .logo-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.1;
-  }
-  .logo-text span:first-child {
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: .05em;
-    color: var(--text);
-  }
-  .logo-text span:last-child {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .pill-turno {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 12px;
-    color: var(--label);
-    font-family: var(--font-mono);
-  }
-  .btn-historial {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 7px 12px;
-    font-size: 12px;
-    color: var(--label);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: border-color .15s, color .15s;
-  }
-  .btn-historial:hover { border-color: var(--accent); color: var(--accent); }
+/* ── STATUS STRIP ── */
+.strip{padding:9px 18px;font-size:12px;font-weight:600;display:none;align-items:center;gap:9px;line-height:1.35}
+.strip.on{display:flex}
+.strip-offline{background:rgba(229,87,79,.11);border-bottom:1px solid rgba(229,87,79,.3);color:#f0938c}
+.strip-queue{background:var(--accent-soft);border-bottom:1px solid rgba(240,169,44,.3);color:var(--accent)}
+.strip .lnk{margin-left:auto;text-decoration:underline;font-size:11px;white-space:nowrap;opacity:.85}
 
-  /* ── VIEWS ──────────────────────────────────────────── */
-  .view { display: none; flex-direction: column; flex: 1; }
-  .view.active { display: flex; }
+/* ── VIEWS ── */
+.view{display:none;flex-direction:column;flex:1}
+.view.active{display:flex}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 18px calc(120px + var(--safe-b));display:flex;flex-direction:column;gap:15px}
+@media(min-width:520px){.scroll{max-width:520px;margin:0 auto;width:100%}}
 
-  /* ── FORM VIEW ──────────────────────────────────────── */
-  .form-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px 20px 120px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
+/* ── PROGRESO ── */
+.progress{position:sticky;top:0;z-index:5;height:3px;background:var(--surface2);border-radius:100px;overflow:hidden;margin:-4px 0 4px}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s cubic-bezier(.4,0,.2,1)}
 
-  .section-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 2px;
-  }
+/* ── STEP HEADINGS ── */
+.step{display:flex;align-items:center;gap:9px;margin-top:8px}
+.step:first-of-type{margin-top:0}
+.step-n{width:21px;height:21px;border-radius:100px;background:var(--surface2);border:1px solid var(--border);display:grid;place-items:center;font-size:10px;font-weight:800;color:var(--muted);font-family:var(--mono);flex-shrink:0;transition:background .2s,color .2s,border-color .2s}
+.step.done .step-n{background:var(--accent);border-color:var(--accent);color:#1a1409}
+.step h2{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--label)}
+.step::after{content:'';flex:1;height:1px;background:var(--border)}
 
-  .field { display: flex; flex-direction: column; gap: 6px; }
+/* ── FIELDS ── */
+.field{display:flex;flex-direction:column;gap:7px}
+.field label{font-size:13px;font-weight:600;color:var(--label);display:flex;align-items:center;gap:5px}
+.req{color:var(--accent)}
+.hint{font-size:11.5px;color:var(--muted);font-weight:400;line-height:1.45}
+.field input,.field textarea,.field select{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:16px;padding:13px 14px;width:100%;outline:none;transition:border-color .15s,box-shadow .15s,background .15s;appearance:none;-webkit-appearance:none}
+.field input::placeholder,.field textarea::placeholder{color:#6d6255}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);background:var(--surface2);box-shadow:0 0 0 3px var(--accent-soft)}
+.field input.err,.field textarea.err,.field select.err{border-color:var(--danger)}
+.field textarea{resize:vertical;min-height:96px;line-height:1.55}
+.select-wrap{position:relative}
+.select-wrap::after{content:'';position:absolute;right:16px;top:50%;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.select-wrap select{padding-right:38px}
+.field select:invalid,.field select option[value=""]{color:#6d6255}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 
-  .field label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--label);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .req { color: var(--accent); font-size: 14px; }
+/* ── CHIPS ── */
+.chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
+.chip{background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:12px 10px;font-size:13px;font-weight:600;color:var(--label);transition:background .15s,border-color .15s,color .15s,transform .08s;text-align:center;min-height:48px;display:flex;align-items:center;justify-content:center;gap:6px;line-height:1.2}
+.chip:active{transform:scale(.97)}
+.chip.selected{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chips.state .chip.selected[data-tone=stop]{background:rgba(229,87,79,.14);border-color:var(--danger);color:#f0938c}
+.chips.state .chip.selected[data-tone=slow]{background:rgba(224,163,58,.14);border-color:var(--warn);color:var(--warn)}
+.chips.state .chip.selected[data-tone=run]{background:rgba(92,180,107,.14);border-color:var(--ok);color:var(--ok)}
+.chip .dotc{width:8px;height:8px;border-radius:100px;flex-shrink:0}
 
-  .field input,
-  .field textarea,
-  .field select {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: var(--r);
-    color: var(--text);
-    font-size: 16px; /* 16px evita zoom en iOS */
-    padding: 13px 15px;
-    width: 100%;
-    outline: none;
-    transition: border-color .15s, box-shadow .15s;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-  .field input:focus,
-  .field textarea:focus,
-  .field select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(245,158,11,.15);
-  }
-  .field textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+/* ── FOTOS ── */
+.foto-zone{border:1.5px dashed var(--border);border-radius:var(--r-lg);padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;position:relative}
+.foto-zone:hover{border-color:var(--accent);background:var(--accent-soft)}
+.foto-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.foto-zone .big{font-size:24px;margin-bottom:6px;opacity:.8}
+.foto-zone .t{font-size:13px;color:var(--label);font-weight:600}
+.foto-zone .s{font-size:11px;color:var(--muted);margin-top:3px}
+.foto-grid{display:flex;flex-wrap:wrap;gap:9px}
+.thumb-wrap{position:relative;width:78px;height:78px}
+.foto-thumb{width:100%;height:100%;border-radius:11px;object-fit:cover;border:1px solid var(--border);display:block}
+.thumb-del{position:absolute;top:-7px;right:-7px;background:var(--danger);border-radius:100px;width:24px;height:24px;display:grid;place-items:center;font-size:12px;color:#fff;font-weight:700;border:2px solid var(--bg)}
 
-  /* select arrow */
-  .select-wrap { position: relative; }
-  .select-wrap::after {
-    content: '▾';
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--muted);
-    pointer-events: none;
-    font-size: 14px;
-  }
-  .select-wrap select { padding-right: 36px; }
+/* ── SUBMIT BAR ── */
+.bar{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--bg) 62%,rgba(20,17,14,0));padding:18px 18px calc(20px + var(--safe-b));z-index:50;pointer-events:none}
+.bar>*{pointer-events:auto}
+@media(min-width:520px){.bar{max-width:520px;left:50%;transform:translateX(-50%);right:auto;width:100%}}
+.btn{width:100%;background:var(--accent);color:#1a1409;font-size:16px;font-weight:800;padding:17px;border-radius:var(--r-lg);letter-spacing:-.01em;transition:filter .15s,transform .08s;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 6px 22px rgba(0,0,0,.4)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:scale(.985)}
+.btn:disabled{background:var(--surface2);color:var(--muted);box-shadow:none}
+.btn.green{background:var(--ok);color:#0d1a0f}
+.btn.ghost{background:var(--surface2);border:1px solid var(--border);color:var(--label);box-shadow:none;font-size:14px;padding:13px}
+.spinner{width:17px;height:17px;border:2px solid rgba(0,0,0,.25);border-top-color:currentColor;border-radius:100px;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  /* turno chips */
-  .chip-group {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .chip {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--label);
-    transition: all .15s;
-    flex: 1;
-    text-align: center;
-    min-width: 100px;
-  }
-  .chip.selected {
-    background: rgba(245,158,11,.12);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+/* ── TOAST ── */
+.toast{position:fixed;left:50%;bottom:calc(96px + var(--safe-b));transform:translateX(-50%) translateY(12px);background:var(--surface3);border:1px solid var(--border-hi);border-radius:14px;padding:13px 18px;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:9px;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:999;max-width:calc(100vw - 32px);text-align:left;line-height:1.4;box-shadow:0 8px 28px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(92,180,107,.5);color:#8fd39a}
+.toast.err{border-color:rgba(229,87,79,.5);color:#f0938c}
 
-  /* foto */
-  .foto-zone {
-    border: 2px dashed var(--border);
-    border-radius: var(--r-lg);
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color .15s, background .15s;
-    position: relative;
-    overflow: hidden;
-  }
-  .foto-zone:hover { border-color: var(--accent); background: rgba(245,158,11,.04); }
-  .foto-zone input[type=file] {
-    position: absolute; inset: 0;
-    opacity: 0; cursor: pointer;
-    width: 100%; height: 100%;
-  }
-  .foto-icon { font-size: 28px; margin-bottom: 6px; }
-  .foto-txt { font-size: 13px; color: var(--muted); }
-  .foto-preview {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .foto-thumb {
-    width: 72px; height: 72px;
-    border-radius: 8px;
-    object-fit: cover;
-    border: 1.5px solid var(--border);
-    position: relative;
-  }
-  .thumb-wrap { position: relative; display: inline-block; }
-  .thumb-del {
-    position: absolute;
-    top: -6px; right: -6px;
-    background: var(--danger);
-    border-radius: 50%;
-    width: 20px; height: 20px;
-    display: grid;
-    place-items: center;
-    font-size: 11px;
-    color: #fff;
-    font-weight: 700;
-    cursor: pointer;
-    z-index: 10;
-  }
+/* ── SUCCESS ── */
+.success{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:36px}
+.success.show{display:flex;animation:fade .22s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.success .ring{width:86px;height:86px;background:rgba(92,180,107,.12);border:2px solid var(--ok);border-radius:100px;display:grid;place-items:center;font-size:38px;color:var(--ok);animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.success h2{font-size:23px;font-weight:800;letter-spacing:-.02em}
+.success p{font-size:14px;color:var(--muted);line-height:1.6;max-width:330px;text-wrap:pretty}
+.success .ref{font-family:var(--mono);font-size:13px;color:var(--accent);background:var(--accent-soft);border:1px solid rgba(240,169,44,.28);border-radius:10px;padding:8px 16px;font-weight:600}
+.success .acts{display:flex;flex-direction:column;gap:9px;width:100%;max-width:300px;margin-top:12px}
 
-  /* datetime row */
-  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* ── HISTORIAL ── */
+.sub-header{padding:13px 18px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
+.btn-back{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 13px;font-size:13px;font-weight:600;color:var(--label);transition:border-color .15s,color .15s}
+.btn-back:hover{border-color:var(--border-hi);color:var(--text)}
+.sub-title{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.hist-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 15px;display:flex;flex-direction:column;gap:7px}
+.hist-card.stopped{border-left:3px solid var(--danger)}
+.hist-top{display:flex;justify-content:space-between;align-items:flex-start;gap:9px}
+.hist-eq{font-size:15px;font-weight:700;letter-spacing:-.01em;line-height:1.3}
+.badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:100px;white-space:nowrap;flex-shrink:0}
+.b-pend{background:var(--accent-soft);color:var(--accent)}
+.b-curso{background:rgba(91,155,213,.15);color:#8fbfe8}
+.b-done{background:rgba(92,180,107,.15);color:#8fd39a}
+.b-cola{background:rgba(141,129,117,.16);color:var(--muted)}
+.hist-sint{font-size:13px;color:var(--label);line-height:1.5}
+.hist-meta{display:flex;gap:11px;flex-wrap:wrap;font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:1px}
+.btn-ot{width:100%;margin-top:5px;background:var(--accent-soft);border:1.5px solid rgba(240,169,44,.45);border-radius:10px;padding:11px;font-size:13px;font-weight:700;color:var(--accent);transition:background .15s}
+.btn-ot:hover{background:rgba(240,169,44,.22)}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:var(--muted);padding:56px 32px;text-align:center}
+.empty .big{font-size:34px;opacity:.5}
+.empty p{font-size:13.5px;line-height:1.6;max-width:280px;text-wrap:pretty}
 
-  /* ── SUBMIT BAR ──────────────────────────────────────── */
-  .submit-bar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, var(--bg) 70%, transparent);
-    padding: 16px 20px 24px;
-    z-index: 50;
-  }
-  .btn-submit {
-    width: 100%;
-    background: var(--accent);
-    color: #000;
-    font-size: 16px;
-    font-weight: 800;
-    padding: 16px;
-    border-radius: var(--r-lg);
-    letter-spacing: .03em;
-    transition: background .15s, transform .1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-  .btn-submit:active { transform: scale(.98); }
-  .btn-submit:disabled { background: var(--border); color: var(--muted); }
-  .btn-submit .spinner {
-    width: 18px; height: 18px;
-    border: 2px solid rgba(0,0,0,.3);
-    border-top-color: #000;
-    border-radius: 50%;
-    animation: spin .6s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── TOAST ──────────────────────────────────────────── */
-  .toast {
-    position: fixed;
-    top: 80px; left: 50%;
-    transform: translateX(-50%) translateY(-20px);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
-    padding: 14px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .25s, transform .25s;
-    z-index: 999;
-    white-space: nowrap;
-    max-width: 90vw;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-  .toast.ok  { border-color: var(--ok);     color: var(--ok); }
-  .toast.err { border-color: var(--danger);  color: var(--danger); }
-
-  /* ── HISTORIAL VIEW ─────────────────────────────────── */
-  .hist-header {
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .btn-back {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 8px 14px;
-    font-size: 13px;
-    color: var(--label);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .hist-title { font-size: 16px; font-weight: 700; }
-  .hist-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .hist-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
-    padding: 14px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .hist-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .hist-equipo {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .hist-badge {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 20px;
-    white-space: nowrap;
-  }
-  .badge-pendiente  { background: rgba(245,158,11,.15); color: var(--accent); }
-  .badge-enviado    { background: rgba(245,158,11,.15); color: var(--accent); }
-  .badge-encurso    { background: rgba(59,130,246,.15); color: #60a5fa; }
-  .badge-concluido  { background: rgba(34,197,94,.15);  color: var(--ok); }
-  .hist-sintoma {
-    font-size: 13px;
-    color: var(--label);
-    line-height: 1.4;
-  }
-  .hist-meta {
-    display: flex;
-    gap: 12px;
-    font-size: 11px;
-    color: var(--muted);
-    font-family: var(--font-mono);
-    margin-top: 2px;
-  }
-  .empty-state {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    color: var(--muted);
-    padding: 40px;
-    text-align: center;
-  }
-  .empty-state .big { font-size: 40px; }
-  .empty-state p { font-size: 14px; line-height: 1.5; }
-
-  /* ── CONFIG VIEW ─────────────────────────────────────── */
-  .config-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .config-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .config-card h3 { font-size: 14px; font-weight: 700; color: var(--label); }
-  .btn-config-save {
-    background: var(--accent);
-    color: #000;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 13px;
-    border-radius: var(--r);
-    transition: background .15s;
-  }
-
-  /* ── SUCCESS OVERLAY ─────────────────────────────────── */
-  .success-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(10,15,26,.95);
-    z-index: 200;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    text-align: center;
-    padding: 40px;
-  }
-  .success-overlay.show { display: flex; }
-  .success-check {
-    width: 80px; height: 80px;
-    background: rgba(34,197,94,.15);
-    border: 2px solid var(--ok);
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-size: 36px;
-  }
-  .success-overlay h2 { font-size: 22px; font-weight: 800; }
-  .success-overlay p  { font-size: 14px; color: var(--muted); line-height: 1.5; }
-  .success-overlay .ref {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--accent);
-    background: rgba(245,158,11,.08);
-    border: 1px solid rgba(245,158,11,.2);
-    border-radius: 8px;
-    padding: 8px 16px;
-  }
-  .btn-nueva {
-    margin-top: 10px;
-    background: var(--accent);
-    color: #000;
-    font-size: 15px;
-    font-weight: 800;
-    padding: 14px 32px;
-    border-radius: var(--r-lg);
-  }
-
-  /* ── OFFLINE BANNER ──────────────────────────────────── */
-  .offline-bar {
-    background: rgba(239,68,68,.12);
-    border-bottom: 1px solid rgba(239,68,68,.3);
-    padding: 8px 20px;
-    font-size: 12px;
-    color: #fca5a5;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    display: none;
-  }
-  body.offline .offline-bar { display: flex; }
-
-  /* ── BOTÓN GENERAR OT ───────────────────────────────── */
-  .btn-generar-ot {
-    width: 100%;
-    margin-top: 10px;
-    background: rgba(245,158,11,.12);
-    border: 1.5px solid var(--accent);
-    border-radius: var(--r);
-    padding: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: background .15s;
-  }
-  .btn-generar-ot:hover { background: rgba(245,158,11,.22); }
-  .btn-generar-ot:disabled { opacity: .4; }
-
-  /* ── VIEW OT ────────────────────────────────────────── */
-  .ot-header {
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .ot-origen {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: var(--r);
-    padding: 12px 14px;
-    margin-bottom: 4px;
-  }
-  .ot-origen-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
-  .ot-origen-equipo { font-size: 15px; font-weight: 700; color: var(--text); }
-  .ot-origen-desc { font-size: 12px; color: var(--label); margin-top: 2px; line-height: 1.4; }
-  .ot-submit-bar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, var(--bg) 70%, transparent);
-    padding: 16px 20px 24px;
-    z-index: 50;
-  }
-  .btn-ot-submit {
-    width: 100%;
-    background: #16a34a;
-    color: #fff;
-    font-size: 16px;
-    font-weight: 800;
-    padding: 16px;
-    border-radius: var(--r-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: background .15s, transform .1s;
-  }
-  .btn-ot-submit:active { transform: scale(.98); }
-  .btn-ot-submit:disabled { background: var(--border); color: var(--muted); }
-
-  @media (min-width: 480px) {
-    .form-scroll { max-width: 480px; margin: 0 auto; width: 100%; }
-    .submit-bar  { max-width: 480px; left: 50%; transform: translateX(-50%); right: auto; width: 100%; }
-  }
+/* ── CONFIG ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;display:flex;flex-direction:column;gap:13px}
+.card h3{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--label)}
+.card p{font-size:12.5px;color:var(--muted);line-height:1.6}
+.status-line{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;padding:11px 13px;border-radius:10px;background:var(--surface2);border:1px solid var(--border)}
+.status-line .dotc{width:9px;height:9px;border-radius:100px;flex-shrink:0}
+.origin{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r);padding:13px 14px}
+.origin .l{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.origin .e{font-size:15px;font-weight:700;margin-top:3px;letter-spacing:-.01em}
+.origin .d{font-size:12.5px;color:var(--label);margin-top:3px;line-height:1.5}
 </style>
 </head>
 <body>
 
-<!-- OFFLINE BANNER -->
-<div class="offline-bar">⚠ Sin conexión — el reporte se guardará localmente y se enviará al recuperar la red.</div>
-
-<!-- HEADER -->
 <header>
   <div class="logo">
     <div class="logo-mark">C</div>
-    <div class="logo-text">
-      <span>Cimplast</span>
-      <span>Reporte de Fallas</span>
-    </div>
+    <div class="logo-text"><b>Cimplast</b><span>Reporte de fallas</span></div>
   </div>
   <div class="header-right">
-    <div class="pill-turno" id="turnoHeader">—</div>
-    <button class="btn-historial" onclick="showView('historial')">📋 Mis reportes</button>
+    <div class="pill" id="turnoHeader">—</div>
+    <button class="icon-btn" onclick="showView('historial')" title="Mis reportes">📋<span class="dot" id="queueDot" style="display:none">0</span></button>
+    <button class="icon-btn" onclick="showView('config')" title="Ajustes">⚙</button>
   </div>
 </header>
 
-<!-- TOAST -->
+<div class="strip strip-offline" id="stripOffline">Sin conexión — podés seguir cargando, todo se envía solo cuando vuelva la red.</div>
+<div class="strip strip-queue" id="stripQueue"><span id="queueTxt"></span><button class="lnk" onclick="flushOutbox(true)">Reintentar</button></div>
+
 <div class="toast" id="toast"></div>
 
-<!-- SUCCESS OVERLAY -->
-<div class="success-overlay" id="successOverlay">
-  <div class="success-check">✓</div>
-  <h2>Reporte enviado</h2>
-  <p>El equipo de mantenimiento fue notificado. El registro quedó guardado en SharePoint.</p>
+<div class="success" id="successOverlay">
+  <div class="ring">✓</div>
+  <h2 id="successTitle">Reporte registrado</h2>
+  <p id="successMsg">Mantenimiento queda notificado.</p>
   <div class="ref" id="successRef"></div>
-  <button class="btn-nueva" onclick="resetForm()">+ Nueva falla</button>
+  <div class="acts">
+    <button class="btn" onclick="resetForm()">Reportar otra falla</button>
+    <button class="btn ghost" onclick="closeSuccess();showView('historial')">Ver mis reportes</button>
+  </div>
 </div>
 
-<!-- ══════════ VIEW: FORMULARIO ══════════ -->
+<!-- ═══ FORMULARIO ═══ -->
 <div class="view active" id="viewForm">
+  <div class="scroll" id="formScroll">
+    <div class="progress"><i id="progBar"></i></div>
 
-  <!-- CONFIG inicial si no hay SP configurado -->
-  <div id="spWarning" style="display:none; background: rgba(245,158,11,.08); border-bottom: 1px solid rgba(245,158,11,.2); padding: 10px 20px; font-size: 12px; color: var(--accent); display:flex; gap:8px; align-items:center;">
-    ⚙ Google Sheets no configurado.
-    <button onclick="showView('config')" style="text-decoration:underline; color:var(--accent); font-size:12px; font-weight:600;">Configurar ahora</button>
-  </div>
-
-  <div class="form-scroll" id="formScroll">
-
-    <!-- QUIÉN REPORTA -->
-    <div class="section-label">Operador</div>
+    <div class="step" id="st1"><span class="step-n">1</span><h2>Quién reporta</h2></div>
     <div class="field">
       <label>Nombre <span class="req">*</span></label>
-      <input type="text" id="fNombre" placeholder="Tu nombre completo" autocomplete="name">
+      <input type="text" id="fNombre" placeholder="Tu nombre completo" autocomplete="name" oninput="tick()">
     </div>
-
-    <!-- TURNO -->
     <div class="field">
       <label>Turno <span class="req">*</span></label>
-      <div class="chip-group" id="turnoGroup">
-        <button class="chip" data-val="Mañana"  onclick="selChip(this,'turnoGroup')">🌅 Mañana</button>
-        <button class="chip" data-val="Tarde"   onclick="selChip(this,'turnoGroup')">🌆 Tarde</button>
-        <button class="chip" data-val="Noche"   onclick="selChip(this,'turnoGroup')">🌙 Noche</button>
+      <div class="chips" id="turnoGroup">
+        <button class="chip" data-val="Mañana" onclick="selChip(this,'turnoGroup')">Mañana</button>
+        <button class="chip" data-val="Tarde"  onclick="selChip(this,'turnoGroup')">Tarde</button>
+        <button class="chip" data-val="Noche"  onclick="selChip(this,'turnoGroup')">Noche</button>
       </div>
     </div>
 
-    <!-- EQUIPO -->
-    <div class="section-label" style="margin-top:4px">Equipo</div>
+    <div class="step" id="st2"><span class="step-n">2</span><h2>Qué equipo</h2></div>
     <div class="field">
       <label>Planta <span class="req">*</span></label>
-      <div class="select-wrap">
-        <select id="fPlanta" onchange="updateEquipos()">
-          <option value="">— Seleccionar —</option>
-          <option value="Titese">Titese</option>
-          <option value="Planta 2">Planta 2</option>
-          <option value="Planta 3">Planta 3</option>
-          <option value="Planta 4">Planta 4</option>
-        </select>
-      </div>
+      <div class="select-wrap"><select id="fPlanta" onchange="updateEquipos();tick()"><option value="">Seleccionar planta</option></select></div>
     </div>
     <div class="field">
-      <label>Equipo / Activo <span class="req">*</span></label>
-      <div class="select-wrap">
-        <select id="fEquipo">
-          <option value="">— Primero seleccionar planta —</option>
-        </select>
-      </div>
-    </div>
-    <div class="field">
-      <label>¿Equipo no listado?</label>
-      <input type="text" id="fEquipoManual" placeholder="Escribir nombre del equipo (opcional)">
+      <label>Equipo <span class="req">*</span></label>
+      <div class="select-wrap"><select id="fEquipo" onchange="tick()"><option value="">Elegí la planta primero</option></select></div>
+      <span class="hint">¿No aparece? Escribilo abajo y avisale a mantenimiento para darlo de alta.</span>
+      <input type="text" id="fEquipoManual" placeholder="Otro equipo (opcional)" oninput="tick()">
     </div>
 
-    <!-- FALLA -->
-    <div class="section-label" style="margin-top:4px">Falla</div>
+    <div class="step" id="st3"><span class="step-n">3</span><h2>Qué pasó</h2></div>
     <div class="field">
       <label>Sistema afectado <span class="req">*</span></label>
-      <div class="chip-group" id="sistemaGroup">
-        <button class="chip" data-val="Eléctrico"  onclick="selChip(this,'sistemaGroup')">⚡ Eléctrico</button>
-        <button class="chip" data-val="Hidráulico" onclick="selChip(this,'sistemaGroup')">💧 Hidráulico</button>
-        <button class="chip" data-val="Neumático"  onclick="selChip(this,'sistemaGroup')">🌬 Neumático</button>
-        <button class="chip" data-val="Mecánico"   onclick="selChip(this,'sistemaGroup')">⚙ Mecánico</button>
-        <button class="chip" data-val="Automati."  onclick="selChip(this,'sistemaGroup')">🖥 Automati.</button>
-        <button class="chip" data-val="No sé"      onclick="selChip(this,'sistemaGroup')">❓ No sé</button>
+      <div class="chips" id="sistemaGroup">
+        <button class="chip" data-val="Eléctrico"     onclick="selChip(this,'sistemaGroup')">Eléctrico</button>
+        <button class="chip" data-val="Hidráulico"    onclick="selChip(this,'sistemaGroup')">Hidráulico</button>
+        <button class="chip" data-val="Neumático"     onclick="selChip(this,'sistemaGroup')">Neumático</button>
+        <button class="chip" data-val="Mecánico"      onclick="selChip(this,'sistemaGroup')">Mecánico</button>
+        <button class="chip" data-val="Automatización" onclick="selChip(this,'sistemaGroup')">Automatización</button>
+        <button class="chip" data-val="No sé"         onclick="selChip(this,'sistemaGroup')">No sé</button>
       </div>
     </div>
     <div class="field">
-      <label>Descripción del síntoma <span class="req">*</span></label>
-      <textarea id="fSintoma" placeholder="Describir qué está pasando: ruidos, alarmas, comportamiento anormal, momento en que ocurrió…"></textarea>
-    </div>
-    <div class="field">
-      <label>¿Equipo detenido?</label>
-      <div class="chip-group" id="detenidoGroup">
-        <button class="chip" data-val="Sí — parado"         onclick="selChip(this,'detenidoGroup')">🔴 Sí — parado</button>
-        <button class="chip" data-val="Parcial — reducido"  onclick="selChip(this,'detenidoGroup')">🟡 Parcial</button>
-        <button class="chip" data-val="No — sigue operando" onclick="selChip(this,'detenidoGroup')">🟢 Sigue</button>
+      <label>¿Está parado el equipo? <span class="req">*</span></label>
+      <div class="chips state" id="detenidoGroup">
+        <button class="chip" data-tone="stop" data-val="Sí — parado"         onclick="selChip(this,'detenidoGroup')"><i class="dotc" style="background:var(--danger)"></i>Parado</button>
+        <button class="chip" data-tone="slow" data-val="Parcial — reducido"  onclick="selChip(this,'detenidoGroup')"><i class="dotc" style="background:var(--warn)"></i>Parcial</button>
+        <button class="chip" data-tone="run"  data-val="No — sigue operando" onclick="selChip(this,'detenidoGroup')"><i class="dotc" style="background:var(--ok)"></i>Opera</button>
       </div>
     </div>
-
-    <!-- FECHA/HORA -->
+    <div class="field">
+      <label>Qué está pasando <span class="req">*</span></label>
+      <textarea id="fSintoma" placeholder="Ruido, alarma, fuga, temperatura, en qué momento arrancó…" oninput="tick()"></textarea>
+      <span class="hint">Cuanto más concreto, menos tiempo pierde el técnico buscando.</span>
+    </div>
     <div class="row-2">
-      <div class="field">
-        <label>Fecha <span class="req">*</span></label>
-        <input type="date" id="fFecha">
-      </div>
-      <div class="field">
-        <label>Hora <span class="req">*</span></label>
-        <input type="time" id="fHora">
-      </div>
+      <div class="field"><label>Fecha <span class="req">*</span></label><input type="date" id="fFecha" oninput="tick()"></div>
+      <div class="field"><label>Hora <span class="req">*</span></label><input type="time" id="fHora" oninput="tick()"></div>
     </div>
 
-    <!-- FOTO -->
-    <div class="section-label" style="margin-top:4px">Evidencia</div>
-    <div class="foto-zone" id="fotoZone">
+    <div class="step" id="st4"><span class="step-n">4</span><h2>Evidencia</h2></div>
+    <div class="foto-zone">
       <input type="file" id="fFotos" accept="image/*" multiple capture="environment" onchange="handleFotos(this)">
-      <div class="foto-icon">📷</div>
-      <div class="foto-txt">Tocar para sacar foto o adjuntar imagen</div>
-      <div class="foto-preview" id="fotoPreview"></div>
+      <div class="big">📷</div>
+      <div class="t">Sacar foto o adjuntar</div>
+      <div class="s">Hasta 4 fotos · se comprimen y quedan guardadas sin conexión</div>
     </div>
-
-  </div><!-- /form-scroll -->
-
-  <div class="submit-bar">
-    <button class="btn-submit" id="btnSubmit" onclick="submitForm()">
-      Enviar reporte de falla
-    </button>
+    <div class="foto-grid" id="fotoPreview"></div>
   </div>
 
-</div><!-- /viewForm -->
-
-<!-- ══════════ VIEW: HISTORIAL ══════════ -->
-<div class="view" id="viewHistorial">
-  <div class="hist-header">
-    <button class="btn-back" onclick="showView('form')">← Volver</button>
-    <span class="hist-title">Mis reportes</span>
-  </div>
-  <div class="hist-list" id="histList"></div>
+  <div class="bar"><button class="btn" id="btnSubmit" onclick="submitForm()">Enviar reporte</button></div>
 </div>
 
-<!-- ══════════ VIEW: GENERAR OT ══════════ -->
-<div class="view" id="viewGenOT">
-  <div class="ot-header">
-    <button class="btn-back" onclick="showView('historial')">← Volver</button>
-    <span class="hist-title">Nueva Orden de Trabajo</span>
+<!-- ═══ HISTORIAL ═══ -->
+<div class="view" id="viewHistorial">
+  <div class="sub-header">
+    <button class="btn-back" onclick="showView('form')">← Volver</button>
+    <span class="sub-title">Mis reportes</span>
   </div>
-  <div class="form-scroll" style="padding-bottom:120px">
+  <div class="scroll" id="histList" style="padding-bottom:32px"></div>
+</div>
 
-    <!-- Origen: datos de la falla -->
-    <div class="section-label">Origen — Falla reportada</div>
-    <div class="ot-origen" id="otOrigenCard">
-      <div class="ot-origen-label">Equipo</div>
-      <div class="ot-origen-equipo" id="otOrigenEquipo">—</div>
-      <div class="ot-origen-desc" id="otOrigenDesc">—</div>
+<!-- ═══ GENERAR OT ═══ -->
+<div class="view" id="viewGenOT">
+  <div class="sub-header">
+    <button class="btn-back" onclick="showView('historial')">← Volver</button>
+    <span class="sub-title">Nueva orden de trabajo</span>
+  </div>
+  <div class="scroll">
+    <div class="step"><span class="step-n">·</span><h2>Falla de origen</h2></div>
+    <div class="origin">
+      <div class="l">Equipo</div>
+      <div class="e" id="otOrigenEquipo">—</div>
+      <div class="d" id="otOrigenDesc">—</div>
     </div>
 
-    <!-- Datos de la OT -->
-    <div class="section-label" style="margin-top:8px">Orden de Trabajo</div>
-
-    <div class="field">
-      <label>N° OT <span class="req">*</span></label>
-      <input type="text" id="otNro" placeholder="Ej: OT-2026-001" autocomplete="off">
-    </div>
-
+    <div class="step"><span class="step-n">·</span><h2>Orden de trabajo</h2></div>
+    <div class="field"><label>N° OT <span class="req">*</span></label><input type="text" id="otNro" autocomplete="off"></div>
     <div class="field">
       <label>Tipo <span class="req">*</span></label>
-      <div class="chip-group" id="otTipoGroup">
-        <button class="chip" data-val="Correctivo" onclick="selChip(this,'otTipoGroup')">🔧 Correctivo</button>
-        <button class="chip" data-val="Preventivo" onclick="selChip(this,'otTipoGroup')">📋 Preventivo</button>
-        <button class="chip" data-val="Mejora"     onclick="selChip(this,'otTipoGroup')">⬆ Mejora</button>
+      <div class="chips" id="otTipoGroup">
+        <button class="chip" data-val="Correctivo" onclick="selChip(this,'otTipoGroup')">Correctivo</button>
+        <button class="chip" data-val="Preventivo" onclick="selChip(this,'otTipoGroup')">Preventivo</button>
+        <button class="chip" data-val="Mejora"     onclick="selChip(this,'otTipoGroup')">Mejora</button>
       </div>
     </div>
-
     <div class="field">
       <label>Prioridad <span class="req">*</span></label>
-      <div class="chip-group" id="otPrioGroup">
-        <button class="chip" data-val="Alta"   onclick="selChip(this,'otPrioGroup')">🔴 Alta</button>
-        <button class="chip" data-val="Media"  onclick="selChip(this,'otPrioGroup')">🟡 Media</button>
-        <button class="chip" data-val="Baja"   onclick="selChip(this,'otPrioGroup')">🟢 Baja</button>
+      <div class="chips state" id="otPrioGroup">
+        <button class="chip" data-tone="stop" data-val="Alta"  onclick="selChip(this,'otPrioGroup')">Alta</button>
+        <button class="chip" data-tone="slow" data-val="Media" onclick="selChip(this,'otPrioGroup')">Media</button>
+        <button class="chip" data-tone="run"  data-val="Baja"  onclick="selChip(this,'otPrioGroup')">Baja</button>
       </div>
     </div>
-
-    <div class="field">
-      <label>Técnico asignado <span class="req">*</span></label>
-      <div class="select-wrap">
-        <select id="otTecnico">
-          <option value="">— Seleccionar técnico —</option>
-        </select>
-      </div>
+    <div class="field"><label>Técnico asignado <span class="req">*</span></label><div class="select-wrap"><select id="otTecnico"></select></div></div>
+    <div class="field"><label>Tarea a realizar</label><textarea id="otDescripcion"></textarea></div>
+    <div class="row-2">
+      <div class="field"><label>Horas estimadas</label><input type="number" id="otHoras" placeholder="2" min="0" step="0.5"></div>
+      <div class="field"><label>Fecha programada</label><input type="date" id="otFecha"></div>
     </div>
-
-    <div class="field">
-      <label>Descripción / Tarea</label>
-      <textarea id="otDescripcion" placeholder="Describir el trabajo a realizar…"></textarea>
-    </div>
-
-    <div class="field">
-      <label>Tiempo estimado (horas)</label>
-      <input type="number" id="otHoras" placeholder="Ej: 2" min="0" step="0.5">
-    </div>
-
-    <div class="field">
-      <label>Fecha programada</label>
-      <input type="date" id="otFecha">
-    </div>
-
-    <div class="field">
-      <label>Observaciones</label>
-      <textarea id="otObs" placeholder="Repuestos necesarios, precauciones, contexto adicional…"></textarea>
-    </div>
-
+    <div class="field"><label>Observaciones</label><textarea id="otObs" placeholder="Repuestos necesarios, precauciones…" style="min-height:70px"></textarea></div>
   </div>
-  <div class="ot-submit-bar">
-    <button class="btn-ot-submit" id="btnOTSubmit" onclick="submitOT()">
-      ⚙ Crear Orden de Trabajo
-    </button>
-  </div>
+  <div class="bar"><button class="btn" id="btnOTSubmit" onclick="submitOT()">Crear orden de trabajo</button></div>
 </div>
+
+<!-- ═══ CONFIG ═══ -->
 <div class="view" id="viewConfig">
-  <div class="hist-header">
+  <div class="sub-header">
     <button class="btn-back" onclick="showView('form')">← Volver</button>
-    <span class="hist-title">Configuración SharePoint</span>
+    <span class="sub-title">Ajustes</span>
   </div>
-  <div class="config-scroll">
-    <div class="config-card">
-      <h3>🔗 CONEXIÓN SHAREPOINT DIRECTA</h3>
-      <p style="font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:4px">
-        Conecta directo a SharePoint usando tu cuenta Microsoft 365. Sin Power Automate ni Azure AD.
-      </p>
-      <div class="field">
-        <label>URL del sitio SharePoint</label>
-        <input type="url" id="cfgSite" placeholder="https://cimplast.sharepoint.com/sites/MantenimientoPlanta" value="https://cimplast.sharepoint.com/sites/MantenimientoPlanta">
-      </div>
-      <div class="field">
-        <label>Nombre de la lista</label>
-        <input type="text" id="cfgLista" placeholder="Fallas" value="Fallas">
-      </div>
-      <button class="btn-config-save" onclick="loginYGuardar()">🔑 Iniciar sesión con Microsoft y guardar</button>
-      <div id="cfgTestResult" style="display:none; margin-top:8px; font-size:12px; padding:8px 12px; border-radius:8px;"></div>
-      <div id="cfgUserInfo" style="display:none; margin-top:8px; font-size:12px; color:var(--ok); padding:8px 12px; border-radius:8px; background:rgba(34,197,94,.08); border:1px solid var(--ok)"></div>
-      <p style="font-size:11px; color:var(--muted); line-height:1.5; margin-top:8px">
-        <strong>Sin configurar:</strong> los reportes se guardan localmente y podés exportarlos a CSV.
-      </p>
+  <div class="scroll" style="padding-bottom:32px">
+    <div class="card">
+      <h3>Estado de la conexión</h3>
+      <div class="status-line" id="cfgNet"><i class="dotc"></i><span>—</span></div>
+      <div class="status-line" id="cfgQueue"><i class="dotc"></i><span>—</span></div>
+      <p>La app guarda todo en el celular apenas tocás enviar. Si no hay red, los reportes quedan en cola y se suben solos cuando vuelve la señal — no hace falta que hagas nada.</p>
+      <button class="btn ghost" onclick="flushOutbox(true)">Forzar envío de la cola</button>
     </div>
-    <div class="config-card">
-      <h3>📤 EXPORTAR REPORTES LOCALES</h3>
-      <p style="font-size:13px; color:var(--label); line-height:1.5">
-        Exportá todos los reportes guardados localmente a un archivo Excel (.csv) para cargarlo manualmente en SharePoint o SAP PM.
-      </p>
-      <button class="btn-config-save" onclick="exportCSV()">Descargar CSV</button>
+    <div class="card">
+      <h3>Mi nombre por defecto</h3>
+      <div class="field"><input type="text" id="cfgNombre" placeholder="Tu nombre"></div>
+      <button class="btn ghost" onclick="saveNombre()">Guardar nombre</button>
     </div>
-    <div class="config-card">
-      <h3>👤 MI NOMBRE POR DEFECTO</h3>
-      <div class="field">
-        <label>Nombre del operador</label>
-        <input type="text" id="cfgNombre" placeholder="Tu nombre">
-      </div>
-      <button class="btn-config-save" onclick="saveNombre()">Guardar nombre</button>
+    <div class="card">
+      <h3>Exportar reportes</h3>
+      <p>Descargá todos los reportes de este dispositivo en Excel (.csv) para cargarlos a mano en SAP PM.</p>
+      <button class="btn ghost" onclick="exportCSV()">Descargar CSV</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════ SCRIPTS ════════════════ -->
+<script src="datos.js"></script>
 <script>
-// ── EQUIPOS POR PLANTA ──────────────────────────────────
-const EQUIPOS = {
-  "Titese": [
-    "Sopladora Uniloy N°1","Sopladora Uniloy N°2","Sopladora Uniloy N°3",
-    "Inyectora N°1","Inyectora N°2","Compresor Kaeser N°1","Compresor Kaeser N°2",
-    "Chiller N°1","Chiller N°2","Molino N°1","Secador N°1"
-  ],
-  "Planta 2": [
-    "Inyecto-sopladora N°1","Inyecto-sopladora N°2","Extrusora PEAD N°1",
-    "Extrusora COEX N°1","Compresor N°1","Chiller N°1","Molino N°2"
-  ],
-  "Planta 3": [
-    "Línea extrusión N°1","Línea extrusión N°2","Compresor Atlas Copco",
-    "Chiller N°3","Molino N°3","Mezclador N°1"
-  ],
-  "Planta 4": [
-    "Inyectora grande N°1","Inyectora grande N°2","Sopladora PET N°1",
-    "Compresor N°2","Chiller N°4","Molino N°4"
-  ]
+const API = window.CIMPLAST_DATA.api;
+const TECNICOS = window.CIMPLAST_DATA.tecnicos;
+
+/* ══ IndexedDB mínimo: cola de envío + fotos ══ */
+const DB={_p:null};
+DB.open=function(){
+  if(this._p) return this._p;
+  this._p=new Promise((res,rej)=>{
+    const r=indexedDB.open('cimplast',2);
+    r.onupgradeneeded=e=>{const db=e.target.result;
+      if(!db.objectStoreNames.contains('outbox')) db.createObjectStore('outbox',{keyPath:'key',autoIncrement:true});
+      if(!db.objectStoreNames.contains('fotos'))  db.createObjectStore('fotos',{keyPath:'id'});};
+    r.onsuccess=e=>res(e.target.result); r.onerror=()=>rej(r.error);
+  });
+  return this._p;
 };
+DB.tx=async function(store,mode,fn){const db=await this.open();return new Promise((res,rej)=>{
+  const t=db.transaction(store,mode),s=t.objectStore(store);let out;
+  try{out=fn(s)}catch(e){rej(e);return}
+  t.oncomplete=()=>res(out&&out.result!==undefined?out.result:out);t.onerror=()=>rej(t.error);});};
+DB.add=(store,val)=>DB.tx(store,'readwrite',s=>s.put(val));
+DB.all=store=>DB.tx(store,'readonly',s=>s.getAll());
+DB.del=(store,key)=>DB.tx(store,'readwrite',s=>s.delete(key));
 
-function updateEquipos() {
-  const planta = document.getElementById('fPlanta').value;
-  const sel = document.getElementById('fEquipo');
-  sel.innerHTML = '<option value="">— Seleccionar equipo —</option>';
-  if (planta && EQUIPOS[planta]) {
-    EQUIPOS[planta].forEach(eq => {
-      const opt = document.createElement('option');
-      opt.value = eq; opt.textContent = eq;
-      sel.appendChild(opt);
-    });
+/* ══ COLA DE ENVÍO ══ */
+let flushing=false;
+async function enqueue(body,meta){ await DB.add('outbox',{body,meta,intentos:0,creado:Date.now()}); updateQueueUI(); }
+async function outboxCount(){ try{return (await DB.all('outbox')).length}catch(e){return 0} }
+
+async function flushOutbox(manual){
+  if(flushing) return;
+  if(!navigator.onLine){ if(manual) showToast('Seguís sin conexión — la cola se envía sola al volver la red','err'); return; }
+  flushing=true;
+  let ok=0,items=[];
+  try{ items=await DB.all('outbox'); }catch(e){ flushing=false; return; }
+  for(const it of items){
+    try{
+      const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(it.body)});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const d=await r.json().catch(()=>({ok:true}));
+      if(d.ok===false) throw new Error(d.error||'API');
+      await DB.del('outbox',it.key);
+      if(it.meta&&it.meta.fallaId) marcarEnviado(it.meta.fallaId);
+      ok++;
+    }catch(e){ break; }  // se corta al primer fallo; reintenta después
   }
+  flushing=false;
+  updateQueueUI();
+  if(ok){ showToast(ok===1?'Reporte sincronizado':ok+' registros sincronizados'); if(isActive('historial')) renderHistorial(); }
+  else if(manual&&items.length) showToast('No se pudo sincronizar todavía','err');
+}
+async function updateQueueUI(){
+  const n=await outboxCount();
+  const dot=document.getElementById('queueDot');
+  dot.style.display=n?'grid':'none'; dot.textContent=n;
+  const strip=document.getElementById('stripQueue');
+  strip.classList.toggle('on',n>0&&navigator.onLine);
+  document.getElementById('queueTxt').textContent=n===1?'1 reporte esperando sincronizar':n+' reportes esperando sincronizar';
+  const cq=document.getElementById('cfgQueue');
+  if(cq){ cq.querySelector('.dotc').style.background=n?'var(--warn)':'var(--ok)';
+    cq.querySelector('span').textContent=n?(n+' registro(s) en cola de envío'):'Todo sincronizado'; }
+  const cn=document.getElementById('cfgNet');
+  if(cn){ cn.querySelector('.dotc').style.background=navigator.onLine?'var(--ok)':'var(--danger)';
+    cn.querySelector('span').textContent=navigator.onLine?'Con conexión a internet':'Sin conexión'; }
 }
 
-// ── CHIPS ───────────────────────────────────────────────
-function selChip(el, groupId) {
-  document.querySelectorAll(`#${groupId} .chip`).forEach(c => c.classList.remove('selected'));
+/* ══ EQUIPOS ══ */
+function fillPlantas(){
+  const sel=document.getElementById('fPlanta');
+  window.CIMPLAST_DATA.listaPlantas().forEach(p=>{
+    const o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o);
+  });
+}
+function updateEquipos(){
+  const p=document.getElementById('fPlanta').value, sel=document.getElementById('fEquipo');
+  sel.innerHTML='<option value="">Seleccionar equipo</option>';
+  window.CIMPLAST_DATA.equiposDe(p).forEach(e=>{
+    const o=document.createElement('option'); o.value=e.nombre; o.dataset.cod=e.cod;
+    o.textContent=e.nombre; sel.appendChild(o);
+  });
+}
+
+/* ══ CHIPS ══ */
+function selChip(el,g){
+  document.querySelectorAll('#'+g+' .chip').forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
-  if (groupId === 'turnoGroup') {
-    document.getElementById('turnoHeader').textContent = el.dataset.val;
-    localStorage.setItem('ultimoTurno', el.dataset.val);
-  }
+  if(g==='turnoGroup'){ document.getElementById('turnoHeader').textContent=el.dataset.val; localStorage.setItem('cimplast_turno',el.dataset.val); }
+  tick();
 }
+function getChipVal(g){ const s=document.querySelector('#'+g+' .chip.selected'); return s?s.dataset.val:''; }
 
-// ── FOTO ────────────────────────────────────────────────
-let fotosData = [];
-function handleFotos(input) {
-  const files = Array.from(input.files);
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      fotosData.push({ name: file.name, data: e.target.result });
-      renderFotos();
-    };
-    reader.readAsDataURL(file);
+/* ══ FOTOS (comprimidas) ══ */
+let fotosData=[];
+const MAX_FOTOS=4;
+function handleFotos(input){
+  const files=Array.from(input.files).slice(0,MAX_FOTOS-fotosData.length);
+  if(!files.length){ showToast('Máximo '+MAX_FOTOS+' fotos','err'); input.value=''; return; }
+  files.forEach(f=>comprimir(f).then(d=>{ fotosData.push(d); renderFotos(); }).catch(()=>showToast('No se pudo procesar una imagen','err')));
+  input.value='';
+}
+function comprimir(file){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onload=e=>{ const img=new Image();
+      img.onload=()=>{ const max=1100, sc=Math.min(1,max/Math.max(img.width,img.height));
+        const c=document.createElement('canvas'); c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        res(c.toDataURL('image/jpeg',.62)); };
+      img.onerror=rej; img.src=e.target.result; };
+    fr.onerror=rej; fr.readAsDataURL(file);
   });
 }
-function renderFotos() {
-  const preview = document.getElementById('fotoPreview');
-  preview.innerHTML = '';
-  fotosData.forEach((f, i) => {
-    const wrap = document.createElement('div');
-    wrap.className = 'thumb-wrap';
-    wrap.innerHTML = `
-      <img class="foto-thumb" src="${f.data}" alt="foto">
-      <div class="thumb-del" onclick="deleteFoto(${i})">✕</div>`;
-    preview.appendChild(wrap);
+function renderFotos(){
+  const p=document.getElementById('fotoPreview'); p.innerHTML='';
+  fotosData.forEach((d,i)=>{
+    const w=document.createElement('div'); w.className='thumb-wrap';
+    const img=document.createElement('img'); img.className='foto-thumb'; img.src=d; img.alt='Evidencia '+(i+1);
+    const b=document.createElement('button'); b.className='thumb-del'; b.textContent='✕';
+    b.onclick=()=>{ fotosData.splice(i,1); renderFotos(); };
+    w.append(img,b); p.appendChild(w);
   });
 }
-function deleteFoto(i) {
-  fotosData.splice(i, 1);
-  renderFotos();
-}
 
-// ── VIEWS ───────────────────────────────────────────────
-function showView(name) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
-  if (name === 'historial') renderHistorial();
+/* ══ VIEWS ══ */
+function showView(n){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view'+n.charAt(0).toUpperCase()+n.slice(1)).classList.add('active');
+  if(n==='historial') renderHistorial();
+  if(n==='config'){ document.getElementById('cfgNombre').value=localStorage.getItem('cimplast_nombre')||''; updateQueueUI(); }
+  window.scrollTo(0,0);
 }
+function isActive(n){ return document.getElementById('view'+n.charAt(0).toUpperCase()+n.slice(1)).classList.contains('active'); }
 
-// ── TOAST ────────────────────────────────────────────────
+/* ══ TOAST ══ */
 let toastTimer;
-function showToast(msg, type = 'ok') {
-  const t = document.getElementById('toast');
-  t.textContent = (type === 'ok' ? '✓ ' : '⚠ ') + msg;
-  t.className = `toast ${type} show`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+function showToast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=(type==='ok'?'✓ ':'⚠ ')+msg; t.className='toast '+type+' show';
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3600);
 }
 
-// ── VALIDACIÓN ───────────────────────────────────────────
-function getChipVal(groupId) {
-  const sel = document.querySelector(`#${groupId} .chip.selected`);
-  return sel ? sel.dataset.val : '';
+/* ══ PROGRESO ══ */
+function tick(){
+  const eq=document.getElementById('fEquipo').value||document.getElementById('fEquipoManual').value.trim();
+  const c=[
+    !!document.getElementById('fNombre').value.trim() && !!getChipVal('turnoGroup'),
+    !!document.getElementById('fPlanta').value && !!eq,
+    !!getChipVal('sistemaGroup') && !!getChipVal('detenidoGroup') && !!document.getElementById('fSintoma').value.trim()
+      && !!document.getElementById('fFecha').value && !!document.getElementById('fHora').value,
+    fotosData.length>0
+  ];
+  ['st1','st2','st3','st4'].forEach((id,i)=>document.getElementById(id).classList.toggle('done',c[i]));
+  document.getElementById('progBar').style.width=Math.round(c.slice(0,3).filter(Boolean).length/3*100)+'%';
 }
-function validate() {
-  const errs = [];
-  if (!document.getElementById('fNombre').value.trim()) errs.push('Nombre del operador');
-  if (!getChipVal('turnoGroup'))                         errs.push('Turno');
-  if (!document.getElementById('fPlanta').value)        errs.push('Planta');
-  const eq = document.getElementById('fEquipo').value || document.getElementById('fEquipoManual').value.trim();
-  if (!eq) errs.push('Equipo / Activo');
-  if (!getChipVal('sistemaGroup'))                       errs.push('Sistema afectado');
-  if (!document.getElementById('fSintoma').value.trim()) errs.push('Descripción del síntoma');
-  if (!document.getElementById('fFecha').value)         errs.push('Fecha');
-  if (!document.getElementById('fHora').value)          errs.push('Hora');
+
+/* ══ VALIDACIÓN + ENVÍO ══ */
+function validate(){
+  const errs=[]; const mark=(id,bad)=>{const el=document.getElementById(id); if(el) el.classList.toggle('err',bad);};
+  const v=id=>document.getElementById(id).value.trim();
+  if(!v('fNombre')){errs.push('Nombre');mark('fNombre',1)}else mark('fNombre',0);
+  if(!getChipVal('turnoGroup')) errs.push('Turno');
+  if(!v('fPlanta')){errs.push('Planta');mark('fPlanta',1)}else mark('fPlanta',0);
+  const eq=document.getElementById('fEquipo').value||v('fEquipoManual');
+  if(!eq){errs.push('Equipo');mark('fEquipo',1)}else mark('fEquipo',0);
+  if(!getChipVal('sistemaGroup')) errs.push('Sistema afectado');
+  if(!getChipVal('detenidoGroup')) errs.push('Estado del equipo');
+  if(!v('fSintoma')){errs.push('Descripción');mark('fSintoma',1)}else mark('fSintoma',0);
+  if(!v('fFecha')) errs.push('Fecha');
+  if(!v('fHora'))  errs.push('Hora');
   return errs;
 }
 
-// ── SUBMIT ───────────────────────────────────────────────
-async function submitForm() {
-  const errs = validate();
-  if (errs.length) {
-    showToast('Completar: ' + errs.slice(0,2).join(', ') + (errs.length>2?'…':''), 'err');
-    return;
-  }
+async function submitForm(){
+  const errs=validate();
+  if(errs.length){ showToast('Falta completar: '+errs.slice(0,3).join(', ')+(errs.length>3?'…':''),'err');
+    document.querySelector('.err')?.focus({preventScroll:false}); return; }
 
-  const btn = document.getElementById('btnSubmit');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Enviando…';
+  const btn=document.getElementById('btnSubmit');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Guardando…';
 
-  const equipo = document.getElementById('fEquipo').value || document.getElementById('fEquipoManual').value.trim();
-  const reporte = {
-    id:        'CF-' + Date.now(),
-    timestamp: new Date().toISOString(),
-    nombre:    document.getElementById('fNombre').value.trim(),
-    turno:     getChipVal('turnoGroup'),
-    planta:    document.getElementById('fPlanta').value,
-    equipo,
-    sistema:   getChipVal('sistemaGroup'),
-    sintoma:   document.getElementById('fSintoma').value.trim(),
-    detenido:  getChipVal('detenidoGroup') || 'No especificado',
-    fecha:     document.getElementById('fFecha').value,
-    hora:      document.getElementById('fHora').value,
-    fotos:     fotosData.length,
-    estado:    'pendiente'
+  const selEq=document.getElementById('fEquipo');
+  const equipo=selEq.value||document.getElementById('fEquipoManual').value.trim();
+  const cod=selEq.selectedOptions[0]?.dataset.cod||'';
+  const r={
+    id:'CF-'+Date.now(), timestamp:new Date().toISOString(),
+    nombre:document.getElementById('fNombre').value.trim(),
+    turno:getChipVal('turnoGroup'),
+    planta:document.getElementById('fPlanta').value,
+    equipo, codEquipo:cod,
+    sistema:getChipVal('sistemaGroup'),
+    sintoma:document.getElementById('fSintoma').value.trim(),
+    detenido:getChipVal('detenidoGroup'),
+    fecha:document.getElementById('fFecha').value,
+    hora:document.getElementById('fHora').value,
+    fotos:fotosData.length, estado:'cola'
   };
 
-  // Guardar local siempre
-  saveLocal(reporte);
+  saveLocal(r);
+  try{ if(fotosData.length) await DB.add('fotos',{id:r.id,imgs:fotosData}); }catch(e){}
+  await enqueue({
+    accion:'falla', id:r.id, timestamp:r.timestamp, operador:r.nombre, turno:r.turno,
+    planta:r.planta, equipo:r.equipo, codEquipo:r.codEquipo, sistema:r.sistema,
+    sintoma:r.sintoma, detenido:r.detenido, fecha:r.fecha, hora:r.hora,
+    cantFotos:r.fotos, fotos:fotosData
+  },{fallaId:r.id});
 
-  // Intentar SharePoint directo
-  const cfg = getConfig();
-  let enviado = false;
-  if (cfg.loggedIn) {
-    try {
-      await sendToSharePoint(reporte);
-      reporte.estado = 'enviado';
-      updateLocal(reporte);
-      enviado = true;
-    } catch(e) {
-      console.warn('SP error:', e.message);
-      // Si es error de auth, intentar login
-      if (e.message?.includes('token') || e.message?.includes('auth')) {
-        showToast('Sesión expirada — ir a Configuración para reconectar', 'err');
-      }
-    }
-  }
+  btn.disabled=false; btn.textContent='Enviar reporte';
 
-  btn.disabled = false;
-  btn.innerHTML = 'Enviar reporte de falla';
-
-  document.getElementById('successRef').textContent = reporte.id;
+  document.getElementById('successRef').textContent=r.id;
+  const online=navigator.onLine;
+  document.getElementById('successTitle').textContent=online?'Reporte enviado':'Reporte guardado';
+  document.getElementById('successMsg').textContent=online
+    ? 'Mantenimiento ya lo tiene en el tablero.'
+    : 'Sin conexión: queda en cola y se envía solo cuando vuelva la red. Podés cerrar la app.';
   document.getElementById('successOverlay').classList.add('show');
 
-  if (!enviado && cfg.loggedIn) {
-    showToast('Sin conexión — guardado local, se enviará al recuperar red', 'err');
-  }
-  if (!cfg.loggedIn) {
-    showToast('Guardado local — configurá SharePoint en Configuración', 'err');
-  }
+  flushOutbox();
+}
+function closeSuccess(){ document.getElementById('successOverlay').classList.remove('show'); }
+function marcarEnviado(id){
+  const arr=getLocalFallas(); const i=arr.findIndex(x=>x.id===id);
+  if(i>=0&&arr[i].estado==='cola'){ arr[i].estado='Pendiente'; localStorage.setItem('cimplast_fallas',JSON.stringify(arr)); }
 }
 
-// ── GOOGLE SHEETS API ────────────────────────────────────
-const GS_API = 'https://script.google.com/macros/s/AKfycbwaw-wAoQh7iEv-tdNmnT7X17jvY3ZDx7x-WN3upqv0aq8uUSZSOFcP4pqwv9vdIqmTkA/exec';
+/* ══ ALMACENAMIENTO LOCAL ══ */
+function saveLocal(r){ const a=getLocalFallas(); a.unshift(r); localStorage.setItem('cimplast_fallas',JSON.stringify(a)); }
+function updateLocal(r){ const a=getLocalFallas(); const i=a.findIndex(x=>x.id===r.id); if(i>=0){a[i]=r;localStorage.setItem('cimplast_fallas',JSON.stringify(a));} }
+function getLocalFallas(){ try{return JSON.parse(localStorage.getItem('cimplast_fallas')||'[]')}catch(e){return []} }
 
-async function loginYGuardar() {
-  const resultEl = document.getElementById('cfgTestResult');
-  const userEl   = document.getElementById('cfgUserInfo');
-  resultEl.style.display = 'block';
-  resultEl.style.cssText += ';background:rgba(100,116,139,.1);color:var(--label);border:1px solid var(--border)';
-  resultEl.textContent = 'Verificando conexion con Google Sheets...';
-  try {
-    const resp = await fetch(GS_API + '?accion=tecnicos');
-    if (!resp.ok) throw new Error('No se pudo conectar a la API');
-    const data = await resp.json();
-    if (!data.ok) throw new Error(data.error || 'Error en la API');
-    const cfg = { gsApi: GS_API, loggedIn: true };
-    localStorage.setItem('cimplast_cfg', JSON.stringify(cfg));
-    checkSpWarning();
-    resultEl.style.cssText += ';background:rgba(34,197,94,.1);color:var(--ok);border:1px solid var(--ok)';
-    resultEl.textContent = 'Conectado a Google Sheets correctamente';
-    userEl.style.display = 'block';
-    userEl.textContent   = 'API activa - los reportes se guardaran en Google Sheets';
-    showToast('Conectado a Google Sheets');
-  } catch(e) {
-    resultEl.style.cssText += ';background:rgba(239,68,68,.1);color:var(--danger);border:1px solid var(--danger)';
-    resultEl.textContent = 'Error: ' + (e.message || e);
-    showToast('Error de conexion', 'err');
-  }
+/* ══ HISTORIAL ══ */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function badgeFor(e){
+  if(e==='cola')      return {c:'b-cola', t:'En cola'};
+  if(e==='Concluido') return {c:'b-done', t:'Concluido'};
+  if(e==='En curso')  return {c:'b-curso',t:'En curso'};
+  return {c:'b-pend',t:'Pendiente'};
 }
-
-async function sendToSharePoint(reporte) {
-  const body = {
-    accion: 'falla', id: reporte.id, timestamp: reporte.timestamp,
-    operador: reporte.nombre, turno: reporte.turno, planta: reporte.planta,
-    equipo: reporte.equipo, sistema: reporte.sistema, sintoma: reporte.sintoma,
-    detenido: reporte.detenido, fecha: reporte.fecha, hora: reporte.hora,
-    cantFotos: reporte.fotos
-  };
-  const resp = await fetch(GS_API, {
-    method: 'POST', headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(body)
-  });
-  if (!resp.ok) throw new Error('Error HTTP ' + resp.status);
-  const data = await resp.json();
-  if (!data.ok) throw new Error(data.error || 'Error en la API');
-}
-
-
-// ── GENERAR OT ───────────────────────────────────────────
-let otFallaActual = null;
-
-async function abrirGenOT(fallaId) {
-  const fallas = getLocalFallas();
-  const f = fallas.find(x => x.id === fallaId);
-  if (!f) return;
-  otFallaActual = f;
-
-  // Prellenar datos de origen
-  document.getElementById('otOrigenEquipo').textContent = f.equipo + ' — ' + f.planta;
-  document.getElementById('otOrigenDesc').textContent   = f.sintoma.substring(0,120);
-
-  // Prellenar descripción con el síntoma
-  document.getElementById('otDescripcion').value = f.sintoma;
-
-  // Prellenar fecha con hoy
-  document.getElementById('otFecha').value = today();
-
-  // Generar N°OT automático
-  document.getElementById('otNro').value = 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4);
-
-  // Cargar técnicos desde SharePoint
-  await cargarTecnicos();
-
-  // Seleccionar Correctivo por defecto
-  const chipCorr = document.querySelector('#otTipoGroup .chip[data-val="Correctivo"]');
-  if (chipCorr) chipCorr.classList.add('selected');
-
-  // Seleccionar prioridad según detenido
-  const prio = f.detenido?.includes('parado') ? 'Alta' : f.detenido?.includes('Parcial') ? 'Media' : 'Baja';
-  const chipPrio = document.querySelector(`#otPrioGroup .chip[data-val="${prio}"]`);
-  if (chipPrio) chipPrio.classList.add('selected');
-
-  showView('genOT');
-}
-
-async function cargarTecnicos() {
-  const sel = document.getElementById('otTecnico');
-  sel.innerHTML = '<option value="">— Cargando técnicos… —</option>';
-  const TECNICOS = [
-    { id: 14, nombre: 'Carlos Mongelos', esp: 'Eléctrico' },
-    { id:  4, nombre: 'Claudio Cerezo',  esp: 'Eléctrico' },
-    { id: 11, nombre: 'Edgar Maqueda',   esp: 'Metricero' },
-    { id: 13, nombre: 'Enrique Monges',  esp: 'Eléctrico' },
-    { id: 10, nombre: 'Jose Caballero',  esp: 'Mecánico' },
-    { id:  2, nombre: 'José González',   esp: 'Mecánico' },
-    { id: 16, nombre: 'Maximo Duarte',   esp: 'Eléctrico' },
-    { id: 15, nombre: 'Nicolas Vazquez', esp: 'Mecánico' },
-    { id:  7, nombre: 'Oscar Duarte',    esp: 'Electromecánico' },
-    { id:  6, nombre: 'Pablo Gomez',     esp: 'Herrero' },
-    { id:  8, nombre: 'Valentin Escobar',esp: 'Herrero' },
-    { id: 12, nombre: 'Victor Saucedo',  esp: 'Mecánico' }
-  ];
-  sel.innerHTML = '<option value="">— Seleccionar técnico —</option>';
-  TECNICOS.forEach(t => {
-    const opt = document.createElement('option');
-    opt.value = t.id;
-    opt.dataset.nombre = t.nombre;
-    opt.textContent = `${t.nombre} — ${t.esp}`;
-    sel.appendChild(opt);
-  });
-}
-
-async function submitOT() {
-  const nro      = document.getElementById('otNro').value.trim();
-  const tipo     = getChipVal('otTipoGroup');
-  const prio     = getChipVal('otPrioGroup');
-  const tecSel   = document.getElementById('otTecnico');
-  const tecId    = tecSel.value;
-  const tecNombre = tecSel.options[tecSel.selectedIndex]?.dataset?.nombre || '';
-  const desc     = document.getElementById('otDescripcion').value.trim();
-  const horas    = document.getElementById('otHoras').value;
-  const fecha    = document.getElementById('otFecha').value;
-  const obs      = document.getElementById('otObs').value.trim();
-
-  if (!nro)   { showToast('Ingresá el N° de OT', 'err'); return; }
-  if (!tipo)  { showToast('Seleccioná el tipo', 'err'); return; }
-  if (!prio)  { showToast('Seleccioná la prioridad', 'err'); return; }
-  if (!tecId) { showToast('Seleccioná un técnico', 'err'); return; }
-
-  const btn = document.getElementById('btnOTSubmit');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Creando OT…';
-
-  try {
-    const body = {
-      accion: 'ot', nroOT: nro,
-      fallaId: otFallaActual?.id || '',
-      equipo: otFallaActual?.equipo || '',
-      planta: otFallaActual?.planta || '',
-      tipo, prioridad: prio, tecnico: tecNombre,
-      descripcion: desc || (otFallaActual?.sintoma || ''),
-      horasEstimadas: horas || '', fechaProgramada: fecha, observaciones: obs || ''
-    };
-    const resp = await fetch(GS_API, {
-      method: 'POST', headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(body)
-    });
-    if (!resp.ok) throw new Error('Error HTTP ' + resp.status);
-    const result = await resp.json();
-    if (!result.ok) throw new Error(result.error || 'Error creando OT');
-
-    // Actualizar estado local de la falla
-    if (otFallaActual) {
-      otFallaActual.estado = 'En curso';
-      otFallaActual.otNro = nro;
-      updateLocal(otFallaActual);
-    }
-
-    showToast(`OT ${nro} creada correctamente`);
-    btn.disabled = false;
-    btn.innerHTML = '⚙ Crear Orden de Trabajo';
-    showView('historial');
-    renderHistorial();
-
-  } catch(e) {
-    btn.disabled = false;
-    btn.innerHTML = '⚙ Crear Orden de Trabajo';
-    showToast('Error: ' + e.message, 'err');
-  }
-}
-function saveLocal(r) {
-  const arr = JSON.parse(localStorage.getItem('cimplast_fallas') || '[]');
-  arr.unshift(r);
-  localStorage.setItem('cimplast_fallas', JSON.stringify(arr));
-}
-function updateLocal(r) {
-  const arr = JSON.parse(localStorage.getItem('cimplast_fallas') || '[]');
-  const i = arr.findIndex(x => x.id === r.id);
-  if (i >= 0) { arr[i] = r; localStorage.setItem('cimplast_fallas', JSON.stringify(arr)); }
-}
-function getLocalFallas() {
-  return JSON.parse(localStorage.getItem('cimplast_fallas') || '[]');
-}
-
-// ── HISTORIAL ────────────────────────────────────────────
-async function fetchEstadosSP(ids) {
-  try {
-    const resp = await fetch(GS_API + '?accion=estados&ids=' + ids.join(','));
-    if (!resp.ok) return {};
-    const data = await resp.json();
-    const estados = data.estados || {};
-    const fallas = getLocalFallas();
-    let cambios = false;
-    fallas.forEach(f => {
-      if (estados[f.id] && estados[f.id] !== f.estado) { f.estado = estados[f.id]; cambios = true; }
-    });
-    if (cambios) localStorage.setItem('cimplast_fallas', JSON.stringify(fallas));
-    return estados;
-  } catch(e) { return {}; }
-}
-
-function estadoBadge(estadoSP, estadoLocal) {
-  // Priorizar estado real de SharePoint si existe
-  const e = estadoSP || estadoLocal;
-  if (e === 'Concluido')  return { cls: 'badge-concluido',  txt: '✓ Concluido' };
-  if (e === 'En curso')   return { cls: 'badge-encurso',    txt: '🔧 En curso' };
-  if (e === 'enviado' || e === 'Pendiente') return { cls: 'badge-pendiente', txt: '⏳ Pendiente' };
-  return { cls: 'badge-pendiente', txt: '⏳ Pendiente' };
-}
-
-async function renderHistorial() {
-  const list = document.getElementById('histList');
-  const fallas = getLocalFallas();
-  if (!fallas.length) {
-    list.innerHTML = `<div class="empty-state"><div class="big">📋</div><p>Todavía no hay reportes registrados en este dispositivo.</p></div>`;
+async function renderHistorial(){
+  const list=document.getElementById('histList');
+  const fallas=getLocalFallas();
+  if(!fallas.length){
+    list.innerHTML='<div class="empty"><div class="big">📋</div><p>Todavía no reportaste ninguna falla desde este dispositivo.</p></div>';
     return;
   }
-
-  // Mostrar primero con datos locales
-  renderHistorialConEstados(fallas, {});
-
-  // Luego consultar SharePoint para estados actualizados
-  const ids = fallas.filter(f => f.estado === 'enviado' || f.estado === 'Pendiente').map(f => f.id);
-  if (ids.length) {
-    const estadosSP = await fetchEstadosSP(ids);
-    renderHistorialConEstados(fallas, estadosSP);
+  paint(fallas,{});
+  const ids=fallas.filter(f=>f.estado!=='cola'&&f.estado!=='Concluido').map(f=>f.id);
+  if(ids.length&&navigator.onLine){
+    try{
+      const rp=await fetch(API+'?accion=estados&ids='+encodeURIComponent(ids.join(',')));
+      const d=await rp.json(); const est=d.estados||{};
+      let ch=false;
+      fallas.forEach(f=>{ if(est[f.id]&&est[f.id]!==f.estado){f.estado=est[f.id];ch=true;} });
+      if(ch) localStorage.setItem('cimplast_fallas',JSON.stringify(fallas));
+      paint(fallas,est);
+    }catch(e){}
   }
 }
-
-function renderHistorialConEstados(fallas, estadosSP) {
-  const list = document.getElementById('histList');
-  list.innerHTML = fallas.map(f => {
-    const badge = estadoBadge(estadosSP[f.id], f.estado);
-    const puedeOT = f.estado === 'enviado' || estadosSP[f.id] === 'Pendiente' || estadosSP[f.id] === 'En curso';
-    return `
-    <div class="hist-card">
-      <div class="hist-card-top">
-        <span class="hist-equipo">${f.equipo}</span>
-        <span class="hist-badge ${badge.cls}">${badge.txt}</span>
-      </div>
-      <div class="hist-sintoma">${f.sintoma.substring(0,100)}${f.sintoma.length>100?'…':''}</div>
-      <div class="hist-meta">
-        <span>📍 ${f.planta}</span>
-        <span>🕐 ${f.fecha} ${f.hora}</span>
-        <span>🌀 ${f.turno}</span>
-        ${f.fotos ? `<span>📷 ${f.fotos}</span>` : ''}
-      </div>
-      ${puedeOT ? `<button class="btn-generar-ot" onclick="abrirGenOT('${f.id}')">⚙ Generar Orden de Trabajo</button>` : ''}
-    </div>`;
+function paint(fallas,est){
+  document.getElementById('histList').innerHTML=fallas.map(f=>{
+    const estado=est[f.id]||f.estado, b=badgeFor(estado);
+    const parado=(f.detenido||'').includes('parado');
+    const puedeOT=estado==='Pendiente';
+    return '<div class="hist-card'+(parado?' stopped':'')+'">'
+      +'<div class="hist-top"><span class="hist-eq">'+esc(f.equipo)+'</span><span class="badge '+b.c+'">'+b.t+'</span></div>'
+      +'<div class="hist-sint">'+esc((f.sintoma||'').slice(0,120))+((f.sintoma||'').length>120?'…':'')+'</div>'
+      +'<div class="hist-meta"><span>'+esc(f.planta)+'</span><span>'+esc(f.fecha)+' '+esc(f.hora)+'</span><span>'+esc(f.turno)+'</span>'
+      +(f.fotos?'<span>'+f.fotos+' foto(s)</span>':'')+'</div>'
+      +(puedeOT?'<button class="btn-ot" data-id="'+esc(f.id)+'">Generar orden de trabajo</button>':'')
+      +'</div>';
   }).join('');
+  document.getElementById('histList').querySelectorAll('.btn-ot').forEach(b=>b.onclick=()=>abrirGenOT(b.dataset.id));
 }
 
-// ── CONFIG ────────────────────────────────────────────────
-function getConfig() {
-  return JSON.parse(localStorage.getItem('cimplast_cfg') || '{}');
+/* ══ GENERAR OT ══ */
+let otFalla=null;
+function abrirGenOT(id){
+  const f=getLocalFallas().find(x=>x.id===id); if(!f) return;
+  otFalla=f;
+  document.getElementById('otOrigenEquipo').textContent=f.equipo+' · '+f.planta;
+  document.getElementById('otOrigenDesc').textContent=(f.sintoma||'').slice(0,140);
+  document.getElementById('otDescripcion').value=f.sintoma||'';
+  document.getElementById('otFecha').value=today();
+  document.getElementById('otNro').value='OT-'+new Date().getFullYear()+'-'+Date.now().toString().slice(-4);
+  cargarTecnicos();
+  document.querySelectorAll('#otTipoGroup .chip, #otPrioGroup .chip').forEach(c=>c.classList.remove('selected'));
+  document.querySelector('#otTipoGroup .chip[data-val="Correctivo"]')?.classList.add('selected');
+  const prio=(f.detenido||'').includes('parado')?'Alta':(f.detenido||'').includes('Parcial')?'Media':'Baja';
+  document.querySelector('#otPrioGroup .chip[data-val="'+prio+'"]')?.classList.add('selected');
+  showView('genOT');
 }
-function saveNombre() {
-  const n = document.getElementById('cfgNombre').value.trim();
-  if (n) { localStorage.setItem('cimplast_nombre', n); showToast('Nombre guardado'); }
+function cargarTecnicos(){
+  const sel=document.getElementById('otTecnico');
+  sel.innerHTML='<option value="">Seleccionar técnico</option>';
+  TECNICOS.forEach(t=>{ const o=document.createElement('option'); o.value=t.id; o.dataset.nombre=t.nombre; o.textContent=t.nombre+' · '+t.esp; sel.appendChild(o); });
 }
-function checkSpWarning() {
-  const cfg = getConfig();
-  const warn = document.getElementById('spWarning');
-  warn.style.display = cfg.loggedIn ? 'none' : 'flex';
-}
-function loadConfig() {
-  const cfg = getConfig();
-  // Mostrar usuario si ya está logueado
-  if (cfg.loggedIn && cfg.user) {
-    const userEl = document.getElementById('cfgUserInfo');
-    if (userEl) {
-      userEl.style.display = 'block';
-      userEl.textContent = `✓ Conectado como ${cfg.user} → lista "${cfg.lista}"`;
-    }
-  }
+async function submitOT(){
+  const nro=document.getElementById('otNro').value.trim();
+  const tipo=getChipVal('otTipoGroup'), prio=getChipVal('otPrioGroup');
+  const ts=document.getElementById('otTecnico');
+  if(!nro){showToast('Falta el N° de OT','err');return}
+  if(!tipo){showToast('Elegí el tipo','err');return}
+  if(!prio){showToast('Elegí la prioridad','err');return}
+  if(!ts.value){showToast('Asigná un técnico','err');return}
+
+  const btn=document.getElementById('btnOTSubmit');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Creando…';
+  await enqueue({
+    accion:'ot', nroOT:nro, fallaId:otFalla?.id||'',
+    equipo:otFalla?.equipo||'', planta:otFalla?.planta||'',
+    tipo, prioridad:prio, tecnico:ts.selectedOptions[0]?.dataset.nombre||'',
+    descripcion:document.getElementById('otDescripcion').value.trim()||otFalla?.sintoma||'',
+    horasEstimadas:document.getElementById('otHoras').value||'',
+    fechaProgramada:document.getElementById('otFecha').value,
+    observaciones:document.getElementById('otObs').value.trim()
+  });
+  if(otFalla){ otFalla.estado='En curso'; otFalla.otNro=nro; updateLocal(otFalla); }
+  btn.disabled=false; btn.textContent='Crear orden de trabajo';
+  showToast(navigator.onLine?('OT '+nro+' creada'):('OT '+nro+' en cola — se envía al volver la red'));
+  showView('historial');
+  flushOutbox();
 }
 
-// ── EXPORT CSV ────────────────────────────────────────────
-function exportCSV() {
-  const fallas = getLocalFallas();
-  if (!fallas.length) { showToast('No hay reportes para exportar', 'err'); return; }
-  const cols = ['id','timestamp','nombre','turno','planta','equipo','sistema','sintoma','detenido','fecha','hora','fotos','estado'];
-  const header = cols.join(';');
-  const rows = fallas.map(f => cols.map(c => `"${(f[c]||'').toString().replace(/"/g,'""')}"`).join(';'));
-  const csv = [header, ...rows].join('\n');
-  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `fallas_cimplast_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
+/* ══ CONFIG ══ */
+function saveNombre(){ const n=document.getElementById('cfgNombre').value.trim(); if(n){localStorage.setItem('cimplast_nombre',n);showToast('Nombre guardado')} }
+function exportCSV(){
+  const f=getLocalFallas();
+  if(!f.length){showToast('No hay reportes para exportar','err');return}
+  const cols=['id','timestamp','nombre','turno','planta','equipo','codEquipo','sistema','sintoma','detenido','fecha','hora','fotos','estado'];
+  const csv=[cols.join(';'),...f.map(r=>cols.map(c=>'"'+String(r[c]??'').replace(/"/g,'""')+'"').join(';'))].join('\n');
+  const url=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a'); a.href=url; a.download='fallas_cimplast_'+today()+'.csv'; a.click();
   URL.revokeObjectURL(url);
 }
 
-// ── RESET FORM ────────────────────────────────────────────
-function resetForm() {
-  document.getElementById('successOverlay').classList.remove('show');
-  document.getElementById('fNombre').value = localStorage.getItem('cimplast_nombre') || '';
-  document.getElementById('fPlanta').value = '';
-  document.getElementById('fEquipo').innerHTML = '<option value="">— Primero seleccionar planta —</option>';
-  document.getElementById('fEquipoManual').value = '';
-  document.getElementById('fSintoma').value = '';
-  document.getElementById('fFecha').value = today();
-  document.getElementById('fHora').value = nowTime();
-  fotosData = [];
-  renderFotos();
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-  // Re-select last turno
-  const lt = localStorage.getItem('ultimoTurno');
-  if (lt) {
-    const chip = document.querySelector(`#turnoGroup .chip[data-val="${lt}"]`);
-    if (chip) chip.classList.add('selected');
-  }
-  document.getElementById('formScroll').scrollTop = 0;
+/* ══ RESET ══ */
+function resetForm(){
+  closeSuccess();
+  document.getElementById('fNombre').value=localStorage.getItem('cimplast_nombre')||'';
+  document.getElementById('fPlanta').value='';
+  document.getElementById('fEquipo').innerHTML='<option value="">Elegí la planta primero</option>';
+  document.getElementById('fEquipoManual').value='';
+  document.getElementById('fSintoma').value='';
+  document.getElementById('fFecha').value=today();
+  document.getElementById('fHora').value=nowTime();
+  document.querySelectorAll('.err').forEach(e=>e.classList.remove('err'));
+  fotosData=[]; renderFotos();
+  document.querySelectorAll('#sistemaGroup .chip, #detenidoGroup .chip').forEach(c=>c.classList.remove('selected'));
+  const lt=localStorage.getItem('cimplast_turno');
+  if(lt) document.querySelector('#turnoGroup .chip[data-val="'+lt+'"]')?.classList.add('selected');
+  showView('form');
+  document.getElementById('formScroll').scrollTop=0;
+  tick();
 }
 
-// ── HELPERS ───────────────────────────────────────────────
-function today() {
-  return new Date().toISOString().slice(0,10);
+/* ══ HELPERS ══ */
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const nowTime=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+function autoTurno(){const h=new Date().getHours();return h>=6&&h<14?'Mañana':h>=14&&h<22?'Tarde':'Noche'}
+
+/* ══ RED ══ */
+function netUI(){
+  document.getElementById('stripOffline').classList.toggle('on',!navigator.onLine);
+  updateQueueUI();
 }
-function nowTime() {
-  const d = new Date();
-  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
-}
-function autoTurno() {
-  const h = new Date().getHours();
-  if (h >= 6 && h < 14)  return 'Mañana';
-  if (h >= 14 && h < 22) return 'Tarde';
-  return 'Noche';
-}
+window.addEventListener('online',()=>{netUI();flushOutbox()});
+window.addEventListener('offline',netUI);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) flushOutbox(); });
+setInterval(()=>flushOutbox(),45000);
 
-// ── OFFLINE ───────────────────────────────────────────────
-window.addEventListener('online',  () => { document.body.classList.remove('offline'); trySendPending(); });
-window.addEventListener('offline', () => document.body.classList.add('offline'));
-async function trySendPending() {
-  const cfg = getConfig();
-  if (!cfg.site || !cfg.loggedIn) return;
-  const fallas = getLocalFallas().filter(f => f.estado === 'pendiente');
-  let enviados = 0;
-  for (const f of fallas) {
-    try {
-      await sendToSharePoint(f);
-      f.estado = 'enviado';
-      updateLocal(f);
-      enviados++;
-    } catch(e) {}
-  }
-  if (enviados) showToast(`${enviados} reporte(s) pendientes enviados a SharePoint`);
-}
-
-// ── INIT ──────────────────────────────────────────────────
-function init() {
-  // Fecha/hora actuales
-  document.getElementById('fFecha').value = today();
-  document.getElementById('fHora').value  = nowTime();
-
-  // Nombre guardado
-  const nombre = localStorage.getItem('cimplast_nombre');
-  if (nombre) document.getElementById('fNombre').value = nombre;
-
-  // Turno automático
-  const turno = autoTurno();
-  const chip  = document.querySelector(`#turnoGroup .chip[data-val="${turno}"]`);
-  if (chip) { chip.classList.add('selected'); document.getElementById('turnoHeader').textContent = turno; }
-
-  // AUTO-CONFIGURAR Google Sheets
-  const cfgAuto = getConfig();
-  if (!cfgAuto.loggedIn) {
-    localStorage.setItem('cimplast_cfg', JSON.stringify({ gsApi: 'https://script.google.com/macros/s/AKfycbwaw-wAoQh7iEv-tdNmnT7X17jvY3ZDx7x-WN3upqv0aq8uUSZSOFcP4pqwv9vdIqmTkA/exec', loggedIn: true }));
-  }
-  loadConfig();
-  checkSpWarning();
-  if (!navigator.onLine) document.body.classList.add('offline');
-}
-
-init();
+/* ══ INIT ══ */
+(function init(){
+  fillPlantas();
+  document.getElementById('fFecha').value=today();
+  document.getElementById('fHora').value=nowTime();
+  const n=localStorage.getItem('cimplast_nombre'); if(n) document.getElementById('fNombre').value=n;
+  const t=localStorage.getItem('cimplast_turno')||autoTurno();
+  document.querySelector('#turnoGroup .chip[data-val="'+t+'"]')?.classList.add('selected');
+  document.getElementById('turnoHeader').textContent=t;
+  netUI(); tick(); flushOutbox();
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
 </script>
 </body>
 </html>

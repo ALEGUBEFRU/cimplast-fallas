@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14110e">
+<link rel="manifest" href="manifest.json">
+<title>Cimplast · Mis órdenes de trabajo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#14110e;--surface:#1d1915;--surface2:#282219;--surface3:#332b21;
+  --border:#3a3126;--border-hi:#544736;
+  --accent:#f0a92c;--accent-soft:rgba(240,169,44,.13);
+  --danger:#e5574f;--warn:#e0a33a;--ok:#5cb46b;--info:#5b9bd5;
+  --text:#f6f1e8;--label:#c4b8a8;--muted:#8d8175;
+  --font:'Archivo',system-ui,-apple-system,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;
+  --r:12px;--r-lg:18px;--safe-b:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100dvh;display:flex;flex-direction:column}
+button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit}
+a{color:var(--accent);text-decoration:none}a:hover{color:#ffc35c}
+::selection{background:var(--accent);color:#000}
+
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:11px}
+.logo-mark{width:36px;height:36px;background:var(--accent);border-radius:9px;display:grid;place-items:center;font-size:19px;font-weight:800;color:#1a1409;letter-spacing:-.04em}
+.logo b{font-size:14px;font-weight:700;display:block;line-height:1.15}
+.logo span{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.icon-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;width:38px;height:38px;display:grid;place-items:center;font-size:15px;color:var(--label);transition:border-color .15s,color .15s}
+.icon-btn:hover{border-color:var(--border-hi);color:var(--text)}
+
+.strip{padding:9px 18px;font-size:12px;font-weight:600;display:none;align-items:center;gap:9px}
+.strip.on{display:flex}
+.strip-offline{background:rgba(229,87,79,.11);border-bottom:1px solid rgba(229,87,79,.3);color:#f0938c}
+.strip-queue{background:var(--accent-soft);border-bottom:1px solid rgba(240,169,44,.3);color:var(--accent)}
+
+/* selector de técnico */
+.picker{padding:26px 18px;display:flex;flex-direction:column;gap:12px;max-width:520px;margin:0 auto;width:100%}
+.picker h1{font-size:21px;font-weight:800;letter-spacing:-.02em}
+.picker p{font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:6px;text-wrap:pretty}
+.tec-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:15px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:border-color .15s,background .15s;text-align:left}
+.tec-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.tec-btn b{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.tec-btn span{font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em}
+
+/* resumen */
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:16px 18px 0;max-width:560px;margin:0 auto;width:100%}
+.sum{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;display:flex;flex-direction:column;gap:2px;border-left:2px solid var(--tone,var(--border-hi))}
+.sum .v{font-size:22px;font-weight:800;font-family:var(--mono);letter-spacing:-.03em;line-height:1.1}
+.sum .k{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+.tabs{display:flex;gap:6px;padding:16px 18px 0;max-width:560px;margin:0 auto;width:100%}
+.tab{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--border);transition:background .15s,color .15s,border-color .15s}
+.tab.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+.list{flex:1;overflow-y:auto;padding:14px 18px calc(32px + var(--safe-b));display:flex;flex-direction:column;gap:11px;max-width:560px;margin:0 auto;width:100%}
+.ot{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:15px;display:flex;flex-direction:column;gap:9px}
+.ot.alta{border-left:3px solid var(--danger)}
+.ot-top{display:flex;align-items:center;justify-content:space-between;gap:9px}
+.ot-num{font-size:12px;font-weight:700;color:var(--accent);font-family:var(--mono)}
+.tag{font-size:10px;font-weight:700;padding:4px 9px;border-radius:100px;white-space:nowrap}
+.t-alta{background:rgba(229,87,79,.16);color:#f0938c}
+.t-media{background:var(--accent-soft);color:var(--accent)}
+.t-baja{background:rgba(92,180,107,.14);color:#8fd39a}
+.t-done{background:rgba(92,180,107,.14);color:#8fd39a}
+.ot-eq{font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.3}
+.ot-desc{font-size:13.5px;color:var(--label);line-height:1.55}
+.ot-meta{display:flex;gap:11px;flex-wrap:wrap;font-size:11px;color:var(--muted);font-family:var(--mono)}
+.ot-acts{display:flex;gap:8px;margin-top:3px}
+.act{flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:700;border:1.5px solid;transition:background .15s;min-height:46px}
+.a-start{border-color:rgba(91,155,213,.5);color:#8fbfe8;background:rgba(91,155,213,.07)}
+.a-start:hover{background:rgba(91,155,213,.18)}
+.a-close{border-color:rgba(92,180,107,.5);color:#8fd39a;background:rgba(92,180,107,.07)}
+.a-close:hover{background:rgba(92,180,107,.18)}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:var(--muted);padding:60px 32px;text-align:center}
+.empty .big{font-size:32px;opacity:.5}
+.empty p{font-size:13.5px;line-height:1.6;max-width:280px;text-wrap:pretty}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(10,8,6,.8);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+.overlay.show{display:flex}
+.modal{background:var(--surface);border-top:1px solid var(--border);border-radius:22px 22px 0 0;width:100%;max-width:560px;max-height:92vh;display:flex;flex-direction:column}
+@media(min-width:560px){.overlay{align-items:center}.modal{border-radius:var(--r-lg);border:1px solid var(--border)}}
+.modal-h{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-t{font-size:15px;font-weight:700}
+.modal-x{width:32px;height:32px;border-radius:9px;background:var(--surface2);color:var(--muted);display:grid;place-items:center}
+.modal-b{padding:20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.modal-f{padding:14px 20px calc(18px + var(--safe-b));border-top:1px solid var(--border);display:flex;gap:10px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12.5px;font-weight:600;color:var(--label)}
+.field input,.field textarea{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:16px;padding:12px 13px;outline:none;width:100%;transition:border-color .15s}
+.field input::placeholder,.field textarea::placeholder{color:#6d6255}
+.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field textarea{min-height:92px;resize:vertical;line-height:1.55}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.origin{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r);padding:12px 13px}
+.origin .l{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.origin .e{font-size:15px;font-weight:700;margin-top:2px}
+.origin .d{font-size:12.5px;color:var(--label);margin-top:3px;line-height:1.5}
+.btn{flex:1;font-size:15px;font-weight:800;padding:15px;border-radius:var(--r);transition:filter .15s}
+.btn.green{background:var(--ok);color:#0d1a0f}
+.btn.green:hover{filter:brightness(1.07)}
+.btn.ghost{flex:0 0 auto;background:var(--surface2);border:1px solid var(--border);color:var(--label);font-size:14px;font-weight:600;padding:15px 18px}
+.toast{position:fixed;left:50%;bottom:calc(24px + var(--safe-b));transform:translateX(-50%) translateY(12px);background:var(--surface3);border:1px solid var(--border-hi);border-radius:14px;padding:13px 18px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:999;max-width:calc(100vw - 32px);line-height:1.4;box-shadow:0 8px 28px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(92,180,107,.5);color:#8fd39a}
+.toast.err{border-color:rgba(229,87,79,.5);color:#f0938c}
+.spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,.25);border-top-color:currentColor;border-radius:100px;animation:spin .6s linear infinite;display:inline-block;vertical-align:-3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">C</div>
+    <div><b id="hdrNombre">Cimplast</b><span id="hdrSub">Mis órdenes de trabajo</span></div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="icon-btn" onclick="recargar()" title="Actualizar">↻</button>
+    <button class="icon-btn" onclick="cambiarTecnico()" title="Cambiar técnico">👤</button>
+  </div>
+</header>
+
+<div class="strip strip-offline" id="stripOffline">Sin conexión — los cierres quedan en cola y se envían solos.</div>
+<div class="strip strip-queue" id="stripQueue"><span id="queueTxt"></span></div>
+<div class="toast" id="toast"></div>
+
+<!-- selector -->
+<div id="viewPicker" style="display:flex;flex-direction:column;flex:1">
+  <div class="picker">
+    <h1>¿Quién sos?</h1>
+    <p>Elegí tu nombre una sola vez. Queda guardado en este teléfono.</p>
+    <div id="tecList" style="display:flex;flex-direction:column;gap:9px"></div>
+  </div>
+</div>
+
+<!-- órdenes -->
+<div id="viewOTs" style="display:none;flex-direction:column;flex:1">
+  <div class="summary" id="summary"></div>
+  <div class="tabs">
+    <button class="tab active" data-f="activas" onclick="setTab(this)">Activas</button>
+    <button class="tab" data-f="hoy" onclick="setTab(this)">Para hoy</button>
+    <button class="tab" data-f="cerradas" onclick="setTab(this)">Cerradas</button>
+  </div>
+  <div class="list" id="otList"></div>
+</div>
+
+<!-- modal cierre -->
+<div class="overlay" id="modalCerrar"><div class="modal">
+  <div class="modal-h"><span class="modal-t">Cerrar orden de trabajo</span><button class="modal-x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b">
+    <div class="origin"><div class="l">OT</div><div class="e" id="cNro">—</div><div class="d" id="cEquipo">—</div></div>
+    <div class="row-2">
+      <div class="field"><label>Horas reales *</label><input type="number" id="cHoras" min="0" step="0.5" placeholder="3.5" inputmode="decimal"></div>
+      <div class="field"><label>Fecha de cierre</label><input type="date" id="cFecha"></div>
+    </div>
+    <div class="field"><label>Repuestos usados</label><textarea id="cRepuestos" placeholder="Rodamiento 6205 x1, retén 40x60 x2…" style="min-height:64px"></textarea></div>
+    <div class="field"><label>Costo (Gs.)</label><input type="number" id="cCosto" min="0" placeholder="150000" inputmode="numeric"></div>
+    <div class="field"><label>Qué falló y qué hiciste *</label><textarea id="cObs" placeholder="Causa de la falla, trabajo realizado y qué recomendás para que no se repita."></textarea></div>
+  </div>
+  <div class="modal-f">
+    <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+    <button class="btn green" id="btnCerrar" onclick="confirmarCierre()">Confirmar cierre</button>
+  </div>
+</div></div>
+
+<script src="datos.js"></script>
+<script>
+const D=window.CIMPLAST_DATA, API=D.api, TECNICOS=D.tecnicos;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=n=>Number(n)||0;
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+let yo=null, ots=[], tab='activas', otActual=null;
+
+/* cola offline simple */
+const Q={
+  get(){ try{return JSON.parse(localStorage.getItem('cimplast_tec_q')||'[]')}catch(e){return []} },
+  set(v){ localStorage.setItem('cimplast_tec_q',JSON.stringify(v)); ui(); },
+  add(b){ const q=this.get(); q.push(b); this.set(q); }
+};
+async function flush(){
+  if(!navigator.onLine) return;
+  const q=Q.get(); if(!q.length) return;
+  const rest=[]; let ok=0;
+  for(let i=0;i<q.length;i++){
+    try{
+      const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(q[i])});
+      const d=await r.json(); if(d.ok===false) throw new Error(d.error);
+      ok++;
+    }catch(e){ rest.push(...q.slice(i)); break; }
+  }
+  Q.set(rest);
+  if(ok){ showToast(ok+' cambio(s) sincronizado(s)'); recargar(); }
+}
+function ui(){
+  const n=Q.get().length;
+  document.getElementById('stripQueue').classList.toggle('on',n>0);
+  document.getElementById('queueTxt').textContent=n===1?'1 cambio esperando sincronizar':n+' cambios esperando sincronizar';
+  document.getElementById('stripOffline').classList.toggle('on',!navigator.onLine);
+}
+
+/* técnico */
+function pintarPicker(){
+  document.getElementById('tecList').innerHTML=TECNICOS.map(t=>
+    '<button class="tec-btn" data-n="'+esc(t.nombre)+'"><b>'+esc(t.nombre)+'</b><span>'+esc(t.esp)+'</span></button>').join('');
+  document.querySelectorAll('.tec-btn').forEach(b=>b.onclick=()=>elegir(b.dataset.n));
+}
+function elegir(nombre){
+  yo=nombre; localStorage.setItem('cimplast_tecnico',nombre);
+  document.getElementById('hdrNombre').textContent=nombre;
+  document.getElementById('hdrSub').textContent='Mis órdenes de trabajo';
+  document.getElementById('viewPicker').style.display='none';
+  document.getElementById('viewOTs').style.display='flex';
+  cargarCache(); recargar();
+}
+function cambiarTecnico(){
+  localStorage.removeItem('cimplast_tecnico'); yo=null; ots=[];
+  document.getElementById('hdrNombre').textContent='Cimplast';
+  document.getElementById('hdrSub').textContent='Mis órdenes de trabajo';
+  document.getElementById('viewOTs').style.display='none';
+  document.getElementById('viewPicker').style.display='flex';
+}
+
+/* datos */
+function cargarCache(){
+  try{ const c=JSON.parse(localStorage.getItem('cimplast_tec_cache')||'null'); if(c){ ots=c; render(); } }catch(e){}
+}
+async function recargar(){
+  if(!yo) return;
+  try{
+    const r=await fetch(API+'?accion=ots');
+    const d=await r.json();
+    ots=(d.ots||[]).filter(o=>D.tieneTecnico(o.Tecnico,yo));
+    try{localStorage.setItem('cimplast_tec_cache',JSON.stringify(ots))}catch(e){}
+    render();
+  }catch(e){ if(!ots.length) showToast('Sin conexión y sin datos guardados','err'); }
+  flush();
+}
+
+function setTab(b){ tab=b.dataset.f; document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===b)); render(); }
+
+function render(){
+  const abiertas=ots.filter(o=>o.Estado!=='Cerrada');
+  const hoy=ots.filter(o=>o.Estado!=='Cerrada'&&(o.FechaProgramada||'').toString().slice(0,10)<=today());
+  const cerradas=ots.filter(o=>o.Estado==='Cerrada');
+  const horas=cerradas.reduce((a,o)=>a+num(o.HorasReales),0);
+
+  document.getElementById('summary').innerHTML=
+     sum('Asignadas',abiertas.length,abiertas.length?'var(--accent)':'var(--ok)')
+    +sum('Vencen hoy',hoy.length,hoy.length?'var(--danger)':'var(--ok)')
+    +sum('Horas cargadas',horas.toFixed(horas%1?1:0),'var(--info)');
+
+  const lista=tab==='cerradas'?cerradas:tab==='hoy'?hoy:abiertas;
+  const orden={Alta:0,Media:1,Baja:2};
+  lista.sort((a,b)=>(orden[a.Prioridad]??1)-(orden[b.Prioridad]??1));
+
+  const el=document.getElementById('otList');
+  if(!lista.length){
+    el.innerHTML='<div class="empty"><div class="big">✓</div><p>'+
+      (tab==='cerradas'?'Todavía no cerraste ninguna OT.':tab==='hoy'?'Nada vencido para hoy.':'No tenés órdenes asignadas.')+'</p></div>';
+    return;
+  }
+  el.innerHTML=lista.map(o=>{
+    const p=o.Prioridad||'Media', cerrada=o.Estado==='Cerrada';
+    const cls=cerrada?'t-done':p==='Alta'?'t-alta':p==='Baja'?'t-baja':'t-media';
+    return '<div class="ot'+(p==='Alta'&&!cerrada?' alta':'')+'">'
+      +'<div class="ot-top"><span class="ot-num">'+esc(o.NroOT)+'</span><span class="tag '+cls+'">'+(cerrada?'Cerrada':esc(p))+'</span></div>'
+      +'<div class="ot-eq">'+esc(o.Equipo||'—')+'</div>'
+      +'<div class="ot-desc">'+esc(o.Descripcion||'Sin descripción')+'</div>'
+      +'<div class="ot-meta"><span>'+esc(o.Planta||'')+'</span><span>'+esc(o.Tipo||'')+'</span>'
+      +(D.tecnicosDe(o.Tecnico).length>1?'<span>con '+esc(D.tecnicosDe(o.Tecnico).filter(n=>n.toLowerCase()!==yo.toLowerCase()).join(', '))+'</span>':'')
+      +(o.FechaProgramada?'<span>'+esc(D.fmtFecha(o.FechaProgramada))+'</span>':'')
+      +(o.HorasEstimadas?'<span>'+esc(o.HorasEstimadas)+'h est.</span>':'')
+      +(cerrada&&o.HorasReales?'<span>'+esc(o.HorasReales)+'h reales</span>':'')+'</div>'
+      +(cerrada?'':'<div class="ot-acts">'
+        +(o.Estado==='Abierta'?'<button class="act a-start" data-a="start" data-id="'+esc(o.NroOT)+'">Empezar</button>':'')
+        +'<button class="act a-close" data-a="close" data-id="'+esc(o.NroOT)+'">Cerrar OT</button></div>')
+      +'</div>';
+  }).join('');
+  el.querySelectorAll('.act').forEach(b=>b.onclick=()=>{
+    b.dataset.a==='start'?empezar(b.dataset.id):abrirCierre(b.dataset.id);
+  });
+}
+const sum=(k,v,t)=>'<div class="sum" style="--tone:'+t+'"><span class="v">'+v+'</span><span class="k">'+k+'</span></div>';
+
+async function empezar(nro){
+  const o=ots.find(x=>x.NroOT===nro); if(!o) return;
+  o.Estado='En curso'; render();
+  const body={accion:'estadoOT',nroOT:nro,id:nro,estado:'En curso'};
+  if(!navigator.onLine){ Q.add(body); showToast('Guardado — se envía al volver la red'); return; }
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+    const d=await r.json(); if(d.ok===false) throw new Error(d.error);
+    showToast('OT '+nro+' en curso');
+  }catch(e){ Q.add(body); showToast('Sin conexión — queda en cola'); }
+}
+
+function abrirCierre(nro){
+  otActual=ots.find(x=>x.NroOT===nro); if(!otActual) return;
+  document.getElementById('cNro').textContent=nro;
+  document.getElementById('cEquipo').textContent=(otActual.Equipo||'')+' · '+(otActual.Planta||'');
+  ['cHoras','cRepuestos','cCosto','cObs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cFecha').value=today();
+  if(otActual.HorasEstimadas) document.getElementById('cHoras').placeholder='Estimado: '+otActual.HorasEstimadas+'h';
+  document.getElementById('modalCerrar').classList.add('show');
+}
+function closeModal(){ document.getElementById('modalCerrar').classList.remove('show'); }
+
+async function confirmarCierre(){
+  const horas=document.getElementById('cHoras').value, obs=document.getElementById('cObs').value.trim();
+  if(!horas){ showToast('Cargá las horas reales','err'); return; }
+  if(!obs){ showToast('Contá qué falló y qué hiciste','err'); return; }
+  const btn=document.getElementById('btnCerrar'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Cerrando…';
+  const body={
+    accion:'cerrarOT', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
+    horasReales:parseFloat(horas), repuestos:document.getElementById('cRepuestos').value.trim(),
+    costo:parseFloat(document.getElementById('cCosto').value)||0,
+    observaciones:obs, fechaCierre:document.getElementById('cFecha').value
+  };
+  otActual.Estado='Cerrada'; otActual.HorasReales=horas; otActual.Costo=body.costo;
+  try{
+    if(!navigator.onLine) throw new Error('offline');
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+    const d=await r.json(); if(d.ok===false) throw new Error(d.error);
+    showToast('OT '+body.otNro+' cerrada');
+  }catch(e){ Q.add(body); showToast('Sin conexión — el cierre se envía al volver la red'); }
+  try{localStorage.setItem('cimplast_tec_cache',JSON.stringify(ots))}catch(e){}
+  btn.disabled=false; btn.textContent='Confirmar cierre';
+  closeModal(); render();
+}
+
+let tt;
+function showToast(m,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=(type==='ok'?'✓ ':'⚠ ')+m; t.className='toast '+type+' show';
+  clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),3600);
+}
+window.addEventListener('online',()=>{ui();flush()});
+window.addEventListener('offline',ui);
+document.getElementById('modalCerrar').addEventListener('click',e=>{ if(e.target.id==='modalCerrar') closeModal() });
+setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },90000);
+
+(function init(){
+  pintarPicker(); ui();
+  const g=localStorage.getItem('cimplast_tecnico');
+  if(g&&TECNICOS.some(t=>t.nombre===g)) elegir(g);
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
