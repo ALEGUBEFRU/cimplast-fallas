@@ -1,1405 +1,1608 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cimplast · Supervisores</title>
-<style>
-/* ── TOKENS ──────────────────────────────────────────────── */
-:root {
-  --bg:        #0d1117;
-  --surface:   #161b22;
-  --surface2:  #21262d;
-  --border:    #30363d;
-  --accent:    #f59e0b;
-  --accent-dk: #b45309;
-  --blue:      #3b82f6;
-  --ok:        #22c55e;
-  --danger:    #ef4444;
-  --muted:     #8b949e;
-  --label:     #c9d1d9;
-  --text:      #f0f6fc;
-  --col-pend:  #f59e0b;
-  --col-curso: #3b82f6;
-  --col-done:  #22c55e;
-  --font:      'Inter', system-ui, sans-serif;
-  --mono:      'JetBrains Mono', monospace;
-  --r:         8px;
-  --r-lg:      12px;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 15px; }
-body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; display: flex; flex-direction: column; }
-button { cursor: pointer; font-family: inherit; border: none; background: none; }
-input, select, textarea { font-family: inherit; }
-a { color: inherit; text-decoration: none; }
-
-/* ── TOPBAR ────────────────────────────────────────────── */
-.topbar {
-  background: var(--surface);
-  border-bottom: 2px solid var(--accent);
-  padding: 0 24px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo-mark {
-  width: 32px; height: 32px;
-  background: var(--accent);
-  border-radius: 6px;
-  display: grid; place-items: center;
-  font-size: 16px; font-weight: 900; color: #000;
-}
-.logo-text { font-size: 14px; font-weight: 700; }
-.logo-sub  { font-size: 10px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
-
-.topbar-nav {
-  display: flex;
-  gap: 2px;
-  margin-left: 24px;
-}
-.nav-btn {
-  padding: 6px 14px;
-  border-radius: var(--r);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  transition: background .15s, color .15s;
-}
-.nav-btn:hover  { background: var(--surface2); color: var(--text); }
-.nav-btn.active { background: var(--surface2); color: var(--accent); }
-
-.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-.badge-count {
-  background: var(--danger);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 20px;
-  padding: 2px 7px;
-  min-width: 20px;
-  text-align: center;
-}
-.btn-refresh {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 6px 12px;
-  font-size: 12px;
-  color: var(--label);
-  display: flex; align-items: center; gap: 6px;
-  transition: border-color .15s;
-}
-.btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
-.spin { display: inline-block; }
-.spin.loading { animation: spin .6s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── VIEWS ─────────────────────────────────────────────── */
-.view { display: none; flex: 1; flex-direction: column; }
-.view.active { display: flex; }
-
-/* ── FILTERS BAR ────────────────────────────────────────── */
-.filters {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 24px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.filter-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
-.filter-input {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  color: var(--text);
-  font-size: 13px;
-  padding: 6px 10px;
-  outline: none;
-  transition: border-color .15s;
-}
-.filter-input:focus { border-color: var(--accent); }
-.filter-input[type=date] { width: 140px; }
-.filter-input[type=text] { width: 200px; }
-.filter-sep { color: var(--border); font-size: 18px; }
-.btn-clear {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 6px 12px;
-  font-size: 12px;
-  color: var(--muted);
-  transition: all .15s;
-}
-.btn-clear:hover { border-color: var(--danger); color: var(--danger); }
-
-/* ── KANBAN ─────────────────────────────────────────────── */
-.kanban-wrap {
-  flex: 1;
-  overflow-x: auto;
-  padding: 20px 24px 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-.kanban-section-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.kanban-section-title::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-.kanban-board {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  min-width: 900px;
-}
-.kanban-col {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  display: flex;
-  flex-direction: column;
-  min-height: 200px;
-  max-height: calc(100vh - 260px);
-  overflow: hidden;
-}
-.kanban-col-header {
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: var(--surface);
-  z-index: 1;
-}
-.col-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.col-title { font-size: 13px; font-weight: 700; flex: 1; }
-.col-count {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--muted);
-  padding: 2px 8px;
-  font-family: var(--mono);
-}
-.kanban-col-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.kanban-col-body::-webkit-scrollbar { width: 4px; }
-.kanban-col-body::-webkit-scrollbar-track { background: transparent; }
-.kanban-col-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-/* ── CARDS ──────────────────────────────────────────────── */
-.card {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: border-color .15s, box-shadow .15s;
-  cursor: default;
-}
-.card:hover { border-color: #484f58; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-.card.urgent { border-left: 3px solid var(--danger); }
-.card.parado { border-left: 3px solid var(--danger); }
-
-.card-top { display: flex; align-items: flex-start; gap: 6px; justify-content: space-between; }
-.card-num { font-size: 11px; font-weight: 700; color: var(--accent); font-family: var(--mono); }
-.card-prio {
-  font-size: 10px; font-weight: 700;
-  padding: 2px 7px; border-radius: 20px;
-  white-space: nowrap;
-}
-.prio-alta   { background: rgba(239,68,68,.15);  color: #fca5a5; }
-.prio-media  { background: rgba(245,158,11,.15); color: var(--accent); }
-.prio-baja   { background: rgba(34,197,94,.15);  color: var(--ok); }
-.prio-parado { background: rgba(239,68,68,.2);   color: #ff6b6b; }
-
-.card-equipo { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
-.card-desc   { font-size: 12px; color: var(--muted); line-height: 1.4; }
-.card-meta   { display: flex; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--muted); font-family: var(--mono); }
-.card-meta span { display: flex; align-items: center; gap: 3px; }
-
-.card-actions { display: flex; gap: 6px; margin-top: 2px; }
-.card-btn {
-  flex: 1;
-  padding: 7px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  border: 1px solid;
-  transition: all .15s;
-  text-align: center;
-}
-.card-btn-ot     { border-color: var(--accent);  color: var(--accent);  background: rgba(245,158,11,.06); }
-.card-btn-ot:hover { background: rgba(245,158,11,.15); }
-.card-btn-close  { border-color: var(--ok);      color: var(--ok);      background: rgba(34,197,94,.06); }
-.card-btn-close:hover { background: rgba(34,197,94,.15); }
-.card-btn-copy   { border-color: var(--blue);    color: var(--blue);    background: rgba(59,130,246,.06); }
-.card-btn-copy:hover { background: rgba(59,130,246,.15); }
-
-/* empty col */
-.col-empty {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  color: var(--border);
-  padding: 20px;
-  text-align: center;
-}
-
-/* ── MODAL ──────────────────────────────────────────────── */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.7);
-  z-index: 200;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.modal-overlay.show { display: flex; }
-.modal {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  width: 100%;
-  max-width: 540px;
-  max-height: 90vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-.modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.modal-title { font-size: 15px; font-weight: 700; }
-.modal-close {
-  width: 28px; height: 28px;
-  border-radius: 6px;
-  background: var(--surface2);
-  color: var(--muted);
-  font-size: 16px;
-  display: grid; place-items: center;
-  transition: background .15s;
-}
-.modal-close:hover { background: var(--border); color: var(--text); }
-.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-.modal-footer {
-  padding: 14px 20px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-/* form fields in modal */
-.field { display: flex; flex-direction: column; gap: 5px; }
-.field label { font-size: 12px; font-weight: 600; color: var(--label); }
-.field input, .field textarea, .field select {
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: var(--r);
-  color: var(--text);
-  font-size: 14px;
-  padding: 9px 12px;
-  outline: none;
-  transition: border-color .15s;
-  width: 100%;
-}
-.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
-.field textarea { min-height: 80px; resize: vertical; }
-.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-.origen-card {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--r);
-  padding: 10px 12px;
-}
-.origen-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.origen-equipo { font-size: 15px; font-weight: 700; margin-top: 2px; }
-.origen-desc   { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-.chip-group { display: flex; gap: 6px; flex-wrap: wrap; }
-.chip {
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 6px;
-  padding: 7px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  transition: all .15s;
-}
-.chip.selected { background: rgba(245,158,11,.12); border-color: var(--accent); color: var(--accent); }
-
-/* modal buttons */
-.btn-primary {
-  background: var(--accent);
-  color: #000;
-  font-size: 13px;
-  font-weight: 800;
-  padding: 10px 20px;
-  border-radius: var(--r);
-  transition: background .15s;
-}
-.btn-primary:disabled { background: var(--border); color: var(--muted); }
-.btn-primary.green { background: var(--ok); color: #fff; }
-.btn-secondary {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--label);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 10px 16px;
-  border-radius: var(--r);
-  transition: all .15s;
-}
-.btn-secondary:hover { border-color: var(--muted); }
-
-/* ── TOAST ──────────────────────────────────────────────── */
-.toast {
-  position: fixed;
-  bottom: 24px; right: 24px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 12px 18px;
-  font-size: 13px;
-  font-weight: 600;
-  display: flex; align-items: center; gap: 8px;
-  opacity: 0; pointer-events: none;
-  transform: translateY(10px);
-  transition: opacity .25s, transform .25s;
-  z-index: 999;
-}
-.toast.show { opacity: 1; transform: translateY(0); }
-.toast.ok  { border-color: var(--ok);    color: var(--ok); }
-.toast.err { border-color: var(--danger); color: var(--danger); }
-
-/* ── WHATSAPP COPY ──────────────────────────────────────── */
-.wa-preview {
-  background: #1a2b1a;
-  border: 1px solid #2d4a2d;
-  border-radius: var(--r);
-  padding: 14px;
-  font-family: var(--mono);
-  font-size: 13px;
-  color: #a3d9a5;
-  line-height: 1.7;
-  white-space: pre-wrap;
-  user-select: all;
-}
-
-/* ── LOADING ────────────────────────────────────────────── */
-.loading-overlay {
-  position: fixed; inset: 0;
-  background: rgba(13,17,23,.8);
-  z-index: 300;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 12px;
-  font-size: 13px;
-  color: var(--muted);
-}
-.loading-overlay.show { display: flex; }
-.loader {
-  width: 36px; height: 36px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin .6s linear infinite;
-}
-
-/* ── select arrow ───────────────────────────────────────── */
-.select-wrap { position: relative; }
-.select-wrap::after {
-  content: '▾'; position: absolute; right: 10px; top: 50%;
-  transform: translateY(-50%); color: var(--muted); pointer-events: none;
-}
-.select-wrap select { padding-right: 28px; appearance: none; -webkit-appearance: none; }
-
-@media (max-width: 900px) {
-  .kanban-board { grid-template-columns: 1fr; min-width: unset; }
-  .kanban-col { max-height: 400px; }
-}
-</style>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="a7e03995-ae57-48b4-9fdc-f4652832bb9d"></script>
 </head>
 <body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cimplast · Panel de Supervisores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("df662c95-7463-4b8e-94b6-a4af8eec36f4") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("3c4d346f-fc77-4f2c-99c9-8eed477b1f25") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("0f9d211d-f3cb-4342-af66-8a109ac22731") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("9b14efd0-7353-433d-a506-f4038d9eaea5") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("0323ea97-e1ef-4687-97e3-2900410f7100") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("b0385a4c-d8c6-4022-82de-1df35dc2b12a") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("df662c95-7463-4b8e-94b6-a4af8eec36f4") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("3c4d346f-fc77-4f2c-99c9-8eed477b1f25") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("0f9d211d-f3cb-4342-af66-8a109ac22731") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("9b14efd0-7353-433d-a506-f4038d9eaea5") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("0323ea97-e1ef-4687-97e3-2900410f7100") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("b0385a4c-d8c6-4022-82de-1df35dc2b12a") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("87a1a1e2-e50e-447d-b6bb-abb46826c5a7") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("bc7dcd57-61aa-4fda-8beb-8e99159aa48d") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("a8c8cdd0-6214-44ac-b98b-cc09b83b2965") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("78262130-09ef-4bbb-b92c-05474e7f509b") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("451f1200-e7e9-4f30-aa78-26919b84b09c") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("c9cf8616-c747-465a-8f9f-b616ff744f93") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("87a1a1e2-e50e-447d-b6bb-abb46826c5a7") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("bc7dcd57-61aa-4fda-8beb-8e99159aa48d") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("a8c8cdd0-6214-44ac-b98b-cc09b83b2965") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("78262130-09ef-4bbb-b92c-05474e7f509b") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("451f1200-e7e9-4f30-aa78-26919b84b09c") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c9cf8616-c747-465a-8f9f-b616ff744f93") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("87a1a1e2-e50e-447d-b6bb-abb46826c5a7") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("bc7dcd57-61aa-4fda-8beb-8e99159aa48d") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("a8c8cdd0-6214-44ac-b98b-cc09b83b2965") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("78262130-09ef-4bbb-b92c-05474e7f509b") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("451f1200-e7e9-4f30-aa78-26919b84b09c") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("c9cf8616-c747-465a-8f9f-b616ff744f93") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("87a1a1e2-e50e-447d-b6bb-abb46826c5a7") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("bc7dcd57-61aa-4fda-8beb-8e99159aa48d") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("a8c8cdd0-6214-44ac-b98b-cc09b83b2965") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("78262130-09ef-4bbb-b92c-05474e7f509b") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("451f1200-e7e9-4f30-aa78-26919b84b09c") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("c9cf8616-c747-465a-8f9f-b616ff744f93") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("87a1a1e2-e50e-447d-b6bb-abb46826c5a7") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("bc7dcd57-61aa-4fda-8beb-8e99159aa48d") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("a8c8cdd0-6214-44ac-b98b-cc09b83b2965") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("78262130-09ef-4bbb-b92c-05474e7f509b") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("451f1200-e7e9-4f30-aa78-26919b84b09c") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("c9cf8616-c747-465a-8f9f-b616ff744f93") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0c1016; color: #eef2f7; font-family: 'Manrope', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #f0a92e; text-decoration: none; }
+  a:hover { color: #ffc457; }
+  button { font-family: inherit; border: none; background: none; cursor: pointer; color: inherit; }
+  input, select, textarea { font-family: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #2b3444; border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+</style>
+</helmet>
 
-<!-- LOADING -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loader"></div>
-  <span id="loadingMsg">Cargando datos…</span>
+<div style="min-height: 100vh; display: flex; flex-direction: column; background: #0c1016; font-family: 'Manrope', system-ui, sans-serif; color: #eef2f7">
+
+  <sc-if value="{{ needsPin }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 400; background: #0c1016; display: flex; align-items: center; justify-content: center; padding: 24px">
+      <div style="width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 20px; align-items: center; text-align: center">
+        <div style="width: 52px; height: 52px; border-radius: 14px; background: #f0a92e; color: #12161d; display: grid; place-items: center; font-size: 26px; font-weight: 800">C</div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="font-size: 19px; font-weight: 800; letter-spacing: -0.01em">Panel de supervisores</div>
+          <div style="font-size: 13px; color: #8b96a8; line-height: 1.5">Ingresá tu PIN para registrar quién genera y cierra cada orden.</div>
+        </div>
+        <input type="password" inputmode="numeric" maxlength="6" placeholder="• • • •" value="{{ pinInput }}" sc-camel-on-change="{{ onPinInput }}" sc-camel-on-key-down="{{ onPinKey }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 22px; font-family: 'JetBrains Mono', monospace; letter-spacing: .4em; text-align: center; padding: 16px; outline: none">
+        <sc-if value="{{ pinError }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size: 12px; color: #f0776b; font-weight: 600">PIN incorrecto</div>
+        </sc-if>
+        <button sc-camel-on-click="{{ onPinSubmit }}" style="width: 100%; background: #f0a92e; color: #12161d; font-size: 15px; font-weight: 800; padding: 14px; border-radius: 12px">Entrar</button>
+        <div style="font-size: 11px; color: #5e6a7d; font-family: 'JetBrains Mono', monospace; line-height: 1.7">{{ pinHint }}</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <header style="background: #12161d; border-bottom: 1px solid #232c39; box-shadow: inset 0 -2px 0 #f0a92e; padding: 0 22px; height: 60px; display: flex; align-items: center; gap: 18px; position: sticky; top: 0; z-index: 100">
+    <div style="display: flex; align-items: center; gap: 11px">
+      <div style="width: 34px; height: 34px; border-radius: 9px; background: #f0a92e; color: #12161d; display: grid; place-items: center; font-size: 17px; font-weight: 800">C</div>
+      <div style="display: flex; flex-direction: column; line-height: 1.25">
+        <span style="font-size: 14px; font-weight: 800; letter-spacing: -0.01em">Cimplast</span>
+        <span style="font-size: 10px; color: #6f7c90; letter-spacing: .1em; text-transform: uppercase; font-weight: 600">Mantenimiento</span>
+      </div>
+    </div>
+
+    <nav style="display: flex; gap: 3px; margin-left: 14px">
+      <button sc-camel-on-click="{{ goKanban }}" style="{{ tabKanban }}">Tablero</button>
+      <button sc-camel-on-click="{{ goKpis }}" style="{{ tabKpis }}">Indicadores</button>
+      <button sc-camel-on-click="{{ goTecnicos }}" style="{{ tabTecnicos }}">Técnicos</button>
+      <button sc-camel-on-click="{{ goNueva }}" style="{{ tabNueva }}">Nueva OT</button>
+    </nav>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 10px">
+      <sc-if value="{{ hasPendientes }}" hint-placeholder-val="{{ false }}">
+        <span style="background: rgba(240,119,107,.14); color: #f0776b; border: 1px solid rgba(240,119,107,.3); font-size: 11px; font-weight: 700; border-radius: 20px; padding: 3px 10px; font-family: 'JetBrains Mono', monospace">{{ pendCount }} pendientes</span>
+      </sc-if>
+      <span style="font-size: 11px; color: #5e6a7d; font-family: 'JetBrains Mono', monospace">{{ lastSync }}</span>
+      <button sc-camel-on-click="{{ onReload }}" style="background: #1b222c; border: 1px solid #2b3444; border-radius: 9px; padding: 7px 13px; font-size: 12px; font-weight: 600; color: #a9b4c4; display: flex; align-items: center; gap: 7px" style-hover="border-color: #f0a92e; color: #f0a92e">
+        <span style="{{ spinStyle }}">↻</span> Actualizar
+      </button>
+      <div style="display: flex; align-items: center; gap: 8px; padding-left: 10px; border-left: 1px solid #232c39">
+        <div style="width: 28px; height: 28px; border-radius: 50%; background: #1b222c; border: 1px solid #2b3444; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #a9b4c4">{{ userInitials }}</div>
+        <button sc-camel-on-click="{{ onLogout }}" style="font-size: 11px; color: #5e6a7d; font-weight: 600" style-hover="color: #f0776b">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ TABLERO ═══ -->
+  <sc-if value="{{ isKanban }}" hint-placeholder-val="{{ true }}">
+  <div style="flex: 1; display: flex; flex-direction: column">
+
+    <div style="background: #12161d; border-bottom: 1px solid #232c39; padding: 11px 22px; display: flex; align-items: center; gap: 9px; flex-wrap: wrap">
+      <span style="font-size: 10px; font-weight: 700; color: #6f7c90; letter-spacing: .1em; text-transform: uppercase">Filtrar</span>
+      <input type="date" value="{{ fDesde }}" sc-camel-on-change="{{ onDesde }}" style="background: #1b222c; border: 1px solid #2b3444; border-radius: 8px; color: #eef2f7; font-size: 12.5px; padding: 7px 10px; outline: none; width: 145px; font-family: 'JetBrains Mono', monospace">
+      <span style="color: #465266; font-size: 12px">→</span>
+      <input type="date" value="{{ fHasta }}" sc-camel-on-change="{{ onHasta }}" style="background: #1b222c; border: 1px solid #2b3444; border-radius: 8px; color: #eef2f7; font-size: 12.5px; padding: 7px 10px; outline: none; width: 145px; font-family: 'JetBrains Mono', monospace">
+      <span style="width: 1px; height: 20px; background: #2b3444; margin: 0 4px"></span>
+      <sc-raw-select value="{{ fPlanta }}" sc-camel-on-change="{{ onPlanta }}" style="background: #1b222c; border: 1px solid #2b3444; border-radius: 8px; color: #eef2f7; font-size: 12.5px; padding: 7px 10px; outline: none; width: 160px">
+        <option value="">Todas las plantas</option>
+        <sc-for list="{{ plantas }}" as="p" hint-placeholder-count="5">
+          <option value="{{ p }}">{{ p }}</option>
+        </sc-for>
+      </sc-raw-select>
+      <sc-raw-select value="{{ fTecnico }}" sc-camel-on-change="{{ onTecnicoFiltro }}" style="background: #1b222c; border: 1px solid #2b3444; border-radius: 8px; color: #eef2f7; font-size: 12.5px; padding: 7px 10px; outline: none; width: 175px">
+        <option value="">Todos los técnicos</option>
+        <sc-for list="{{ tecnicoNombres }}" as="t" hint-placeholder-count="6">
+          <option value="{{ t }}">{{ t }}</option>
+        </sc-for>
+      </sc-raw-select>
+      <input type="text" placeholder="Buscar equipo…" value="{{ fEquipo }}" sc-camel-on-change="{{ onEquipo }}" style="background: #1b222c; border: 1px solid #2b3444; border-radius: 8px; color: #eef2f7; font-size: 12.5px; padding: 7px 12px; outline: none; width: 200px">
+      <button sc-camel-on-click="{{ onLimpiar }}" style="background: transparent; border: 1px solid #2b3444; border-radius: 8px; padding: 7px 12px; font-size: 12px; color: #6f7c90; font-weight: 600" style-hover="border-color: #f0776b; color: #f0776b">Limpiar</button>
+    </div>
+
+    <div style="padding: 16px 22px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px">
+      <sc-for list="{{ miniKpis }}" as="k" hint-placeholder-count="4">
+        <div style="background: #12161d; border: 1px solid #232c39; border-radius: 12px; padding: 13px 15px; display: flex; flex-direction: column; gap: 5px">
+          <span style="font-size: 10px; font-weight: 700; color: #6f7c90; letter-spacing: .09em; text-transform: uppercase">{{ k.label }}</span>
+          <span style="font-size: 25px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; {{ k.colorStyle }}">{{ k.value }}</span>
+          <span style="font-size: 11px; color: #5e6a7d">{{ k.sub }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex: 1; padding: 20px 22px 40px; display: flex; flex-direction: column; gap: 26px">
+
+      <div>
+        <div style="font-size: 10.5px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; color: #6f7c90; margin-bottom: 11px; display: flex; align-items: center; gap: 10px">
+          Reportes de fallas
+          <span style="flex: 1; height: 1px; background: #232c39"></span>
+          <span style="font-weight: 500; letter-spacing: 0; text-transform: none; color: #465266; font-size: 11px">Arrastrá una tarjeta a otra columna para avanzarla</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(280px, 1fr)); gap: 14px">
+          <sc-for list="{{ colsFallas }}" as="col" hint-placeholder-count="3">
+            <div sc-camel-on-drag-over="{{ col.onDragOver }}" sc-camel-on-drop="{{ col.onDrop }}" sc-camel-on-drag-leave="{{ col.onDragLeave }}" style="{{ col.style }}">
+              <div style="padding: 12px 14px; display: flex; align-items: center; gap: 9px; border-bottom: 1px solid #232c39">
+                <span style="width: 8px; height: 8px; border-radius: 50%; {{ col.dotStyle }}"></span>
+                <span style="font-size: 13px; font-weight: 700; flex: 1">{{ col.title }}</span>
+                <span style="background: #1b222c; border: 1px solid #2b3444; border-radius: 20px; font-size: 11px; font-weight: 700; color: #8b96a8; padding: 2px 9px; font-family: 'JetBrains Mono', monospace">{{ col.count }}</span>
+              </div>
+              <div style="flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 9px; max-height: 460px">
+                <sc-for list="{{ col.items }}" as="f" hint-placeholder-count="2">
+                  <div draggable="true" sc-camel-on-drag-start="{{ f.onDragStart }}" sc-camel-on-drag-end="{{ f.onDragEnd }}" sc-camel-on-click="{{ f.onOpen }}" style="{{ f.cardStyle }}">
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px">
+                      <span style="font-size: 11px; font-weight: 700; color: #f0a92e; font-family: 'JetBrains Mono', monospace">{{ f.ref }}</span>
+                      <span style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; {{ f.badgeStyle }}">{{ f.badge }}</span>
+                    </div>
+                    <div style="font-size: 14px; font-weight: 700; line-height: 1.3">{{ f.equipo }}</div>
+                    <div style="font-size: 12px; color: #8b96a8; line-height: 1.45">{{ f.desc }}</div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; font-size: 11px; color: #5e6a7d; font-family: 'JetBrains Mono', monospace">
+                      <span>{{ f.planta }}</span>
+                      <span>{{ f.operador }}</span>
+                      <span>{{ f.cuando }}</span>
+                    </div>
+                    <sc-if value="{{ f.puedeOT }}" hint-placeholder-val="{{ true }}">
+                      <button sc-camel-on-click="{{ f.onGenOT }}" style="margin-top: 2px; padding: 7px; border-radius: 7px; font-size: 11.5px; font-weight: 700; border: 1px solid #f0a92e; color: #f0a92e; background: rgba(240,169,46,.07)" style-hover="background: rgba(240,169,46,.16)">Generar OT</button>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ col.vacio }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex: 1; display: grid; place-items: center; font-size: 12px; color: #37414f; padding: 26px; text-align: center">{{ col.emptyMsg }}</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 10.5px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; color: #6f7c90; margin-bottom: 11px; display: flex; align-items: center; gap: 10px">
+          Órdenes de trabajo
+          <span style="flex: 1; height: 1px; background: #232c39"></span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(300px, 1fr)); gap: 14px">
+          <sc-for list="{{ colsOTs }}" as="col" hint-placeholder-count="2">
+            <div sc-camel-on-drag-over="{{ col.onDragOver }}" sc-camel-on-drop="{{ col.onDrop }}" sc-camel-on-drag-leave="{{ col.onDragLeave }}" style="{{ col.style }}">
+              <div style="padding: 12px 14px; display: flex; align-items: center; gap: 9px; border-bottom: 1px solid #232c39">
+                <span style="width: 8px; height: 8px; border-radius: 50%; {{ col.dotStyle }}"></span>
+                <span style="font-size: 13px; font-weight: 700; flex: 1">{{ col.title }}</span>
+                <span style="background: #1b222c; border: 1px solid #2b3444; border-radius: 20px; font-size: 11px; font-weight: 700; color: #8b96a8; padding: 2px 9px; font-family: 'JetBrains Mono', monospace">{{ col.count }}</span>
+              </div>
+              <div style="flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 9px; max-height: 460px">
+                <sc-for list="{{ col.items }}" as="o" hint-placeholder-count="2">
+                  <div draggable="true" sc-camel-on-drag-start="{{ o.onDragStart }}" sc-camel-on-drag-end="{{ o.onDragEnd }}" sc-camel-on-click="{{ o.onOpen }}" style="{{ o.cardStyle }}">
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px">
+                      <span style="font-size: 11px; font-weight: 700; color: #f0a92e; font-family: 'JetBrains Mono', monospace">{{ o.nro }}</span>
+                      <span style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; {{ o.prioStyle }}">{{ o.prioridad }}</span>
+                    </div>
+                    <div style="font-size: 14px; font-weight: 700; line-height: 1.3">{{ o.equipo }}</div>
+                    <div style="font-size: 12px; color: #8b96a8; line-height: 1.45">{{ o.desc }}</div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; font-size: 11px; color: #5e6a7d; font-family: 'JetBrains Mono', monospace">
+                      <span>{{ o.planta }}</span>
+                      <span>{{ o.tecnico }}</span>
+                      <span>{{ o.horas }}</span>
+                    </div>
+                    <div style="display: flex; gap: 7px; margin-top: 2px">
+                      <sc-if value="{{ o.abierta }}" hint-placeholder-val="{{ true }}">
+                        <button sc-camel-on-click="{{ o.onCerrar }}" style="flex: 1; padding: 7px; border-radius: 7px; font-size: 11.5px; font-weight: 700; border: 1px solid #4bb85f; color: #4bb85f; background: rgba(75,184,95,.07)" style-hover="background: rgba(75,184,95,.16)">Cerrar</button>
+                      </sc-if>
+                      <button sc-camel-on-click="{{ o.onWA }}" style="flex: 1; padding: 7px; border-radius: 7px; font-size: 11.5px; font-weight: 700; border: 1px solid #3f8ef0; color: #3f8ef0; background: rgba(63,142,240,.07)" style-hover="background: rgba(63,142,240,.16)">Avisar</button>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ col.vacio }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex: 1; display: grid; place-items: center; font-size: 12px; color: #37414f; padding: 26px; text-align: center">{{ col.emptyMsg }}</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ═══ INDICADORES ═══ -->
+  <sc-if value="{{ isKpis }}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; padding: 24px 22px 48px; display: flex; flex-direction: column; gap: 22px; overflow-y: auto">
+    <div style="display: flex; align-items: baseline; gap: 12px">
+      <h2 style="font-size: 19px; font-weight: 800; letter-spacing: -0.01em">Indicadores de mantenimiento</h2>
+      <span style="font-size: 12px; color: #5e6a7d">{{ rangoTexto }}</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="6">
+        <div style="background: #12161d; border: 1px solid #232c39; border-radius: 14px; padding: 17px 18px; display: flex; flex-direction: column; gap: 7px">
+          <span style="font-size: 10px; font-weight: 700; color: #6f7c90; letter-spacing: .1em; text-transform: uppercase">{{ k.label }}</span>
+          <div style="display: flex; align-items: baseline; gap: 6px">
+            <span style="font-size: 31px; font-weight: 800; letter-spacing: -0.025em; line-height: 1; {{ k.colorStyle }}">{{ k.value }}</span>
+            <span style="font-size: 13px; color: #6f7c90; font-weight: 600">{{ k.unit }}</span>
+          </div>
+          <span style="font-size: 11.5px; color: #5e6a7d; line-height: 1.45">{{ k.sub }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px">
+      <div style="background: #12161d; border: 1px solid #232c39; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 12.5px; font-weight: 700">Equipos con más fallas</span>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <sc-for list="{{ topEquipos }}" as="e" hint-placeholder-count="5">
+            <div style="display: flex; flex-direction: column; gap: 5px">
+              <div style="display: flex; justify-content: space-between; font-size: 12px">
+                <span style="color: #c3cdda; font-weight: 600">{{ e.nombre }}</span>
+                <span style="color: #6f7c90; font-family: 'JetBrains Mono', monospace">{{ e.txt }}</span>
+              </div>
+              <div style="height: 7px; background: #1b222c; border-radius: 6px; overflow: hidden">
+                <div style="{{ e.barStyle }}"></div>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ sinDatos }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size: 12px; color: #465266; padding: 14px 0">Sin fallas en el rango seleccionado.</div>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="background: #12161d; border: 1px solid #232c39; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 12.5px; font-weight: 700">Carga por planta</span>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <sc-for list="{{ porPlanta }}" as="p" hint-placeholder-count="5">
+            <div style="display: flex; flex-direction: column; gap: 5px">
+              <div style="display: flex; justify-content: space-between; font-size: 12px">
+                <span style="color: #c3cdda; font-weight: 600">{{ p.nombre }}</span>
+                <span style="color: #6f7c90; font-family: 'JetBrains Mono', monospace">{{ p.txt }}</span>
+              </div>
+              <div style="height: 7px; background: #1b222c; border-radius: 6px; overflow: hidden">
+                <div style="{{ p.barStyle }}"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #12161d; border: 1px solid #232c39; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 12.5px; font-weight: 700">Actividad reciente</span>
+      <div style="display: flex; flex-direction: column">
+        <sc-for list="{{ actividad }}" as="a" hint-placeholder-count="5">
+          <div style="display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid #1b222c; align-items: baseline">
+            <span style="font-size: 11px; color: #5e6a7d; font-family: 'JetBrains Mono', monospace; width: 118px; flex-shrink: 0">{{ a.cuando }}</span>
+            <span style="font-size: 12.5px; color: #c3cdda; flex: 1; line-height: 1.5">{{ a.texto }}</span>
+            <span style="font-size: 11px; color: #6f7c90; font-weight: 600">{{ a.usuario }}</span>
+          </div>
+        </sc-for>
+        <sc-if value="{{ sinActividad }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size: 12px; color: #465266; padding: 10px 0">Todavía no hay movimientos registrados en este equipo.</div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ═══ TÉCNICOS ═══ -->
+  <sc-if value="{{ isTecnicos }}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; padding: 24px 22px 48px; display: flex; flex-direction: column; gap: 18px; overflow-y: auto">
+    <div style="display: flex; align-items: baseline; gap: 12px">
+      <h2 style="font-size: 19px; font-weight: 800; letter-spacing: -0.01em">Carga de trabajo</h2>
+      <span style="font-size: 12px; color: #5e6a7d">OTs abiertas asignadas a cada técnico</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 13px">
+      <sc-for list="{{ cargaTecnicos }}" as="t" hint-placeholder-count="8">
+        <div style="background: #12161d; border: 1px solid #232c39; border-radius: 13px; padding: 15px 16px; display: flex; flex-direction: column; gap: 11px">
+          <div style="display: flex; align-items: center; gap: 11px">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: #1b222c; border: 1px solid #2b3444; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #a9b4c4; flex-shrink: 0">{{ t.iniciales }}</div>
+            <div style="flex: 1; display: flex; flex-direction: column; line-height: 1.3">
+              <span style="font-size: 13.5px; font-weight: 700">{{ t.nombre }}</span>
+              <span style="font-size: 11px; color: #6f7c90">{{ t.esp }}</span>
+            </div>
+            <span style="font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; {{ t.estadoStyle }}">{{ t.estado }}</span>
+          </div>
+          <div style="height: 6px; background: #1b222c; border-radius: 6px; overflow: hidden">
+            <div style="{{ t.barStyle }}"></div>
+          </div>
+          <div style="display: flex; gap: 14px; font-size: 11px; color: #5e6a7d; font-family: 'JetBrains Mono', monospace">
+            <span>{{ t.abiertas }} abiertas</span>
+            <span>{{ t.horas }} h est.</span>
+            <span>{{ t.cerradas }} cerradas</span>
+          </div>
+          <div style="display: flex; gap: 7px">
+            <input type="tel" placeholder="Celular p/ WhatsApp" value="{{ t.tel }}" sc-camel-on-change="{{ t.onTel }}" style="flex: 1; background: #1b222c; border: 1px solid #2b3444; border-radius: 7px; color: #c3cdda; font-size: 11.5px; padding: 6px 9px; outline: none; font-family: 'JetBrains Mono', monospace">
+            <button sc-camel-on-click="{{ t.onVerOTs }}" style="border: 1px solid #2b3444; border-radius: 7px; padding: 6px 11px; font-size: 11.5px; font-weight: 700; color: #a9b4c4" style-hover="border-color: #f0a92e; color: #f0a92e">Ver OTs</button>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ═══ NUEVA OT ═══ -->
+  <sc-if value="{{ isNueva }}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; padding: 26px 22px 48px; overflow-y: auto">
+    <div style="max-width: 620px; display: flex; flex-direction: column; gap: 16px">
+      <h2 style="font-size: 19px; font-weight: 800; letter-spacing: -0.01em">Nueva orden de trabajo</h2>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 13px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">N° OT</label>
+          <input type="text" value="{{ nOtNro }}" sc-camel-on-change="{{ onNOtNro }}" style="background: #151b24; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 10px 12px; outline: none; font-family: 'JetBrains Mono', monospace">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Fecha programada</label>
+          <input type="date" value="{{ nOtFecha }}" sc-camel-on-change="{{ onNOtFecha }}" style="background: #151b24; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 10px 12px; outline: none">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Planta</label>
+          <sc-raw-select value="{{ nOtPlanta }}" sc-camel-on-change="{{ onNOtPlanta }}" style="background: #151b24; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 10px 12px; outline: none">
+            <option value="">— Seleccionar —</option>
+            <sc-for list="{{ plantas }}" as="p" hint-placeholder-count="5">
+              <option value="{{ p }}">{{ p }}</option>
+            </sc-for>
+          </sc-raw-select>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Equipo</label>
+          <input type="text" list="equipos-list" value="{{ nOtEquipo }}" sc-camel-on-change="{{ onNOtEquipo }}" placeholder="Escribir o elegir…" style="background: #151b24; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 10px 12px; outline: none">
+          <datalist id="equipos-list">
+            <sc-for list="{{ equiposPlanta }}" as="e" hint-placeholder-count="4">
+              <option value="{{ e }}"></option>
+            </sc-for>
+          </datalist>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Tipo</label>
+        <div style="display: flex; gap: 7px; flex-wrap: wrap">
+          <sc-for list="{{ tiposOT }}" as="c" hint-placeholder-count="3">
+            <button sc-camel-on-click="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Prioridad</label>
+        <div style="display: flex; gap: 7px; flex-wrap: wrap">
+          <sc-for list="{{ priosOT }}" as="c" hint-placeholder-count="3">
+            <button sc-camel-on-click="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Técnicos asignados</label>
+        <div style="display: flex; gap: 7px; flex-wrap: wrap">
+          <sc-for list="{{ tecnicoChips }}" as="c" hint-placeholder-count="12">
+            <button sc-camel-on-click="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 13px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Descripción / tarea</label>
+          <textarea value="{{ nOtDesc }}" sc-camel-on-change="{{ onNOtDesc }}" placeholder="Describir el trabajo a realizar…" style="background: #151b24; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 10px 12px; outline: none; min-height: 86px; resize: vertical; line-height: 1.5"></textarea>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Horas estimadas</label>
+          <input type="number" min="0" step="0.5" value="{{ nOtHoras }}" sc-camel-on-change="{{ onNOtHoras }}" style="background: #151b24; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 10px 12px; outline: none">
+        </div>
+      </div>
+
+      <button sc-camel-on-click="{{ onCrearOT }}" style="{{ btnCrearStyle }}">{{ btnCrearTxt }}</button>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ═══ MODAL ═══ -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div sc-camel-on-click="{{ onOverlayClick }}" style="position: fixed; inset: 0; background: rgba(6,9,13,.78); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; backdrop-filter: blur(2px)">
+      <div sc-camel-on-click="{{ stopProp }}" style="background: #12161d; border: 1px solid #2b3444; border-radius: 16px; width: 100%; max-width: 620px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; animation: fadeUp .18s ease">
+        <div style="padding: 16px 20px; border-bottom: 1px solid #232c39; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+          <span style="font-size: 15px; font-weight: 800; letter-spacing: -0.01em">{{ modalTitle }}</span>
+          <button sc-camel-on-click="{{ onCloseModal }}" style="width: 28px; height: 28px; border-radius: 7px; background: #1b222c; color: #8b96a8; font-size: 15px; display: grid; place-items: center" style-hover="background: #2b3444; color: #eef2f7">✕</button>
+        </div>
+
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto">
+
+          <sc-if value="{{ modalOrigen }}" hint-placeholder-val="{{ false }}">
+            <div style="background: #171d26; border: 1px solid #232c39; border-left: 3px solid #f0a92e; border-radius: 9px; padding: 11px 13px">
+              <div style="font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: #6f7c90">{{ modalOrigenLabel }}</div>
+              <div style="font-size: 14.5px; font-weight: 700; margin-top: 3px">{{ modalOrigenTitulo }}</div>
+              <div style="font-size: 12px; color: #8b96a8; margin-top: 3px; line-height: 1.5">{{ modalOrigenDesc }}</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showDetalleGrid }}" hint-placeholder-val="{{ false }}">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 11px">
+              <sc-for list="{{ detalleCampos }}" as="d" hint-placeholder-count="6">
+                <div style="{{ d.wrapStyle }}">
+                  <span style="font-size: 10px; font-weight: 700; color: #6f7c90; letter-spacing: .08em">{{ d.label }}</span>
+                  <div style="font-size: 13px; margin-top: 3px; line-height: 1.5; {{ d.valueStyle }}">{{ d.value }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showFotoLink }}" hint-placeholder-val="{{ false }}">
+            <a href="{{ fotoUrl }}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 15px; background: rgba(63,142,240,.09); border: 1px solid rgba(63,142,240,.28); border-radius: 9px; color: #6aa8f5; font-size: 12.5px; font-weight: 600; align-self: flex-start">Ver foto de evidencia</a>
+          </sc-if>
+
+          <sc-if value="{{ showFormOT }}" hint-placeholder-val="{{ false }}">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 13px">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">N° OT</label>
+                <input type="text" value="{{ mOtNro }}" sc-camel-on-change="{{ onMOtNro }}" style="background: #171d26; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 9px 12px; outline: none; font-family: 'JetBrains Mono', monospace">
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Fecha programada</label>
+                <input type="date" value="{{ mOtFecha }}" sc-camel-on-change="{{ onMOtFecha }}" style="background: #171d26; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 9px 12px; outline: none">
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 7px">
+              <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Tipo</label>
+              <div style="display: flex; gap: 7px; flex-wrap: wrap">
+                <sc-for list="{{ mTiposOT }}" as="c" hint-placeholder-count="3">
+                  <button sc-camel-on-click="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 7px">
+              <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Prioridad</label>
+              <div style="display: flex; gap: 7px; flex-wrap: wrap">
+                <sc-for list="{{ mPriosOT }}" as="c" hint-placeholder-count="3">
+                  <button sc-camel-on-click="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showTecnicoPicker }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 7px">
+              <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Técnicos asignados</label>
+              <div style="display: flex; gap: 7px; flex-wrap: wrap">
+                <sc-for list="{{ mTecnicoChips }}" as="c" hint-placeholder-count="12">
+                  <button sc-camel-on-click="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showDescOT }}" hint-placeholder-val="{{ false }}">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 13px">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Descripción / tarea</label>
+                <textarea value="{{ mOtDesc }}" sc-camel-on-change="{{ onMOtDesc }}" style="background: #171d26; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 9px 12px; outline: none; min-height: 80px; resize: vertical; line-height: 1.5"></textarea>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Horas est.</label>
+                <input type="number" min="0" step="0.5" value="{{ mOtHoras }}" sc-camel-on-change="{{ onMOtHoras }}" style="background: #171d26; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 9px 12px; outline: none">
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showFormCierre }}" hint-placeholder-val="{{ false }}">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 13px">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Horas reales</label>
+                <input type="number" min="0" step="0.5" value="{{ cHoras }}" sc-camel-on-change="{{ onCHoras }}" placeholder="Ej: 3.5" style="background: #171d26; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 9px 12px; outline: none">
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Fecha de cierre</label>
+                <input type="date" value="{{ cFecha }}" sc-camel-on-change="{{ onCFecha }}" style="background: #171d26; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 9px 12px; outline: none">
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Repuestos utilizados</label>
+              <textarea value="{{ cRepuestos }}" sc-camel-on-change="{{ onCRepuestos }}" placeholder="Ej: Rodamiento 6205 x1, retén 40x60 x2…" style="background: #171d26; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 9px 12px; outline: none; min-height: 62px; resize: vertical; line-height: 1.5"></textarea>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Costo total (Gs.)</label>
+              <input type="number" min="0" value="{{ cCosto }}" sc-camel-on-change="{{ onCCosto }}" placeholder="Ej: 150000" style="background: #171d26; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 9px 12px; outline: none">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <label style="font-size: 12px; font-weight: 600; color: #a9b4c4">Observaciones del cierre</label>
+              <textarea value="{{ cObs }}" sc-camel-on-change="{{ onCObs }}" placeholder="Causa raíz, trabajo realizado, recomendaciones…" style="background: #171d26; border: 1.5px solid #2b3444; border-radius: 9px; color: #eef2f7; font-size: 14px; padding: 9px 12px; outline: none; min-height: 80px; resize: vertical; line-height: 1.5"></textarea>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showHistorial }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 9px">
+              <span style="font-size: 10px; font-weight: 700; color: #6f7c90; letter-spacing: .09em; text-transform: uppercase">Historial de cambios</span>
+              <div style="display: flex; flex-direction: column; gap: 1px">
+                <sc-for list="{{ historial }}" as="h" hint-placeholder-count="3">
+                  <div style="display: flex; gap: 11px; padding: 8px 0; border-bottom: 1px solid #1b222c; align-items: baseline">
+                    <span style="font-size: 10.5px; color: #5e6a7d; font-family: 'JetBrains Mono', monospace; width: 112px; flex-shrink: 0">{{ h.cuando }}</span>
+                    <span style="font-size: 12.5px; color: #c3cdda; flex: 1; line-height: 1.5">{{ h.texto }}</span>
+                    <span style="font-size: 11px; color: #6f7c90; font-weight: 600">{{ h.usuario }}</span>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ historialVacio }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size: 12px; color: #465266; padding: 6px 0">Sin movimientos registrados desde este equipo.</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showWA }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 11px">
+              <span style="font-size: 12px; color: #8b96a8; line-height: 1.5">{{ waHint }}</span>
+              <div style="background: #14231a; border: 1px solid #24402b; border-radius: 10px; padding: 14px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #9ed3a6; line-height: 1.75; white-space: pre-wrap">{{ waText }}</div>
+            </div>
+          </sc-if>
+
+        </div>
+
+        <div style="padding: 14px 20px; border-top: 1px solid #232c39; display: flex; gap: 9px; justify-content: flex-end; flex-wrap: wrap">
+          <button sc-camel-on-click="{{ onCloseModal }}" style="background: #1b222c; border: 1px solid #2b3444; color: #a9b4c4; font-size: 13px; font-weight: 600; padding: 10px 16px; border-radius: 9px" style-hover="border-color: #6f7c90">Cerrar</button>
+          <sc-for list="{{ modalActions }}" as="a" hint-placeholder-count="1">
+            <button sc-camel-on-click="{{ a.onClick }}" style="{{ a.style }}">{{ a.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ═══ TOAST ═══ -->
+  <sc-if value="{{ toastOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ toastStyle }}">{{ toastMsg }}</div>
+  </sc-if>
+
+  <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(12,16,22,.72); z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px">
+      <div style="width: 36px; height: 36px; border: 3px solid #2b3444; border-top-color: #f0a92e; border-radius: 50%; animation: spin .6s linear infinite"></div>
+      <span style="font-size: 12.5px; color: #8b96a8">Cargando datos…</span>
+    </div>
+  </sc-if>
+
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
 
-<!-- TOPBAR -->
-<header class="topbar">
-  <div class="logo">
-    <div class="logo-mark">C</div>
-    <div>
-      <div class="logo-text">Cimplast</div>
-      <div class="logo-sub">Panel de supervisores</div>
-    </div>
-  </div>
-  <nav class="topbar-nav">
-    <button class="nav-btn active" onclick="switchView('kanban')">⬛ Kanban</button>
-    <button class="nav-btn" onclick="switchView('nueva-ot')">+ Nueva OT</button>
-  </nav>
-  <div class="topbar-right">
-    <span id="pendCount" class="badge-count" style="display:none">0</span>
-    <button class="btn-refresh" onclick="recargar()">
-      <span class="spin" id="refreshIcon">↻</span> Actualizar
-    </button>
-  </div>
-</header>
 
-<!-- ══════════ VIEW: KANBAN ══════════ -->
-<div class="view active" id="viewKanban">
-
-  <!-- FILTERS -->
-  <div class="filters">
-    <span class="filter-label">Filtrar</span>
-    <input type="date" class="filter-input" id="fDesde" onchange="aplicarFiltros()">
-    <span style="color:var(--muted);font-size:12px">→</span>
-    <input type="date" class="filter-input" id="fHasta" onchange="aplicarFiltros()">
-    <span class="filter-sep">|</span>
-    <select class="filter-input" id="fPlanta" onchange="aplicarFiltros()" style="width:140px">
-      <option value="">🏭 Todas las plantas</option>
-      <option>Titese</option>
-      <option>Planta 3</option>
-      <option>Planta 4</option>
-      <option>Planta 5</option>
-      <option>Matricería</option>
-      <option>Otros</option>
-    </select>
-    <span class="filter-sep">|</span>
-    <input type="text" class="filter-input" id="fEquipo" placeholder="🔍 Buscar equipo…" oninput="aplicarFiltros()">
-    <button class="btn-clear" onclick="limpiarFiltros()">✕ Limpiar</button>
-  </div>
-
-  <div class="kanban-wrap">
-
-    <!-- SECCIÓN FALLAS -->
-    <div>
-      <div class="kanban-section-title">📋 Reportes de fallas</div>
-      <div class="kanban-board">
-        <div class="kanban-col">
-          <div class="kanban-col-header">
-            <div class="col-dot" style="background:var(--col-pend)"></div>
-            <span class="col-title">Pendiente</span>
-            <span class="col-count" id="cnt-f-pend">0</span>
-          </div>
-          <div class="kanban-col-body" id="col-fallas-pend"></div>
-        </div>
-        <div class="kanban-col">
-          <div class="kanban-col-header">
-            <div class="col-dot" style="background:var(--col-curso)"></div>
-            <span class="col-title">Con OT generada</span>
-            <span class="col-count" id="cnt-f-ot">0</span>
-          </div>
-          <div class="kanban-col-body" id="col-fallas-ot"></div>
-        </div>
-        <div class="kanban-col">
-          <div class="kanban-col-header">
-            <div class="col-dot" style="background:var(--col-done)"></div>
-            <span class="col-title">Atendido</span>
-            <span class="col-count" id="cnt-f-done">0</span>
-          </div>
-          <div class="kanban-col-body" id="col-fallas-done"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECCIÓN OTs -->
-    <div>
-      <div class="kanban-section-title">⚙ Órdenes de trabajo</div>
-      <div class="kanban-board" style="grid-template-columns: 1fr 1fr;">
-        <div class="kanban-col">
-          <div class="kanban-col-header">
-            <div class="col-dot" style="background:var(--col-pend)"></div>
-            <span class="col-title">Abierta</span>
-            <span class="col-count" id="cnt-ot-abierta">0</span>
-          </div>
-          <div class="kanban-col-body" id="col-ots-abierta"></div>
-        </div>
-        <div class="kanban-col">
-          <div class="kanban-col-header">
-            <div class="col-dot" style="background:var(--col-done)"></div>
-            <span class="col-title">Cerrada</span>
-            <span class="col-count" id="cnt-ot-cerrada">0</span>
-          </div>
-          <div class="kanban-col-body" id="col-ots-cerrada"></div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div><!-- /viewKanban -->
-
-<!-- ══════════ VIEW: NUEVA OT ══════════ -->
-<div class="view" id="viewNuevaOt" style="padding:24px;overflow-y:auto">
-  <div style="max-width:560px">
-    <h2 style="font-size:18px;font-weight:800;margin-bottom:20px">Nueva Orden de Trabajo</h2>
-    <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="field">
-        <label>N° OT *</label>
-        <input type="text" id="nOtNro" placeholder="OT-2026-001">
-      </div>
-      <div class="row-2">
-        <div class="field">
-          <label>Planta *</label>
-          <div class="select-wrap">
-            <select id="nOtPlanta" onchange="updateEquiposModal()">
-              <option value="">— Seleccionar —</option>
-              <option>Titese</option>
-              <option>Planta 3</option>
-              <option>Planta 4</option>
-              <option>Planta 5</option>
-              <option>Matricería</option>
-              <option>Otros</option>
-            </select>
-          </div>
-        </div>
-        <div class="field">
-          <label>Equipo *</label>
-          <div class="select-wrap">
-            <select id="nOtEquipo"><option value="">— Planta primero —</option></select>
-          </div>
-        </div>
-      </div>
-      <div class="field">
-        <label>Tipo *</label>
-        <div class="chip-group" id="nOtTipoGroup">
-          <button class="chip" data-val="Correctivo" onclick="selChip(this,'nOtTipoGroup')">🔧 Correctivo</button>
-          <button class="chip" data-val="Preventivo" onclick="selChip(this,'nOtTipoGroup')">📋 Preventivo</button>
-          <button class="chip" data-val="Mejora"     onclick="selChip(this,'nOtTipoGroup')">⬆ Mejora</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Prioridad *</label>
-        <div class="chip-group" id="nOtPrioGroup">
-          <button class="chip" data-val="Alta"  onclick="selChip(this,'nOtPrioGroup')">🔴 Alta</button>
-          <button class="chip" data-val="Media" onclick="selChip(this,'nOtPrioGroup')">🟡 Media</button>
-          <button class="chip" data-val="Baja"  onclick="selChip(this,'nOtPrioGroup')">🟢 Baja</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Técnico(s) asignado(s) *</label>
-        <select id="nOtTecnico" multiple style="height:140px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;padding:6px;width:100%;outline:none">
-        </select>
-        <span style="font-size:11px;color:var(--muted)">Mantené Ctrl (o Cmd en Mac) para seleccionar más de uno</span>
-      </div>
-      <div class="field">
-        <label>Descripción / Tarea *</label>
-        <textarea id="nOtDesc" placeholder="Describir el trabajo a realizar…"></textarea>
-      </div>
-      <div class="row-2">
-        <div class="field">
-          <label>Horas estimadas</label>
-          <input type="number" id="nOtHoras" placeholder="Ej: 2" min="0" step="0.5">
-        </div>
-        <div class="field">
-          <label>Fecha programada</label>
-          <input type="date" id="nOtFecha">
-        </div>
-      </div>
-      <div class="field">
-        <label>Observaciones</label>
-        <textarea id="nOtObs" placeholder="Repuestos, precauciones…" style="min-height:60px"></textarea>
-      </div>
-      <button class="btn-primary" id="btnNuevaOT" onclick="crearOTDirecta()" style="width:100%;padding:14px;font-size:14px">⚙ Crear Orden de Trabajo</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════ MODAL: DETALLE FALLA ══════════ -->
-<div class="modal-overlay" id="modalDetalle">
-  <div class="modal" style="max-width:600px">
-    <div class="modal-header">
-      <span class="modal-title" id="mDetalleTitulo">Detalle de falla</span>
-      <button class="modal-close" onclick="closeModal('modalDetalle')">✕</button>
-    </div>
-    <div class="modal-body" id="mDetalleBody">
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('modalDetalle')">Cerrar</button>
-      <button class="btn-primary" id="btnDetalleOT" onclick="generarOTdesdeDetalle()" style="display:none">⚙ Generar OT</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════ MODAL: GENERAR OT DESDE FALLA ══════════ -->
-<div class="modal-overlay" id="modalGenOT">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">Generar Orden de Trabajo</span>
-      <button class="modal-close" onclick="closeModal('modalGenOT')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="origen-card">
-        <div class="origen-label">Falla origen</div>
-        <div class="origen-equipo" id="mOtEquipo">—</div>
-        <div class="origen-desc" id="mOtDesc">—</div>
-      </div>
-      <div class="field"><label>N° OT *</label><input type="text" id="mOtNro"></div>
-      <div class="field">
-        <label>Tipo *</label>
-        <div class="chip-group" id="mOtTipoGroup">
-          <button class="chip" data-val="Correctivo" onclick="selChip(this,'mOtTipoGroup')">🔧 Correctivo</button>
-          <button class="chip" data-val="Preventivo" onclick="selChip(this,'mOtTipoGroup')">📋 Preventivo</button>
-          <button class="chip" data-val="Mejora"     onclick="selChip(this,'mOtTipoGroup')">⬆ Mejora</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Prioridad *</label>
-        <div class="chip-group" id="mOtPrioGroup">
-          <button class="chip" data-val="Alta"  onclick="selChip(this,'mOtPrioGroup')">🔴 Alta</button>
-          <button class="chip" data-val="Media" onclick="selChip(this,'mOtPrioGroup')">🟡 Media</button>
-          <button class="chip" data-val="Baja"  onclick="selChip(this,'mOtPrioGroup')">🟢 Baja</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Técnico(s) asignado(s) *</label>
-        <select id="mOtTecnico" multiple style="height:140px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;padding:6px;width:100%;outline:none">
-        </select>
-        <span style="font-size:11px;color:var(--muted)">Mantené Ctrl (o Cmd en Mac) para seleccionar más de uno</span>
-      </div>
-      <div class="row-2">
-        <div class="field"><label>Horas estimadas</label><input type="number" id="mOtHoras" min="0" step="0.5"></div>
-        <div class="field"><label>Fecha programada</label><input type="date" id="mOtFecha"></div>
-      </div>
-      <div class="field"><label>Observaciones</label><textarea id="mOtObs" style="min-height:60px"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('modalGenOT')">Cancelar</button>
-      <button class="btn-primary" id="btnModalOT" onclick="submitModalOT()">⚙ Crear OT</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════ MODAL: DETALLE OT ══════════ -->
-<div class="modal-overlay" id="modalDetalleOT">
-  <div class="modal" style="max-width:600px">
-    <div class="modal-header">
-      <span class="modal-title" id="mDetalleOTTitulo">Orden de Trabajo</span>
-      <button class="modal-close" onclick="closeModal('modalDetalleOT')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px" id="mDetalleOTGrid"></div>
-      <div class="field" style="margin-top:12px">
-        <label>Técnico(s) asignado(s) — editable</label>
-        <select id="mDetalleOTTecnico" multiple style="height:140px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;padding:6px;width:100%;outline:none"></select>
-        <span style="font-size:11px;color:var(--muted)">Ctrl/Cmd para seleccionar más de uno</span>
-      </div>
-      <div class="field" style="margin-top:8px">
-        <label>Descripción / Tarea</label>
-        <textarea id="mDetalleOTDesc" style="min-height:70px"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('modalDetalleOT')">Cerrar</button>
-      <button class="btn-primary" id="btnGuardarDetalleOT" onclick="guardarCambiosOT()" style="background:#3b82f6">💾 Guardar cambios</button>
-      <button class="btn-primary green" id="btnCerrarDesdeDetalle" onclick="cerrarDesdeDetalle()">✓ Cerrar OT</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════ MODAL: CERRAR OT ══════════ -->
-<div class="modal-overlay" id="modalCerrar">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">Cerrar Orden de Trabajo</span>
-      <button class="modal-close" onclick="closeModal('modalCerrar')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="origen-card">
-        <div class="origen-label">OT</div>
-        <div class="origen-equipo" id="mCerrarNro">—</div>
-        <div class="origen-desc" id="mCerrarEquipo">—</div>
-      </div>
-      <div class="row-2">
-        <div class="field"><label>Horas reales *</label><input type="number" id="mCerrarHoras" min="0" step="0.5" placeholder="Ej: 3.5"></div>
-        <div class="field"><label>Fecha de cierre</label><input type="date" id="mCerrarFecha"></div>
-      </div>
-      <div class="field"><label>Repuestos utilizados</label><textarea id="mCerrarRepuestos" placeholder="Ej: Rodamiento 6205 x1, retén 40x60 x2…" style="min-height:60px"></textarea></div>
-      <div class="field"><label>Costo total (Gs.)</label><input type="number" id="mCerrarCosto" min="0" placeholder="Ej: 150000"></div>
-      <div class="field"><label>Observaciones del cierre *</label><textarea id="mCerrarObs" placeholder="Causa raíz, trabajo realizado, recomendaciones…"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('modalCerrar')">Cancelar</button>
-      <button class="btn-primary green" id="btnModalCerrar" onclick="submitCerrar()">✓ Confirmar cierre</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════ MODAL: WHATSAPP ══════════ -->
-<div class="modal-overlay" id="modalWA">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">📲 Compartir por WhatsApp</span>
-      <button class="modal-close" onclick="closeModal('modalWA')">✕</button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size:12px;color:var(--muted)">Tocá el texto para seleccionarlo, luego copiá y pegá en WhatsApp.</p>
-      <div class="wa-preview" id="waText" onclick="selectWAText()"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('modalWA')">Cerrar</button>
-      <button class="btn-primary" onclick="copyWAText()">📋 Copiar texto</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// ── CONFIG ────────────────────────────────────────────────
-const GS_API = 'https://script.google.com/macros/s/AKfycbwaw-wAoQh7iEv-tdNmnT7X17jvY3ZDx7x-WN3upqv0aq8uUSZSOFcP4pqwv9vdIqmTkA/exec';
-
-const EQUIPOS = {
-  'Titese':   ['Sopladora Uniloy N°1','Sopladora Uniloy N°2','Sopladora Uniloy N°3','Inyectora N°1','Inyectora N°2','Compresor Kaeser N°1','Compresor Kaeser N°2','Chiller N°1','Chiller N°2','Molino N°1','Secador N°1'],
-  'Planta 2': ['Inyecto-sopladora N°1','Inyecto-sopladora N°2','Extrusora PEAD N°1','Extrusora COEX N°1','Compresor N°1','Chiller N°1','Molino N°2'],
-  'Planta 3': ['Línea extrusión N°1','Línea extrusión N°2','Compresor Atlas Copco','Chiller N°3','Molino N°3','Mezclador N°1'],
-  'Planta 4': ['Inyectora grande N°1','Inyectora grande N°2','Sopladora PET N°1','Compresor N°2','Chiller N°4','Molino N°4']
-};
-
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;apiUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Conexión&quot;},&quot;requierePin&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Conexión&quot;},&quot;autoRefreshSec&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:120,&quot;min&quot;:30,&quot;max&quot;:600,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Conexión&quot;},&quot;avisarWhatsApp&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Flujo&quot;},&quot;metaMttr&quot;:{&quot;editor&quot;:&quot;float&quot;,&quot;default&quot;:4,&quot;min&quot;:1,&quot;max&quot;:24,&quot;step&quot;:0.5,&quot;unit&quot;:&quot;h&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Flujo&quot;}}">
 const TECNICOS = [
-  { id: 14, nombre: 'Carlos Mongelos',  esp: 'Eléctrico' },
-  { id:  4, nombre: 'Claudio Cerezo',   esp: 'Eléctrico' },
-  { id: 11, nombre: 'Edgar Maqueda',    esp: 'Metricero' },
-  { id: 13, nombre: 'Enrique Monges',   esp: 'Eléctrico' },
-  { id: 10, nombre: 'Jose Caballero',   esp: 'Mecánico' },
-  { id:  2, nombre: 'José González',    esp: 'Mecánico' },
-  { id: 16, nombre: 'Maximo Duarte',    esp: 'Eléctrico' },
-  { id: 15, nombre: 'Nicolas Vazquez',  esp: 'Mecánico' },
-  { id:  7, nombre: 'Oscar Duarte',     esp: 'Electromecánico' },
-  { id:  6, nombre: 'Pablo Gomez',      esp: 'Herrero' },
-  { id:  8, nombre: 'Valentin Escobar', esp: 'Herrero' },
-  { id: 12, nombre: 'Victor Saucedo',   esp: 'Mecánico' },
+  { id: 14, nombre: 'Carlos Mongelos', esp: 'Eléctrico' },
+  { id: 4,  nombre: 'Claudio Cerezo',  esp: 'Eléctrico' },
+  { id: 11, nombre: 'Edgar Maqueda',   esp: 'Matricero' },
+  { id: 13, nombre: 'Enrique Monges',  esp: 'Eléctrico' },
+  { id: 10, nombre: 'Jose Caballero',  esp: 'Mecánico' },
+  { id: 2,  nombre: 'José González',   esp: 'Mecánico' },
+  { id: 16, nombre: 'Maximo Duarte',   esp: 'Eléctrico' },
+  { id: 15, nombre: 'Nicolas Vazquez', esp: 'Mecánico' },
+  { id: 7,  nombre: 'Oscar Duarte',    esp: 'Electromecánico' },
+  { id: 6,  nombre: 'Pablo Gomez',     esp: 'Herrero' },
+  { id: 8,  nombre: 'Valentin Escobar',esp: 'Herrero' },
+  { id: 12, nombre: 'Victor Saucedo',  esp: 'Mecánico' }
 ];
 
-// ── STATE ─────────────────────────────────────────────────
-let fallasTodas = [];
-let otsTodas    = [];
-let fallaActual = null;
-let otActual    = null;
+// Catálogo real: se carga desde equipos.js (Lista Master de Equipamientos)
+const PLANTAS = ['Planta 3', 'Planta 4', 'Planta 5', 'Planta 6 (Titese)', 'Administración'];
 
-// ── INIT ──────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  const hoy = new Date().toISOString().slice(0,10);
-  const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0,10);
-  document.getElementById('fDesde').value = hace30;
-  document.getElementById('fHasta').value = hoy;
-  document.getElementById('mOtFecha').value = hoy;
-  document.getElementById('nOtFecha').value = hoy;
-  document.getElementById('mCerrarFecha').value = hoy;
-  document.getElementById('nOtNro').value = 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4);
-  cargarTecnicosSelects();
-  // Pequeño delay para asegurar que el DOM esté listo
-  setTimeout(recargar, 500);
-});
+// Nombres históricos en la hoja → nomenclatura actual
+const ALIAS_PLANTA = {
+  'titese': 'Planta 6 (Titese)',
+  'planta 6': 'Planta 6 (Titese)',
+  'matriceria': 'Matricería'
+};
 
-// ── VIEWS ─────────────────────────────────────────────────
-function switchView(name) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  const id = 'view' + name.charAt(0).toUpperCase() + name.slice(1).replace(/-([a-z])/g, g => g[1].toUpperCase());
-  const el = document.getElementById(id);
-  if (el) el.classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  if (event?.target) event.target.classList.add('active');
-  // Resetear N°OT al abrir Nueva OT
-  if (name === 'nueva-ot') {
-    document.getElementById('nOtNro').value = 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4);
-  }
-}
+const SUPERVISORES = [
+  { pin: '1234', nombre: 'Alexis Benitez' },
+  { pin: '2468', nombre: 'Supervisor Turno A' },
+  { pin: '1357', nombre: 'Supervisor Turno B' }
+];
 
-// ── CARGA DE DATOS ────────────────────────────────────────
-async function recargar(silencioso = false) {
-  const icon = document.getElementById('refreshIcon');
-  icon.classList.add('loading');
-  if (!silencioso) showLoading('Cargando datos…');
-  try {
-    const [rFallas, rOTs] = await Promise.all([
-      fetch(`${GS_API}?accion=fallas`).then(r => r.json()),
-      fetch(`${GS_API}?accion=ots`).then(r => r.json())
-    ]);
-    fallasTodas = rFallas.fallas || [];
-    otsTodas    = rOTs.ots    || [];
-    aplicarFiltros();
-  } catch(e) {
-    if (!silencioso) showToast('Error cargando datos', 'err');
-  } finally {
-    icon.classList.remove('loading');
-    if (!silencioso) hideLoading();
-  }
-}
+const CHIP_BASE = 'border-radius: 8px; padding: 7px 13px; font-size: 12px; font-weight: 600; border: 1.5px solid; transition: all .14s;';
+const CHIP_OFF = CHIP_BASE + ' background: #171d26; border-color: #2b3444; color: #8b96a8;';
+const CHIP_ON  = CHIP_BASE + ' background: rgba(240,169,46,.13); border-color: #f0a92e; color: #f0a92e;';
+const COL_BASE = 'background: #12161d; border-radius: 13px; display: flex; flex-direction: column; min-height: 210px; transition: border-color .15s, background .15s;';
 
-// ── FILTROS ───────────────────────────────────────────────
-function aplicarFiltros() {
-  const desde  = document.getElementById('fDesde').value;
-  const hasta  = document.getElementById('fHasta').value;
-  const planta = document.getElementById('fPlanta').value;
-  const equipo = document.getElementById('fEquipo').value.toLowerCase().trim();
-
-  const filtrarFalla = f => {
-    // Fecha de la falla — normalizar a yyyy-MM-dd
-    const fecha = (f.Fecha || '').toString().slice(0,10);
-    // Comparar fechas correctamente — hasta debe incluir el día completo
-    if (desde && fecha && fecha < desde) return false;
-    if (hasta && fecha && fecha > hasta + 'z') return false;
-    if (planta && f.Planta !== planta) return false;
-    if (equipo && !f.Equipo?.toLowerCase().includes(equipo)) return false;
-    return true;
-  };
-  const filtrarOT = o => {
-    // Para OTs usar FechaCreacion que es la más confiable
-    const fecha = (o.FechaCreacion || o.FechaProgramada || '').toString().slice(0,10);
-    if (desde && fecha && fecha < desde) return false;
-    if (hasta && fecha && fecha > hasta + 'z') return false;
-    if (planta && o.Planta !== planta) return false;
-    if (equipo && !o.Equipo?.toLowerCase().includes(equipo)) return false;
-    return true;
+class Component extends DCLogic {
+  state = {
+    tab: 'kanban',
+    user: null, pinInput: '', pinError: false,
+    fallas: [], ots: [], loading: false, spinning: false, lastSync: '',
+    fDesde: '', fHasta: '', fPlanta: '', fEquipo: '', fTecnico: '',
+    modal: null, modalData: null,
+    mOtNro: '', mOtFecha: '', mOtTipo: 'Correctivo', mOtPrio: 'Media', mOtTecs: [], mOtDesc: '', mOtHoras: '',
+    cHoras: '', cFecha: '', cRepuestos: '', cCosto: '', cObs: '',
+    nOtNro: '', nOtFecha: '', nOtPlanta: '', nOtEquipo: '', nOtTipo: 'Preventivo', nOtPrio: 'Media', nOtTecs: [], nOtDesc: '', nOtHoras: '',
+    waText: '', waUrl: '',
+    log: [], tels: {},
+    catalogo: {}, plantasMaster: PLANTAS,
+    dragOver: null, dragging: null,
+    toast: null, busy: false
   };
 
-  renderKanban(fallasTodas.filter(filtrarFalla), otsTodas.filter(filtrarOT));
-}
+  get api() { return this.props.apiUrl || 'https://script.google.com/macros/s/AKfycbwaw-wAoQh7iEv-tdNmnT7X17jvY3ZDx7x-WN3upqv0aq8uUSZSOFcP4pqwv9vdIqmTkA/exec'; }
 
-function limpiarFiltros() {
-  const hoy    = new Date().toISOString().slice(0,10);
-  const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0,10);
-  document.getElementById('fDesde').value  = hace30;
-  document.getElementById('fHasta').value  = hoy;
-  document.getElementById('fEquipo').value = '';
-  document.getElementById('fPlanta').value = '';
-  aplicarFiltros();
-}
-
-// ── RENDER KANBAN ─────────────────────────────────────────
-function renderKanban(fallas, ots) {
-  // Fallas — normalizar estado
-  const fPend = fallas.filter(f => (f.Estado||'').trim().toLowerCase() === 'pendiente');
-  const fOT   = fallas.filter(f => (f.Estado||'').trim().toLowerCase() === 'en curso');
-  const fDone = fallas.filter(f => (f.Estado||'').trim().toLowerCase() === 'concluido');
-
-  document.getElementById('cnt-f-pend').textContent = fPend.length;
-  document.getElementById('cnt-f-ot').textContent   = fOT.length;
-  document.getElementById('cnt-f-done').textContent = fDone.length;
-
-  document.getElementById('col-fallas-pend').innerHTML = fPend.length ? fPend.map(cardFalla).join('') : emptyCol('Sin fallas pendientes');
-  document.getElementById('col-fallas-ot').innerHTML   = fOT.length   ? fOT.map(cardFalla).join('')   : emptyCol('Sin fallas con OT');
-  document.getElementById('col-fallas-done').innerHTML = fDone.length ? fDone.map(cardFalla).join('')  : emptyCol('Sin fallas atendidas');
-
-  // OTs — normalizar estado para comparación
-  const otAb   = ots.filter(o => (o.Estado||'').trim().toLowerCase() === 'abierta');
-  const otCerr = ots.filter(o => (o.Estado||'').trim().toLowerCase() === 'cerrada');
-
-  document.getElementById('cnt-ot-abierta').textContent = otAb.length;
-  document.getElementById('cnt-ot-cerrada').textContent = otCerr.length;
-
-  document.getElementById('col-ots-abierta').innerHTML = otAb.length   ? otAb.map(cardOT).join('')   : emptyCol('Sin OTs abiertas');
-  document.getElementById('col-ots-cerrada').innerHTML = otCerr.length ? otCerr.map(cardOT).join('')  : emptyCol('Sin OTs cerradas');
-
-  // Badge pendientes
-  const pend = fPend.length;
-  const badge = document.getElementById('pendCount');
-  badge.textContent = pend;
-  badge.style.display = pend > 0 ? 'inline-block' : 'none';
-}
-
-function emptyCol(msg) {
-  return `<div class="col-empty">${msg}</div>`;
-}
-
-function cardFalla(f) {
-  const parado  = (f.Detenido||'').includes('parado');
-  const urgente = parado ? 'parado' : '';
-  const prioTag = parado
-    ? `<span class="card-prio prio-parado">🔴 PARADO</span>`
-    : `<span class="card-prio prio-media">En operación</span>`;
-
-  // Formatear fecha y hora correctamente
-  const fecha = (f.Fecha||'').toString().slice(0,10);
-  const hora  = (f.Hora||'').toString().slice(0,5);
-
-  const acciones = (f.Estado||'').toLowerCase() === 'pendiente'
-    ? `<button class="card-btn card-btn-ot" onclick="abrirModalOT('${f.ID}')">⚙ Generar OT</button>`
-    : '';
-
-  return `
-  <div class="card ${urgente}" onclick="abrirDetalleFalla('${f.ID}')" style="cursor:pointer">
-    <div class="card-top">
-      <span class="card-num">${(f.ID||'').slice(-8) || '—'}</span>
-      ${prioTag}
-    </div>
-    <div class="card-equipo">${f.Equipo || '—'}</div>
-    <div class="card-desc">${(f.Sintoma || '').substring(0,90)}${(f.Sintoma||'').length>90?'…':''}</div>
-    <div class="card-meta">
-      <span>📍 ${f.Planta || '—'}</span>
-      <span>👤 ${f.Operador || '—'}</span>
-      <span>🕐 ${fecha} ${hora}</span>
-      <span>🌀 ${f.Turno || ''}</span>
-      ${f.CantFotos > 0 ? `<span>📷 ${f.CantFotos}</span>` : ''}
-    </div>
-    ${acciones ? `<div class="card-actions" onclick="event.stopPropagation()">${acciones}</div>` : ''}
-  </div>`;
-}
-
-function cardOT(o) {
-  const prioClass = o.Prioridad === 'Alta' ? 'prio-alta' : o.Prioridad === 'Baja' ? 'prio-baja' : 'prio-media';
-  const cerrada   = (o.Estado||'').toLowerCase() === 'cerrada';
-  const nroEsc    = (o.NroOT||'').replace(/'/g,"\\'");
-  const equipoEsc = (o.Equipo||'').replace(/'/g,"\\'");
-  const plantaEsc = (o.Planta||'').replace(/'/g,"\\'");
-  const descEsc   = (o.Descripcion||'').substring(0,60).replace(/'/g,"\\'");
-  const tecEsc    = (o.Tecnico||'').replace(/'/g,"\\'");
-  const prioEsc   = (o.Prioridad||'').replace(/'/g,"\\'");
-
-  const acciones = !cerrada ? `
-    <button class="card-btn card-btn-close" onclick="event.stopPropagation();abrirModalCerrar('${nroEsc}','${equipoEsc}','${plantaEsc}')">✓ Cerrar</button>
-    <button class="card-btn card-btn-copy"  onclick="event.stopPropagation();abrirWA('${nroEsc}','${equipoEsc}','${descEsc}','${tecEsc}','${prioEsc}')">📲 WA</button>
-  ` : `<button class="card-btn card-btn-copy" onclick="event.stopPropagation();abrirWA('${nroEsc}','${equipoEsc}','${descEsc}','${tecEsc}','${prioEsc}')">📲 WA</button>`;
-
-  return `
-  <div class="card" onclick="abrirDetalleOT('${nroEsc}')" style="cursor:pointer">
-    <div class="card-top">
-      <span class="card-num">${o.NroOT || '—'}</span>
-      <span class="card-prio ${prioClass}">${o.Prioridad || '—'}</span>
-    </div>
-    <div class="card-equipo">${o.Equipo || '—'}</div>
-    <div class="card-desc">${(o.Descripcion||'').substring(0,80)}${(o.Descripcion||'').length>80?'…':''}</div>
-    <div class="card-meta">
-      <span>📍 ${o.Planta || '—'}</span>
-      <span>👤 ${o.Tecnico || '—'}</span>
-      ${o.HorasEstimadas ? `<span>⏱ ${o.HorasEstimadas}h est.</span>` : ''}
-      ${cerrada && o.HorasReales ? `<span>✓ ${o.HorasReales}h reales</span>` : ''}
-      ${cerrada && o.Costo ? `<span>💰 Gs. ${Number(o.Costo).toLocaleString()}</span>` : ''}
-    </div>
-    <div class="card-actions" onclick="event.stopPropagation()">${acciones}</div>
-  </div>`;
-}
-
-// ── DETALLE OT ────────────────────────────────────────────
-let otDetalleActual = null;
-
-function abrirDetalleOT(nroOT) {
-  const o = otsTodas.find(x => x.NroOT === nroOT);
-  if (!o) return;
-  otDetalleActual = o;
-  const cerrada = (o.Estado||'').toLowerCase() === 'cerrada';
-
-  document.getElementById('mDetalleOTTitulo').textContent = o.NroOT + ' — ' + o.Equipo;
-
-  document.getElementById('mDetalleOTGrid').innerHTML = `
-    <div><span style="color:var(--muted);font-size:11px">EQUIPO</span><div style="font-weight:700;margin-top:2px">${o.Equipo||'—'}</div></div>
-    <div><span style="color:var(--muted);font-size:11px">PLANTA</span><div style="font-weight:700;margin-top:2px">${o.Planta||'—'}</div></div>
-    <div><span style="color:var(--muted);font-size:11px">TIPO</span><div style="margin-top:2px">${o.Tipo||'—'}</div></div>
-    <div><span style="color:var(--muted);font-size:11px">PRIORIDAD</span><div style="margin-top:2px">${o.Prioridad||'—'}</div></div>
-    <div><span style="color:var(--muted);font-size:11px">HORAS EST.</span><div style="margin-top:2px">${o.HorasEstimadas||'—'}</div></div>
-    <div><span style="color:var(--muted);font-size:11px">FECHA PROG.</span><div style="margin-top:2px;font-family:var(--mono);font-size:12px">${(o.FechaProgramada||'').slice(0,10)||'—'}</div></div>
-    ${cerrada ? `
-    <div><span style="color:var(--muted);font-size:11px">HORAS REALES</span><div style="margin-top:2px;color:var(--ok);font-weight:700">${o.HorasReales||'—'}</div></div>
-    <div><span style="color:var(--muted);font-size:11px">COSTO</span><div style="margin-top:2px;color:var(--ok);font-weight:700">Gs. ${Number(o.Costo||0).toLocaleString()}</div></div>
-    <div style="grid-column:span 2"><span style="color:var(--muted);font-size:11px">REPUESTOS</span><div style="margin-top:2px">${o.Repuestos||'—'}</div></div>
-    <div style="grid-column:span 2"><span style="color:var(--muted);font-size:11px">OBS. CIERRE</span><div style="margin-top:2px">${o.ObservacionesCierre||'—'}</div></div>
-    ` : ''}
-  `;
-
-  // Cargar técnicos en el select múltiple
-  const sel = document.getElementById('mDetalleOTTecnico');
-  sel.innerHTML = '';
-  TECNICOS.forEach(t => {
-    const opt = document.createElement('option');
-    opt.value = t.id;
-    opt.textContent = `${t.nombre} — ${t.esp}`;
-    // Pre-seleccionar si está asignado
-    if ((o.Tecnico||'').includes(t.nombre)) opt.selected = true;
-    sel.appendChild(opt);
-  });
-
-  document.getElementById('mDetalleOTDesc').value = o.Descripcion || '';
-
-  // Mostrar/ocultar botones según estado
-  const btnCerrar = document.getElementById('btnCerrarDesdeDetalle');
-  const btnGuardar = document.getElementById('btnGuardarDetalleOT');
-  btnCerrar.style.display  = cerrada ? 'none' : 'block';
-  btnGuardar.style.display = cerrada ? 'none' : 'block';
-
-  openModal('modalDetalleOT');
-}
-
-async function guardarCambiosOT() {
-  const tecSel = document.getElementById('mDetalleOTTecnico');
-  const tecnicos = Array.from(tecSel.selectedOptions).map(o => o.text.split(' — ')[0].trim()).join(', ');
-  const desc = document.getElementById('mDetalleOTDesc').value.trim();
-
-  if (!tecnicos) { showToast('Seleccioná al menos un técnico', 'err'); return; }
-
-  const btn = document.getElementById('btnGuardarDetalleOT');
-  btn.disabled = true; btn.textContent = 'Guardando…';
-
-  try {
-    const body = {
-      accion:      'actualizarOT',
-      otNro:       otDetalleActual.NroOT,
-      tecnico:     tecnicos,
-      descripcion: desc
-    };
-    const resp = await fetch(GS_API, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
-    const data = await resp.json();
-    if (!data.ok) throw new Error(data.error);
-    showToast('OT actualizada correctamente');
-    closeModal('modalDetalleOT');
-    btn.disabled = false; btn.textContent = '💾 Guardar cambios';
-    setTimeout(() => recargar(true), 1500);
-  } catch(e) {
-    btn.disabled = false; btn.textContent = '💾 Guardar cambios';
-    showToast('Error: ' + e.message, 'err');
-  }
-}
-
-function cerrarDesdeDetalle() {
-  closeModal('modalDetalleOT');
-  abrirModalCerrar(otDetalleActual.NroOT, otDetalleActual.Equipo, otDetalleActual.Planta);
-}
-
-// ── DETALLE FALLA ─────────────────────────────────────────
-function abrirDetalleFalla(fallaId) {
-  const f = fallasTodas.find(x => x.ID === fallaId);
-  if (!f) return;
-
-  const fecha  = (f.Fecha||'').toString().slice(0,10);
-  const hora   = (f.Hora||'').toString().slice(0,5);
-  const parado = (f.Detenido||'').includes('parado');
-
-  document.getElementById('mDetalleTitulo').textContent = f.Equipo + ' — ' + f.Planta;
-
-  const fotoHtml = f.FotoURL
-    ? `<div style="margin-top:4px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Foto de evidencia</div>
-        <a href="${f.FotoURL}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:8px;color:#60a5fa;font-size:13px;font-weight:600;text-decoration:none;transition:background .15s"
-          onmouseover="this.style.background='rgba(59,130,246,.2)'" onmouseout="this.style.background='rgba(59,130,246,.1)'">
-          📷 Ver foto en Google Drive
-        </a>
-       </div>`
-    : (f.CantFotos > 0 ? `<div style="font-size:12px;color:var(--muted);padding:10px;background:var(--surface2);border-radius:8px">📷 ${f.CantFotos} foto(s) — reporte cargado antes del sistema de Drive</div>` : '');
-
-  document.getElementById('mDetalleBody').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
-      <div><span style="color:var(--muted);font-size:11px">EQUIPO</span><div style="font-weight:700;margin-top:2px">${f.Equipo||'—'}</div></div>
-      <div><span style="color:var(--muted);font-size:11px">PLANTA</span><div style="font-weight:700;margin-top:2px">${f.Planta||'—'}</div></div>
-      <div><span style="color:var(--muted);font-size:11px">SISTEMA</span><div style="margin-top:2px">${f.Sistema||'—'}</div></div>
-      <div><span style="color:var(--muted);font-size:11px">OPERADOR</span><div style="margin-top:2px">${f.Operador||'—'}</div></div>
-      <div><span style="color:var(--muted);font-size:11px">TURNO</span><div style="margin-top:2px">${f.Turno||'—'}</div></div>
-      <div><span style="color:var(--muted);font-size:11px">FECHA / HORA</span><div style="margin-top:2px;font-family:var(--mono);font-size:12px">${fecha} ${hora}</div></div>
-    </div>
-    <div style="margin-top:12px">
-      <span style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Estado del equipo</span>
-      <div style="margin-top:4px;padding:8px 12px;border-radius:6px;font-weight:700;font-size:13px;
-        background:${parado ? 'rgba(239,68,68,.12)' : 'rgba(34,197,94,.08)'};
-        color:${parado ? '#fca5a5' : 'var(--ok)'}">
-        ${f.Detenido||'—'}
-      </div>
-    </div>
-    <div style="margin-top:12px">
-      <span style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Descripción del síntoma</span>
-      <div style="margin-top:4px;padding:10px 12px;background:var(--surface2);border-radius:8px;font-size:13px;line-height:1.6;color:var(--label)">${f.Sintoma||'—'}</div>
-    </div>
-    ${fotoHtml}
-  `;
-
-  // Mostrar botón OT solo si está pendiente
-  const btnOT = document.getElementById('btnDetalleOT');
-  btnOT.style.display = (f.Estado||'').toLowerCase() === 'pendiente' ? 'block' : 'none';
-
-  // Guardar falla actual para generar OT
-  fallaActual = f;
-
-  openModal('modalDetalle');
-}
-
-function generarOTdesdeDetalle() {
-  closeModal('modalDetalle');
-  abrirModalOT(fallaActual.ID);
-}
-
-// ── MODAL: GENERAR OT ─────────────────────────────────────
-function abrirModalOT(fallaId) {
-  fallaActual = fallasTodas.find(f => f.ID === fallaId);
-  if (!fallaActual) return;
-
-  document.getElementById('mOtEquipo').textContent = (fallaActual.Equipo || '') + ' — ' + (fallaActual.Planta || '');
-  document.getElementById('mOtDesc').textContent   = (fallaActual.Sintoma || '').substring(0,100);
-  document.getElementById('mOtNro').value  = 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4);
-  document.getElementById('mOtHoras').value = '';
-  document.getElementById('mOtObs').value   = fallaActual.Sintoma || '';
-
-  // Prioridad automática
-  const prio = (fallaActual.Detenido||'').includes('parado') ? 'Alta' : (fallaActual.Detenido||'').includes('Parcial') ? 'Media' : 'Baja';
-  document.querySelectorAll('#mOtPrioGroup .chip').forEach(c => { c.classList.toggle('selected', c.dataset.val === prio); });
-  document.querySelectorAll('#mOtTipoGroup .chip').forEach(c => { c.classList.toggle('selected', c.dataset.val === 'Correctivo'); });
-
-  openModal('modalGenOT');
-}
-
-async function submitModalOT() {
-  const nro    = document.getElementById('mOtNro').value.trim();
-  const tipo   = getChipVal('mOtTipoGroup');
-  const prio   = getChipVal('mOtPrioGroup');
-  const tecSel  = document.getElementById('mOtTecnico');
-  const tecSeleccionados = Array.from(tecSel.selectedOptions).map(o => o.text.split(' — ')[0].trim());
-  const tec = tecSeleccionados.join(', ');
-  if (!tec) { showToast('Seleccioná al menos un técnico', 'err'); return; }
-  const horas  = document.getElementById('mOtHoras').value;
-  const fecha  = document.getElementById('mOtFecha').value;
-  const obs    = document.getElementById('mOtObs').value.trim();
-
-  if (!nro || !tipo || !prio) { showToast('Completar campos obligatorios', 'err'); return; }
-
-  const btn = document.getElementById('btnModalOT');
-  btn.disabled = true; btn.textContent = 'Creando…';
-
-  try {
-    const body = {
-      accion: 'ot', nroOT: nro,
-      fallaId: fallaActual?.ID || '',
-      equipo: fallaActual?.Equipo || '',
-      planta: fallaActual?.Planta || '',
-      tipo, prioridad: prio, tecnico: tec,
-      descripcion: obs, horasEstimadas: horas || '',
-      fechaProgramada: fecha, observaciones: ''
-    };
-    const resp = await fetch(GS_API, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
-    const data = await resp.json();
-    if (!data.ok) throw new Error(data.error);
-
-    showToast('OT ' + nro + ' creada');
-    closeModal('modalGenOT');
-    btn.disabled = false; btn.textContent = '⚙ Crear OT';
-    setTimeout(() => recargar(true), 1500);
-  } catch(e) {
-    btn.disabled = false; btn.textContent = '⚙ Crear OT';
-    showToast('Error: ' + e.message, 'err');
-  }
-}
-
-// ── MODAL: CERRAR OT ──────────────────────────────────────
-function abrirModalCerrar(nroOT, equipo, planta) {
-  otActual = { nroOT, equipo, planta };
-  document.getElementById('mCerrarNro').textContent    = nroOT;
-  document.getElementById('mCerrarEquipo').textContent = equipo + ' — ' + planta;
-  document.getElementById('mCerrarHoras').value    = '';
-  document.getElementById('mCerrarRepuestos').value = '';
-  document.getElementById('mCerrarCosto').value    = '';
-  document.getElementById('mCerrarObs').value      = '';
-  openModal('modalCerrar');
-}
-
-async function submitCerrar() {
-  const horas = document.getElementById('mCerrarHoras').value;
-  const obs   = document.getElementById('mCerrarObs').value.trim();
-  if (!horas) { showToast('Ingresá las horas reales', 'err'); return; }
-  if (!obs)   { showToast('Ingresá las observaciones de cierre', 'err'); return; }
-
-  const btn = document.getElementById('btnModalCerrar');
-  btn.disabled = true; btn.textContent = 'Cerrando…';
-
-  try {
-    const body = {
-      accion: 'cerrarOT',
-      otNro:  otActual.nroOT,
-      fallaId: '',
-      horasReales:   parseFloat(horas),
-      repuestos:     document.getElementById('mCerrarRepuestos').value.trim(),
-      costo:         parseFloat(document.getElementById('mCerrarCosto').value) || 0,
-      observaciones: obs,
-      fechaCierre:   document.getElementById('mCerrarFecha').value
-    };
-    const resp = await fetch(GS_API, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
-    const data = await resp.json();
-    if (!data.ok) throw new Error(data.error);
-
-    showToast('OT ' + otActual.nroOT + ' cerrada');
-    closeModal('modalCerrar');
-    btn.disabled = false; btn.textContent = '✓ Confirmar cierre';
-    // Esperar 1.5 segundos para que Google Sheets procese antes de recargar
-    setTimeout(() => recargar(true), 1500);
-  } catch(e) {
-    btn.disabled = false; btn.textContent = '✓ Confirmar cierre';
-    showToast('Error: ' + e.message, 'err');
-  }
-}
-
-// ── WHATSAPP ──────────────────────────────────────────────
-function abrirWA(nroOT, equipo, desc, tecnico, prioridad) {
-  const texto = `*${nroOT}*\n📍 ${equipo}\n🔧 ${desc}\n👤 Técnico: ${tecnico}\n⚡ Prioridad: ${prioridad}\n\n_Cimplast · Sistema de Mantenimiento_`;
-  document.getElementById('waText').textContent = texto;
-  openModal('modalWA');
-}
-function selectWAText() {
-  const el = document.getElementById('waText');
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  window.getSelection().removeAllRanges();
-  window.getSelection().addRange(range);
-}
-function copyWAText() {
-  const text = document.getElementById('waText').textContent;
-  navigator.clipboard.writeText(text).then(() => showToast('Texto copiado'));
-}
-
-// ── NUEVA OT DIRECTA ──────────────────────────────────────
-async function crearOTDirecta() {
-  const planta = document.getElementById('nOtPlanta').value;
-  const equipo = document.getElementById('nOtEquipo').value;
-  const tipo   = getChipVal('nOtTipoGroup');
-  const prio   = getChipVal('nOtPrioGroup');
-  const tecSel  = document.getElementById('nOtTecnico');
-  const tecSeleccionados = Array.from(tecSel.selectedOptions).map(o => o.text.split(' — ')[0].trim());
-  const tec = tecSeleccionados.join(', ');
-  const desc   = document.getElementById('nOtDesc').value.trim();
-  const nro    = document.getElementById('nOtNro').value.trim();
-
-  if (!nro || !planta || !equipo || !tipo || !prio || !tecSel.value || !desc) {
-    showToast('Completar todos los campos obligatorios', 'err'); return;
-  }
-
-  const btn = document.getElementById('btnNuevaOT');
-  btn.disabled = true; btn.textContent = 'Creando…';
-
-  try {
-    const body = {
-      accion: 'ot', nroOT: nro, fallaId: '',
-      equipo, planta, tipo, prioridad: prio, tecnico: tec,
-      descripcion: desc,
-      horasEstimadas: document.getElementById('nOtHoras').value || '',
-      fechaProgramada: document.getElementById('nOtFecha').value,
-      observaciones: document.getElementById('nOtObs').value.trim()
-    };
-    const resp = await fetch(GS_API, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
-    const data = await resp.json();
-    if (!data.ok) throw new Error(data.error);
-
-    showToast('OT ' + nro + ' creada correctamente');
-    btn.disabled = false; btn.textContent = '⚙ Crear Orden de Trabajo';
-    // Reset form
-    document.getElementById('nOtDesc').value = '';
-    document.getElementById('nOtObs').value  = '';
-    document.getElementById('nOtNro').value  = 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4);
-    document.querySelectorAll('#viewNuevaOt .chip').forEach(c => c.classList.remove('selected'));
-    switchView('kanban');
-    document.querySelectorAll('.nav-btn')[0].classList.add('active');
-    document.querySelectorAll('.nav-btn')[1].classList.remove('active');
-    setTimeout(() => recargar(true), 1500);
-  } catch(e) {
-    btn.disabled = false; btn.textContent = '⚙ Crear Orden de Trabajo';
-    showToast('Error: ' + e.message, 'err');
-  }
-}
-
-// ── HELPERS ───────────────────────────────────────────────
-function selChip(el, groupId) {
-  document.querySelectorAll(`#${groupId} .chip`).forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-}
-function getChipVal(groupId) {
-  return document.querySelector(`#${groupId} .chip.selected`)?.dataset.val || '';
-}
-function openModal(id)  { document.getElementById(id).classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-
-function cargarTecnicosSelects() {
-  ['mOtTecnico','nOtTecnico'].forEach(selId => {
-    const sel = document.getElementById(selId);
-    sel.innerHTML = '';
-    TECNICOS.forEach(t => {
-      const opt = document.createElement('option');
-      opt.value = t.id;
-      opt.textContent = `${t.nombre} — ${t.esp}`;
-      sel.appendChild(opt);
+  componentDidMount() {
+    const hoy = this.iso(new Date());
+    const hace30 = this.iso(new Date(Date.now() - 30 * 864e5));
+    let log = [], tels = {}, user = null;
+    try { log = JSON.parse(localStorage.getItem('cimplast_log') || '[]'); } catch (e) {}
+    try { tels = JSON.parse(localStorage.getItem('cimplast_tels') || '{}'); } catch (e) {}
+    try { user = localStorage.getItem('cimplast_sup') || null; } catch (e) {}
+    this.setState({
+      fDesde: hace30, fHasta: hoy, cFecha: hoy, nOtFecha: hoy, mOtFecha: hoy,
+      nOtNro: this.nuevoNro(), log, tels, user
     });
-  });
-}
+    import('./equipos.js')
+      .then(m => this.setState({ catalogo: m.EQUIPOS || {}, plantasMaster: m.PLANTAS || PLANTAS }))
+      .catch(() => {});
+    this.timer = setInterval(() => this.cargar(true), Math.max(30, this.props.autoRefreshSec || 120) * 1000);
+    this.cargar();
+  }
+  componentWillUnmount() { clearInterval(this.timer); clearTimeout(this.toastT); }
 
-function updateEquiposModal() {
-  const planta = document.getElementById('nOtPlanta').value;
-  const sel    = document.getElementById('nOtEquipo');
-  sel.innerHTML = '<option value="">— Seleccionar equipo —</option>';
-  if (planta && EQUIPOS[planta]) {
-    EQUIPOS[planta].forEach(eq => {
-      const opt = document.createElement('option');
-      opt.value = eq; opt.textContent = eq;
-      sel.appendChild(opt);
+  iso(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); }
+  nuevoNro() { return 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4); }
+  set(k, v) { this.setState({ [k]: v }); }
+  bind(k) { return e => this.setState({ [k]: e.target.value }); }
+
+  toast(msg, tipo) {
+    clearTimeout(this.toastT);
+    this.setState({ toast: { msg, tipo: tipo || 'ok' } });
+    this.toastT = setTimeout(() => this.setState({ toast: null }), 3600);
+  }
+
+  registrar(ref, texto) {
+    const entry = { ref, texto, usuario: this.state.user || 'Sin identificar', ts: new Date().toISOString() };
+    const log = [entry, ...this.state.log].slice(0, 300);
+    this.setState({ log });
+    try { localStorage.setItem('cimplast_log', JSON.stringify(log)); } catch (e) {}
+  }
+
+  async cargar(silencioso) {
+    this.setState({ spinning: true, loading: !silencioso && !this.state.fallas.length });
+    try {
+      const [rf, ro] = await Promise.all([
+        fetch(this.api + '?accion=fallas').then(r => r.json()),
+        fetch(this.api + '?accion=ots').then(r => r.json())
+      ]);
+      this.setState({
+        fallas: rf.fallas || [], ots: ro.ots || [],
+        lastSync: 'act. ' + new Date().toTimeString().slice(0, 5)
+      });
+    } catch (e) {
+      if (!silencioso) this.toast('No se pudieron cargar los datos', 'err');
+    } finally {
+      this.setState({ spinning: false, loading: false });
+    }
+  }
+
+  async post(body) {
+    const r = await fetch(this.api, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Error en la API');
+    return d;
+  }
+
+  // ── filtros ───────────────────────────────────────────
+  enRango(fechaRaw) {
+    const f = (fechaRaw || '').toString().slice(0, 10);
+    if (!f) return true;
+    if (this.state.fDesde && f < this.state.fDesde) return false;
+    if (this.state.fHasta && f > this.state.fHasta) return false;
+    return true;
+  }
+  normPlanta(p) {
+    const raw = (p || '').toString().trim();
+    if (!raw) return '';
+    return ALIAS_PLANTA[raw.toLowerCase()] || raw;
+  }
+  plantasDisponibles() {
+    const base = this.state.plantasMaster && this.state.plantasMaster.length ? this.state.plantasMaster : PLANTAS;
+    const orden = PLANTAS.filter(p => base.indexOf(p) >= 0).concat(base.filter(p => PLANTAS.indexOf(p) < 0));
+    const found = [];
+    this.state.fallas.concat(this.state.ots).forEach(x => {
+      const p = this.normPlanta(x.Planta);
+      if (p && orden.indexOf(p) < 0 && found.indexOf(p) < 0) found.push(p);
+    });
+    return orden.concat(found.sort());
+  }
+  equiposDe(planta) {
+    const cat = this.state.catalogo || {};
+    const lista = planta ? (cat[planta] || []) : Object.keys(cat).reduce((a, k) => a.concat(cat[k]), []);
+    return lista.map(e => (e.c ? e.c + ' — ' : '') + e.n);
+  }
+  fallasFiltradas() {
+    const { fPlanta, fEquipo } = this.state;
+    const q = fEquipo.toLowerCase().trim();
+    return this.state.fallas.filter(f =>
+      this.enRango(f.Fecha) &&
+      (!fPlanta || this.normPlanta(f.Planta) === fPlanta) &&
+      (!q || (f.Equipo || '').toLowerCase().includes(q))
+    );
+  }
+  otsFiltradas() {
+    const { fPlanta, fEquipo, fTecnico } = this.state;
+    const q = fEquipo.toLowerCase().trim();
+    return this.state.ots.filter(o =>
+      this.enRango(o.FechaCreacion || o.FechaProgramada) &&
+      (!fPlanta || this.normPlanta(o.Planta) === fPlanta) &&
+      (!fTecnico || (o.Tecnico || '').includes(fTecnico)) &&
+      (!q || (o.Equipo || '').toLowerCase().includes(q))
+    );
+  }
+  estado(x) { return (x.Estado || '').trim().toLowerCase(); }
+
+  // ── drag & drop ───────────────────────────────────────
+  dragStart(tipo, item) {
+    return e => {
+      this.setState({ dragging: { tipo, item } });
+      try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', tipo); } catch (err) {}
+    };
+  }
+  dragEnd() { return () => this.setState({ dragging: null, dragOver: null }); }
+  dropZone(key, tipo, destino) {
+    return {
+      onDragOver: e => { e.preventDefault(); if (this.state.dragOver !== key) this.setState({ dragOver: key }); },
+      onDragLeave: () => { if (this.state.dragOver === key) this.setState({ dragOver: null }); },
+      onDrop: e => {
+        e.preventDefault();
+        const d = this.state.dragging;
+        this.setState({ dragOver: null, dragging: null });
+        if (!d || d.tipo !== tipo) return;
+        this.manejarDrop(d, destino);
+      }
+    };
+  }
+  manejarDrop(d, destino) {
+    if (d.tipo === 'falla') {
+      const est = this.estado(d.item);
+      if (destino === 'ot' && est === 'pendiente') return this.abrirGenOT(d.item);
+      if (destino === 'done' && est !== 'concluido') return this.toast('Una falla se cierra al cerrar su OT', 'err');
+      return;
+    }
+    if (d.tipo === 'ot' && destino === 'cerrada' && this.estado(d.item) !== 'cerrada') return this.abrirCierre(d.item);
+  }
+
+  // ── modales ───────────────────────────────────────────
+  abrirDetalleFalla(f) { this.setState({ modal: 'falla', modalData: f }); }
+  abrirGenOT(f) {
+    const prio = (f.Detenido || '').includes('parado') ? 'Alta' : (f.Detenido || '').includes('Parcial') ? 'Media' : 'Baja';
+    this.setState({
+      modal: 'genOT', modalData: f, mOtNro: this.nuevoNro(), mOtTipo: 'Correctivo',
+      mOtPrio: prio, mOtTecs: [], mOtDesc: f.Sintoma || '', mOtHoras: '', mOtFecha: this.iso(new Date())
     });
   }
+  abrirDetalleOT(o) {
+    const tecs = TECNICOS.filter(t => (o.Tecnico || '').includes(t.nombre)).map(t => t.nombre);
+    this.setState({ modal: 'detalleOT', modalData: o, mOtTecs: tecs, mOtDesc: o.Descripcion || '', mOtHoras: o.HorasEstimadas || '' });
+  }
+  abrirCierre(o) {
+    this.setState({ modal: 'cerrar', modalData: o, cHoras: '', cRepuestos: '', cCosto: '', cObs: '', cFecha: this.iso(new Date()) });
+  }
+  abrirWA(o) {
+    const tel = this.telDe(o.Tecnico);
+    const texto = '*' + (o.NroOT || '') + '* — ' + (o.Equipo || '') + '\n' +
+      'Planta: ' + (o.Planta || '-') + '\n' +
+      'Prioridad: ' + (o.Prioridad || '-') + '\n' +
+      'Tarea: ' + (o.Descripcion || '-') + '\n' +
+      (o.FechaProgramada ? 'Programada: ' + String(o.FechaProgramada).slice(0, 10) + '\n' : '') +
+      'Asignada a: ' + (o.Tecnico || '-') + '\n\n' +
+      'Cimplast · Mantenimiento';
+    this.setState({
+      modal: 'wa', modalData: o, waText: texto,
+      waUrl: 'https://wa.me/' + (tel || '') + '?text=' + encodeURIComponent(texto)
+    });
+  }
+  telDe(nombre) {
+    const first = (nombre || '').split(',')[0].trim();
+    const t = this.state.tels[first] || '';
+    return t.replace(/[^0-9]/g, '');
+  }
+  cerrarModal() { this.setState({ modal: null, modalData: null }); }
+
+  // ── acciones ──────────────────────────────────────────
+  async crearOT(origen) {
+    const s = this.state;
+    const esModal = origen === 'modal';
+    const nro = esModal ? s.mOtNro : s.nOtNro;
+    const tecs = esModal ? s.mOtTecs : s.nOtTecs;
+    const planta = esModal ? (s.modalData || {}).Planta : s.nOtPlanta;
+    const equipo = esModal ? (s.modalData || {}).Equipo : s.nOtEquipo;
+    const desc = esModal ? s.mOtDesc : s.nOtDesc;
+    if (!nro || !planta || !equipo || !tecs.length || !desc.trim()) { this.toast('Faltan campos obligatorios', 'err'); return; }
+    this.setState({ busy: true });
+    try {
+      await this.post({
+        accion: 'ot', nroOT: nro, fallaId: esModal ? (s.modalData.ID || '') : '',
+        equipo, planta, tipo: esModal ? s.mOtTipo : s.nOtTipo,
+        prioridad: esModal ? s.mOtPrio : s.nOtPrio, tecnico: tecs.join(', '),
+        descripcion: desc.trim(), horasEstimadas: (esModal ? s.mOtHoras : s.nOtHoras) || '',
+        fechaProgramada: esModal ? s.mOtFecha : s.nOtFecha, observaciones: ''
+      });
+      this.registrar(nro, 'OT creada y asignada a ' + tecs.join(', '));
+      this.toast('OT ' + nro + ' creada');
+      const ot = { NroOT: nro, Equipo: equipo, Planta: planta, Prioridad: esModal ? s.mOtPrio : s.nOtPrio, Descripcion: desc.trim(), Tecnico: tecs.join(', '), FechaProgramada: esModal ? s.mOtFecha : s.nOtFecha };
+      this.setState({ busy: false, nOtNro: this.nuevoNro(), nOtDesc: '', nOtTecs: [], modal: null, modalData: null });
+      if (this.props.avisarWhatsApp !== false) this.abrirWA(ot);
+      setTimeout(() => this.cargar(true), 1500);
+    } catch (e) {
+      this.setState({ busy: false });
+      this.toast('Error: ' + e.message, 'err');
+    }
+  }
+
+  async guardarOT() {
+    const s = this.state, o = s.modalData;
+    if (!s.mOtTecs.length) { this.toast('Seleccioná al menos un técnico', 'err'); return; }
+    this.setState({ busy: true });
+    try {
+      await this.post({ accion: 'actualizarOT', otNro: o.NroOT, tecnico: s.mOtTecs.join(', '), descripcion: s.mOtDesc.trim() });
+      this.registrar(o.NroOT, 'Reasignada a ' + s.mOtTecs.join(', '));
+      this.toast('OT actualizada');
+      this.setState({ busy: false, modal: null, modalData: null });
+      setTimeout(() => this.cargar(true), 1500);
+    } catch (e) { this.setState({ busy: false }); this.toast('Error: ' + e.message, 'err'); }
+  }
+
+  async cerrarOT() {
+    const s = this.state, o = s.modalData;
+    if (!s.cHoras) { this.toast('Ingresá las horas reales', 'err'); return; }
+    if (!s.cObs.trim()) { this.toast('Ingresá las observaciones de cierre', 'err'); return; }
+    this.setState({ busy: true });
+    try {
+      await this.post({
+        accion: 'cerrarOT', otNro: o.NroOT, fallaId: o.FallaID || o.FallaId || '',
+        horasReales: parseFloat(s.cHoras), repuestos: s.cRepuestos.trim(),
+        costo: parseFloat(s.cCosto) || 0, observaciones: s.cObs.trim(), fechaCierre: s.cFecha
+      });
+      this.registrar(o.NroOT, 'OT cerrada · ' + s.cHoras + ' h reales' + (s.cRepuestos ? ' · repuestos: ' + s.cRepuestos.trim() : ''));
+      this.toast('OT ' + o.NroOT + ' cerrada');
+      this.setState({ busy: false, modal: null, modalData: null });
+      setTimeout(() => this.cargar(true), 1500);
+    } catch (e) { this.setState({ busy: false }); this.toast('Error: ' + e.message, 'err'); }
+  }
+
+  // ── helpers de render ─────────────────────────────────
+  iniciales(n) { return (n || '?').split(' ').filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase(); }
+  hhmm(v) {
+    const s = (v || '').toString();
+    if (!s) return '';
+    if (s.indexOf('T') > 0) return s.slice(11, 16);
+    return s.slice(0, 5);
+  }
+  fmtFecha(f, h) {
+    const d = (f || '').toString().slice(0, 10);
+    const t = this.hhmm(h);
+    if (!d) return '—';
+    const [y, m, dd] = d.split('-');
+    return dd + '/' + m + (t ? ' ' + t : '');
+  }
+  fmtLog(ts) {
+    const d = new Date(ts);
+    return d.toLocaleDateString('es-PY', { day: '2-digit', month: '2-digit' }) + ' ' + d.toTimeString().slice(0, 5);
+  }
+
+  chipRow(valor, opciones, key) {
+    return opciones.map(o => ({
+      label: o, style: valor === o ? CHIP_ON : CHIP_OFF, onPick: () => this.set(key, o)
+    }));
+  }
+  tecChips(sel, key) {
+    return TECNICOS.map(t => ({
+      label: t.nombre.split(' ')[0] + ' ' + (t.nombre.split(' ')[1] || ''),
+      style: sel.includes(t.nombre) ? CHIP_ON : CHIP_OFF,
+      onPick: () => {
+        const next = sel.includes(t.nombre) ? sel.filter(x => x !== t.nombre) : sel.concat([t.nombre]);
+        this.set(key, next);
+      }
+    }));
+  }
+
+  cardFalla(f) {
+    const parado = (f.Detenido || '').includes('parado');
+    const est = this.estado(f);
+    const drag = this.state.dragging && this.state.dragging.item === f;
+    return {
+      ref: (f.ID || '').slice(-8) || '—',
+      equipo: f.Equipo || '—',
+      desc: (f.Sintoma || '').slice(0, 92) + ((f.Sintoma || '').length > 92 ? '…' : ''),
+      planta: this.normPlanta(f.Planta) || '—', operador: f.Operador || '—',
+      cuando: this.fmtFecha(f.Fecha, f.Hora),
+      badge: parado ? 'PARADO' : (f.Turno || 'En operación'),
+      badgeStyle: parado ? 'background: rgba(240,119,107,.18); color: #ff8d81' : 'background: #1b222c; color: #8b96a8',
+      cardStyle: 'background: #171d26; border: 1px solid #232c39; border-left: 3px solid ' + (parado ? '#e5544a' : '#232c39') +
+        '; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; cursor: grab; opacity: ' + (drag ? '.45' : '1') + '; transition: border-color .15s, box-shadow .15s',
+      puedeOT: est === 'pendiente',
+      onOpen: () => this.abrirDetalleFalla(f),
+      onGenOT: e => { e.stopPropagation(); this.abrirGenOT(f); },
+      onDragStart: this.dragStart('falla', f),
+      onDragEnd: this.dragEnd()
+    };
+  }
+
+  cardOT(o) {
+    const prio = o.Prioridad || '—';
+    const prioStyle = prio === 'Alta' ? 'background: rgba(240,119,107,.16); color: #ff8d81'
+      : prio === 'Baja' ? 'background: rgba(75,184,95,.14); color: #6cd07e'
+      : 'background: rgba(240,169,46,.14); color: #f0a92e';
+    const abierta = this.estado(o) !== 'cerrada';
+    const drag = this.state.dragging && this.state.dragging.item === o;
+    return {
+      nro: o.NroOT || '—', equipo: o.Equipo || '—', planta: this.normPlanta(o.Planta) || '—',
+      tecnico: o.Tecnico || 'Sin asignar', prioridad: prio, prioStyle,
+      desc: (o.Descripcion || '').slice(0, 84) + ((o.Descripcion || '').length > 84 ? '…' : ''),
+      horas: abierta ? ((o.HorasEstimadas || '?') + ' h est.') : (o.HorasReales ? o.HorasReales + ' h reales' : 'cerrada'),
+      abierta,
+      cardStyle: 'background: #171d26; border: 1px solid #232c39; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; cursor: grab; opacity: ' + (drag ? '.45' : '1') + '; transition: border-color .15s',
+      onOpen: () => this.abrirDetalleOT(o),
+      onCerrar: e => { e.stopPropagation(); this.abrirCierre(o); },
+      onWA: e => { e.stopPropagation(); this.abrirWA(o); },
+      onDragStart: this.dragStart('ot', o),
+      onDragEnd: this.dragEnd()
+    };
+  }
+
+  columna(key, title, dot, items, tipo, destino, emptyMsg, mapper) {
+    const activa = this.state.dragOver === key && this.state.dragging && this.state.dragging.tipo === tipo;
+    const zone = this.dropZone(key, tipo, destino);
+    return Object.assign({
+      title, count: items.length, emptyMsg, vacio: items.length === 0,
+      dotStyle: 'background: ' + dot,
+      style: COL_BASE + ' border: 1px solid ' + (activa ? '#f0a92e' : '#232c39') + '; background: ' + (activa ? '#161d26' : '#12161d') + ';',
+      items: items.map(mapper)
+    }, zone);
+  }
+
+  // ── KPIs ──────────────────────────────────────────────
+  calcKpis() {
+    const fallas = this.fallasFiltradas(), ots = this.otsFiltradas();
+    const cerradas = ots.filter(o => this.estado(o) === 'cerrada');
+    const abiertas = ots.filter(o => this.estado(o) !== 'cerrada');
+    const horas = cerradas.map(o => parseFloat(o.HorasReales) || 0).filter(h => h > 0);
+    const mttr = horas.length ? (horas.reduce((a, b) => a + b, 0) / horas.length) : 0;
+    const costo = cerradas.reduce((a, o) => a + (parseFloat(o.Costo) || 0), 0);
+    const pend = fallas.filter(f => this.estado(f) === 'pendiente').length;
+    const cumpl = ots.length ? Math.round(cerradas.length / ots.length * 100) : 0;
+    const dias = Math.max(1, Math.round((new Date(this.state.fHasta) - new Date(this.state.fDesde)) / 864e5));
+    const equipos = {};
+    fallas.forEach(f => { const k = f.Equipo || '—'; equipos[k] = (equipos[k] || 0) + 1; });
+    const nEquipos = Object.keys(equipos).length || 1;
+    const mtbf = fallas.length ? (dias * 24 * nEquipos / fallas.length) : 0;
+    const conCierre = cerradas.some(o => parseFloat(o.HorasReales) > 0);
+    return { fallas, ots, cerradas, abiertas, mttr, costo, pend, cumpl, dias, equipos, mtbf, conCierre };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const k = this.calcKpis();
+    const tab = s.tab;
+    const fallas = k.fallas, ots = k.ots;
+
+    const fPend = fallas.filter(f => this.estado(f) === 'pendiente');
+    const fCurso = fallas.filter(f => this.estado(f) === 'en curso');
+    const fDone = fallas.filter(f => this.estado(f) === 'concluido');
+    const otAb = ots.filter(o => this.estado(o) === 'abierta' || (this.estado(o) !== 'cerrada' && o.NroOT));
+    const otCer = ots.filter(o => this.estado(o) === 'cerrada');
+
+    const tabStyle = activo => 'padding: 7px 14px; border-radius: 9px; font-size: 13px; font-weight: 700; transition: all .15s; ' +
+      (activo ? 'background: #1b222c; color: #f0a92e;' : 'color: #6f7c90;');
+
+    // ── modal ──
+    const o = s.modalData || {};
+    const m = s.modal;
+    const actions = [];
+    const btn = (label, onClick, color) => ({
+      label, onClick,
+      style: 'font-size: 13px; font-weight: 800; padding: 10px 18px; border-radius: 9px; color: ' +
+        (color === 'green' ? '#0b1410' : color === 'blue' ? '#fff' : '#12161d') + '; background: ' +
+        (color === 'green' ? '#4bb85f' : color === 'blue' ? '#3f8ef0' : '#f0a92e') + (s.busy ? '; opacity: .55' : '')
+    });
+    if (m === 'falla' && this.estado(o) === 'pendiente') actions.push(btn('Generar OT', () => this.abrirGenOT(o)));
+    if (m === 'genOT') actions.push(btn(s.busy ? 'Creando…' : 'Crear OT', () => this.crearOT('modal')));
+    if (m === 'detalleOT' && this.estado(o) !== 'cerrada') {
+      actions.push(btn('Guardar cambios', () => this.guardarOT(), 'blue'));
+      actions.push(btn('Cerrar OT', () => this.abrirCierre(o), 'green'));
+    }
+    if (m === 'cerrar') actions.push(btn(s.busy ? 'Cerrando…' : 'Confirmar cierre', () => this.cerrarOT(), 'green'));
+    if (m === 'wa') {
+      actions.push(btn('Copiar texto', () => { navigator.clipboard.writeText(s.waText); this.toast('Texto copiado'); }, 'blue'));
+      actions.push(btn(this.telDe(o.Tecnico) ? 'Abrir WhatsApp' : 'Abrir WhatsApp (elegir contacto)', () => {
+        window.open(s.waUrl, '_blank');
+        this.registrar(o.NroOT || '—', 'Aviso enviado por WhatsApp a ' + (o.Tecnico || '—'));
+      }, 'green'));
+    }
+
+    let detalleCampos = [];
+    if (m === 'falla') {
+      detalleCampos = [
+        { label: 'EQUIPO', value: o.Equipo || '—' }, { label: 'PLANTA', value: this.normPlanta(o.Planta) || '—' },
+        { label: 'SISTEMA', value: o.Sistema || '—' }, { label: 'OPERADOR', value: o.Operador || '—' },
+        { label: 'TURNO', value: o.Turno || '—' }, { label: 'FECHA / HORA', value: this.fmtFecha(o.Fecha, o.Hora) },
+        { label: 'ESTADO DEL EQUIPO', value: o.Detenido || '—', span: true,
+          valueStyle: 'font-weight: 700; color: ' + ((o.Detenido || '').includes('parado') ? '#ff8d81' : '#6cd07e') },
+        { label: 'SÍNTOMA REPORTADO', value: o.Sintoma || '—', span: true }
+      ];
+    } else if (m === 'detalleOT') {
+      const cerr = this.estado(o) === 'cerrada';
+      detalleCampos = [
+        { label: 'EQUIPO', value: o.Equipo || '—' }, { label: 'PLANTA', value: this.normPlanta(o.Planta) || '—' },
+        { label: 'TIPO', value: o.Tipo || '—' }, { label: 'PRIORIDAD', value: o.Prioridad || '—' },
+        { label: 'HORAS EST.', value: o.HorasEstimadas || '—' },
+        { label: 'FECHA PROG.', value: (o.FechaProgramada || '').toString().slice(0, 10) || '—' }
+      ];
+      if (cerr) detalleCampos = detalleCampos.concat([
+        { label: 'HORAS REALES', value: o.HorasReales || '—', valueStyle: 'color: #6cd07e; font-weight: 700' },
+        { label: 'COSTO', value: 'Gs. ' + Number(o.Costo || 0).toLocaleString('es-PY'), valueStyle: 'color: #6cd07e; font-weight: 700' },
+        { label: 'REPUESTOS', value: o.Repuestos || '—', span: true },
+        { label: 'OBSERVACIONES DE CIERRE', value: o.ObservacionesCierre || '—', span: true }
+      ]);
+    }
+    detalleCampos = detalleCampos.map(d => ({
+      label: d.label, value: d.value,
+      valueStyle: d.valueStyle || 'color: #dbe3ec',
+      wrapStyle: d.span ? 'grid-column: span 2' : ''
+    }));
+
+    const refLog = m === 'detalleOT' || m === 'cerrar' ? (o.NroOT || '') : '';
+    const historial = s.log.filter(l => l.ref === refLog).map(l => ({ cuando: this.fmtLog(l.ts), texto: l.texto, usuario: l.usuario }));
+
+    // ── KPI tiles ──
+    const faltaCierre = 'La hoja no guarda todavía HorasReales / Costo al cerrar la OT';
+    const disponibilidad = k.dias ? Math.max(0, 100 - (k.cerradas.reduce((a, x) => a + (parseFloat(x.HorasReales) || 0), 0) / (k.dias * 24) * 100)) : 100;
+    const kpis = [
+      k.conCierre
+        ? { label: 'MTTR', value: k.mttr.toFixed(1), unit: 'h', sub: 'Promedio de horas reales por OT cerrada', colorStyle: 'color: ' + (k.mttr > (this.props.metaMttr || 4) ? '#ff8d81' : '#eef2f7') }
+        : { label: 'MTTR', value: 'sin dato', unit: '', sub: faltaCierre, colorStyle: 'color: #6f7c90; font-size: 20px' },
+      { label: 'MTBF estimado', value: k.mtbf ? Math.round(k.mtbf) : '—', unit: 'h', sub: 'Entre fallas por equipo en el rango', colorStyle: '' },
+      k.conCierre
+        ? { label: 'Disponibilidad', value: disponibilidad.toFixed(1), unit: '%', sub: 'Sobre horas calendario del rango', colorStyle: 'color: #6cd07e' }
+        : { label: 'Disponibilidad', value: 'sin dato', unit: '', sub: 'Requiere horas de parada por OT', colorStyle: 'color: #6f7c90; font-size: 20px' },
+      { label: 'Cumplimiento', value: k.cumpl, unit: '%', sub: k.cerradas.length + ' de ' + k.ots.length + ' OTs cerradas', colorStyle: '' },
+      { label: 'Fallas pendientes', value: k.pend, unit: '', sub: 'Sin OT generada', colorStyle: 'color: ' + (k.pend ? '#f0a92e' : '#6cd07e') },
+      k.conCierre
+        ? { label: 'Costo de repuestos', value: 'Gs. ' + Math.round(k.costo / 1000) + 'k', unit: '', sub: 'Acumulado en OTs cerradas', colorStyle: '' }
+        : { label: 'Costo de repuestos', value: 'sin dato', unit: '', sub: faltaCierre, colorStyle: 'color: #6f7c90; font-size: 20px' }
+    ];
+    const miniKpis = [
+      { label: 'Fallas pendientes', value: fPend.length, sub: 'esperando OT', colorStyle: 'color: ' + (fPend.length ? '#f0a92e' : '#6cd07e') },
+      { label: 'OTs abiertas', value: otAb.length, sub: 'en ejecución', colorStyle: '' },
+      { label: 'MTTR', value: k.conCierre ? k.mttr.toFixed(1) + ' h' : 's/d', sub: k.conCierre ? 'promedio de cierre' : 'falta registrar horas reales', colorStyle: k.conCierre ? '' : 'color: #6f7c90' },
+      { label: 'Cumplimiento', value: k.cumpl + '%', sub: 'OTs cerradas del período', colorStyle: '' }
+    ];
+
+    const maxEq = Math.max(1, ...Object.values(k.equipos));
+    const topEquipos = Object.entries(k.equipos).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([nombre, n]) => ({
+      nombre, txt: n + (n === 1 ? ' falla' : ' fallas'),
+      barStyle: 'height: 100%; width: ' + Math.round(n / maxEq * 100) + '%; background: #f0a92e; border-radius: 6px'
+    }));
+
+    const plantaCount = {};
+    this.plantasDisponibles().forEach(p => { plantaCount[p] = 0; });
+    fallas.forEach(f => { const p = this.normPlanta(f.Planta); if (p) plantaCount[p] = (plantaCount[p] || 0) + 1; });
+    const maxP = Math.max(1, ...Object.values(plantaCount));
+    const porPlanta = Object.entries(plantaCount).map(([nombre, n]) => ({
+      nombre, txt: n + (n === 1 ? ' falla' : ' fallas'),
+      barStyle: 'height: 100%; width: ' + Math.round(n / maxP * 100) + '%; background: #3f8ef0; border-radius: 6px'
+    }));
+
+    // ── carga por técnico ──
+    const maxCarga = Math.max(1, ...TECNICOS.map(t => ots.filter(x => (x.Tecnico || '').includes(t.nombre) && this.estado(x) !== 'cerrada').length));
+    const cargaTecnicos = TECNICOS.map(t => {
+      const suyas = ots.filter(x => (x.Tecnico || '').includes(t.nombre));
+      const ab = suyas.filter(x => this.estado(x) !== 'cerrada');
+      const hs = ab.reduce((a, x) => a + (parseFloat(x.HorasEstimadas) || 0), 0);
+      const estado = ab.length === 0 ? 'Libre' : ab.length <= 2 ? 'Normal' : 'Cargado';
+      return {
+        nombre: t.nombre, esp: t.esp, iniciales: this.iniciales(t.nombre),
+        abiertas: ab.length, cerradas: suyas.length - ab.length, horas: hs || 0,
+        estado,
+        estadoStyle: estado === 'Cargado' ? 'background: rgba(240,119,107,.15); color: #ff8d81'
+          : estado === 'Libre' ? 'background: rgba(75,184,95,.13); color: #6cd07e' : 'background: #1b222c; color: #a9b4c4',
+        barStyle: 'height: 100%; width: ' + Math.round(ab.length / maxCarga * 100) + '%; background: ' + (estado === 'Cargado' ? '#e5544a' : '#f0a92e') + '; border-radius: 6px',
+        tel: s.tels[t.nombre] || '',
+        onTel: e => {
+          const tels = Object.assign({}, s.tels, { [t.nombre]: e.target.value });
+          this.setState({ tels });
+          try { localStorage.setItem('cimplast_tels', JSON.stringify(tels)); } catch (err) {}
+        },
+        onVerOTs: () => this.setState({ tab: 'kanban', fTecnico: t.nombre })
+      };
+    });
+
+    return {
+      // sesión
+      needsPin: this.props.requierePin !== false && !s.user,
+      pinInput: s.pinInput, pinError: s.pinError,
+      pinHint: 'Demo: 1234 · 2468 · 1357',
+      onPinInput: e => this.setState({ pinInput: e.target.value, pinError: false }),
+      onPinKey: e => { if (e.key === 'Enter') this.entrar(); },
+      onPinSubmit: () => this.entrar(),
+      userInitials: this.iniciales(s.user),
+      onLogout: () => { try { localStorage.removeItem('cimplast_sup'); } catch (e) {} this.setState({ user: null, pinInput: '' }); },
+
+      // header
+      isKanban: tab === 'kanban', isKpis: tab === 'kpis', isTecnicos: tab === 'tecnicos', isNueva: tab === 'nueva',
+      tabKanban: tabStyle(tab === 'kanban'), tabKpis: tabStyle(tab === 'kpis'),
+      tabTecnicos: tabStyle(tab === 'tecnicos'), tabNueva: tabStyle(tab === 'nueva'),
+      goKanban: () => this.set('tab', 'kanban'), goKpis: () => this.set('tab', 'kpis'),
+      goTecnicos: () => this.set('tab', 'tecnicos'), goNueva: () => this.set('tab', 'nueva'),
+      hasPendientes: fPend.length > 0, pendCount: fPend.length,
+      lastSync: s.lastSync, onReload: () => this.cargar(),
+      spinStyle: 'display: inline-block; ' + (s.spinning ? 'animation: spin .6s linear infinite' : ''),
+
+      // filtros
+      plantas: this.plantasDisponibles(), tecnicoNombres: TECNICOS.map(t => t.nombre),
+      fDesde: s.fDesde, fHasta: s.fHasta, fPlanta: s.fPlanta, fEquipo: s.fEquipo, fTecnico: s.fTecnico,
+      onDesde: this.bind('fDesde'), onHasta: this.bind('fHasta'), onPlanta: this.bind('fPlanta'),
+      onEquipo: this.bind('fEquipo'), onTecnicoFiltro: this.bind('fTecnico'),
+      onLimpiar: () => this.setState({ fDesde: this.iso(new Date(Date.now() - 30 * 864e5)), fHasta: this.iso(new Date()), fPlanta: '', fEquipo: '', fTecnico: '' }),
+
+      // kanban
+      miniKpis,
+      colsFallas: [
+        this.columna('f-pend', 'Pendiente', '#f0a92e', fPend, 'falla', 'pend', 'Sin fallas pendientes', f => this.cardFalla(f)),
+        this.columna('f-ot', 'Con OT generada', '#3f8ef0', fCurso, 'falla', 'ot', 'Arrastrá acá una falla para generar su OT', f => this.cardFalla(f)),
+        this.columna('f-done', 'Atendido', '#4bb85f', fDone, 'falla', 'done', 'Sin fallas atendidas', f => this.cardFalla(f))
+      ],
+      colsOTs: [
+        this.columna('ot-ab', 'Abierta', '#f0a92e', otAb, 'ot', 'abierta', 'Sin OTs abiertas', x => this.cardOT(x)),
+        this.columna('ot-cer', 'Cerrada', '#4bb85f', otCer, 'ot', 'cerrada', 'Arrastrá una OT acá para registrar su cierre', x => this.cardOT(x))
+      ],
+
+      // kpis
+      kpis, topEquipos, porPlanta,
+      sinDatos: topEquipos.length === 0,
+      rangoTexto: s.fDesde + ' → ' + s.fHasta + ' · ' + k.dias + ' días',
+      actividad: s.log.slice(0, 12).map(l => ({ cuando: this.fmtLog(l.ts), texto: (l.ref ? l.ref + ' · ' : '') + l.texto, usuario: l.usuario })),
+      sinActividad: s.log.length === 0,
+
+      // técnicos
+      cargaTecnicos,
+
+      // nueva OT
+      nOtNro: s.nOtNro, nOtFecha: s.nOtFecha, nOtPlanta: s.nOtPlanta, nOtEquipo: s.nOtEquipo,
+      nOtDesc: s.nOtDesc, nOtHoras: s.nOtHoras,
+      equiposPlanta: this.equiposDe(s.nOtPlanta),
+      onNOtNro: this.bind('nOtNro'), onNOtFecha: this.bind('nOtFecha'),
+      onNOtPlanta: e => this.setState({ nOtPlanta: e.target.value, nOtEquipo: '' }),
+      onNOtEquipo: this.bind('nOtEquipo'), onNOtDesc: this.bind('nOtDesc'), onNOtHoras: this.bind('nOtHoras'),
+      tiposOT: this.chipRow(s.nOtTipo, ['Correctivo', 'Preventivo', 'Mejora'], 'nOtTipo'),
+      priosOT: this.chipRow(s.nOtPrio, ['Alta', 'Media', 'Baja'], 'nOtPrio'),
+      tecnicoChips: this.tecChips(s.nOtTecs, 'nOtTecs'),
+      btnCrearTxt: s.busy ? 'Creando…' : 'Crear orden de trabajo',
+      btnCrearStyle: 'background: #f0a92e; color: #12161d; font-size: 14px; font-weight: 800; padding: 14px; border-radius: 11px; margin-top: 4px' + (s.busy ? '; opacity: .55' : ''),
+      onCrearOT: () => this.crearOT('nueva'),
+
+      // modal
+      modalOpen: !!m,
+      modalTitle: m === 'falla' ? ((o.Equipo || '') + ' — ' + this.normPlanta(o.Planta))
+        : m === 'genOT' ? 'Generar orden de trabajo'
+        : m === 'detalleOT' ? ((o.NroOT || '') + ' — ' + (o.Equipo || ''))
+        : m === 'cerrar' ? 'Cerrar orden de trabajo'
+        : m === 'wa' ? 'Avisar al técnico' : '',
+      modalOrigen: m === 'genOT' || m === 'cerrar',
+      modalOrigenLabel: m === 'cerrar' ? 'Orden de trabajo' : 'Falla origen',
+      modalOrigenTitulo: m === 'cerrar' ? (o.NroOT || '—') : ((o.Equipo || '—') + ' — ' + this.normPlanta(o.Planta)),
+      modalOrigenDesc: m === 'cerrar' ? ((o.Equipo || '') + ' — ' + this.normPlanta(o.Planta)) : (o.Sintoma || ''),
+      showDetalleGrid: detalleCampos.length > 0, detalleCampos,
+      showFotoLink: m === 'falla' && !!o.FotoURL, fotoUrl: o.FotoURL || '#',
+      showFormOT: m === 'genOT',
+      showTecnicoPicker: m === 'genOT' || (m === 'detalleOT' && this.estado(o) !== 'cerrada'),
+      showDescOT: m === 'genOT' || (m === 'detalleOT' && this.estado(o) !== 'cerrada'),
+      showFormCierre: m === 'cerrar',
+      showHistorial: m === 'detalleOT' || m === 'cerrar',
+      historial, historialVacio: historial.length === 0,
+      showWA: m === 'wa', waText: s.waText,
+      waHint: this.telDe(o.Tecnico) ? 'Se abrirá el chat del técnico con el mensaje ya escrito.' : 'Cargá el celular del técnico en la pestaña Técnicos para abrir el chat directo. Por ahora podés copiar el texto.',
+      mOtNro: s.mOtNro, mOtFecha: s.mOtFecha, mOtDesc: s.mOtDesc, mOtHoras: s.mOtHoras,
+      onMOtNro: this.bind('mOtNro'), onMOtFecha: this.bind('mOtFecha'), onMOtDesc: this.bind('mOtDesc'), onMOtHoras: this.bind('mOtHoras'),
+      mTiposOT: this.chipRow(s.mOtTipo, ['Correctivo', 'Preventivo', 'Mejora'], 'mOtTipo'),
+      mPriosOT: this.chipRow(s.mOtPrio, ['Alta', 'Media', 'Baja'], 'mOtPrio'),
+      mTecnicoChips: this.tecChips(s.mOtTecs, 'mOtTecs'),
+      cHoras: s.cHoras, cFecha: s.cFecha, cRepuestos: s.cRepuestos, cCosto: s.cCosto, cObs: s.cObs,
+      onCHoras: this.bind('cHoras'), onCFecha: this.bind('cFecha'), onCRepuestos: this.bind('cRepuestos'),
+      onCCosto: this.bind('cCosto'), onCObs: this.bind('cObs'),
+      modalActions: actions,
+      onCloseModal: () => this.cerrarModal(),
+      onOverlayClick: () => this.cerrarModal(),
+      stopProp: e => e.stopPropagation(),
+
+      // toast / loading
+      toastOpen: !!s.toast, toastMsg: s.toast ? s.toast.msg : '',
+      toastStyle: 'position: fixed; bottom: 24px; right: 24px; z-index: 999; background: #171d26; border: 1px solid ' +
+        (s.toast && s.toast.tipo === 'err' ? '#e5544a' : '#4bb85f') + '; color: ' +
+        (s.toast && s.toast.tipo === 'err' ? '#ff8d81' : '#6cd07e') +
+        '; border-radius: 11px; padding: 12px 18px; font-size: 13px; font-weight: 600; animation: fadeUp .2s ease',
+      loading: s.loading
+    };
+  }
+
+  entrar() {
+    const sup = SUPERVISORES.find(x => x.pin === this.state.pinInput.trim());
+    if (!sup) { this.setState({ pinError: true }); return; }
+    try { localStorage.setItem('cimplast_sup', sup.nombre); } catch (e) {}
+    this.setState({ user: sup.nombre, pinInput: '', pinError: false });
+  }
 }
 
-let toastTimer;
-function showToast(msg, type = 'ok') {
-  const t = document.getElementById('toast');
-  t.textContent = (type === 'ok' ? '✓ ' : '⚠ ') + msg;
-  t.className = `toast ${type} show`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
-}
-function showLoading(msg) {
-  document.getElementById('loadingMsg').textContent = msg;
-  document.getElementById('loadingOverlay').classList.add('show');
-}
-function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
-
-// Cerrar modales con click fuera
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
-});
-
-// Auto-refresh silencioso cada 2 minutos
-setInterval(() => recargar(true), 120000);
 </script>
-</body>
-</html>
+
+
+</body></html>
