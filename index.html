@@ -2714,7 +2714,7 @@ const CHIP_ON = CHIP + ' background: rgba(240,169,46,.13); border-color: #f0a92e
 
 class Component extends DCLogic {
   state = {
-    vista: 'form', user: null, welcomeNombre: '', welcomePin: '',
+    vista: 'form', user: null, welcomeNombre: '',
     catalogo: {}, plantasMaster: PLANTAS, recientes: [],
     fNombre: '', fTurno: '', fPlanta: '', fEquipo: '', fSistema: '', fSintoma: '', fDetenido: '', fFecha: '', fHora: '',
     fotos: [], enviando: false,
@@ -2731,14 +2731,13 @@ class Component extends DCLogic {
 
   componentDidMount() {
     const hoy = this.iso(new Date());
-    let locales = [], cola = [], recientes = [], user = null, plantaGuardada = '';
+    let locales = [], cola = [], recientes = [], user = null;
     try { locales = JSON.parse(localStorage.getItem('cimplast_fallas') || '[]'); } catch (e) {}
     try { cola = JSON.parse(localStorage.getItem('cimplast_cola') || '[]'); } catch (e) {}
     try { recientes = JSON.parse(localStorage.getItem('cimplast_recientes') || '[]'); } catch (e) {}
     try { user = localStorage.getItem('cimplast_nombre') || null; } catch (e) {}
-    try { plantaGuardada = localStorage.getItem('cimplast_planta') || ''; } catch (e) {}
     this.setState({
-      locales, cola, recientes, user, fNombre: user || '', fPlanta: plantaGuardada,
+      locales, cola, recientes, user, fNombre: user || '',
       fFecha: hoy, fHora: this.horaActual(), otFecha: hoy, cFecha: hoy,
       fTurno: this.turnoAuto(), online: navigator.onLine
     });
@@ -3199,14 +3198,9 @@ class Component extends DCLogic {
   }
 
   entrar() {
-    const PINES = { 'Titese': '666', 'Planta 3': '333', 'Planta 4': '444', 'Planta 5': '555', 'Matricería': '111', 'Otros': '222' };
     const n = this.state.welcomeNombre.trim();
     if (!n) { this.toast('Escribí tu nombre', 'err'); return; }
-    // Validar PIN si hay planta seleccionada
-    const p = this.state.fPlanta || '';
-    const pin = this.state.welcomePin || '';
-    if (p && PINES[p] && pin !== PINES[p]) { this.toast('PIN incorrecto', 'err'); return; }
-    try { localStorage.setItem('cimplast_nombre', n); if (p) localStorage.setItem('cimplast_planta', p); } catch (e) {}
+    try { localStorage.setItem('cimplast_nombre', n); } catch (e) {}
     this.setState({ user: n, fNombre: n });
   }
 }
