@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="315a389d-98fe-45ef-a5de-42bfac18e63d"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0c1016">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Cimplast · Reporte de fallas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("1e6e3d01-c29d-4f5a-9c49-dc7a54201f36") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("e58e52cf-9e6f-4de0-a81e-b785c6bfe5bb") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("c60dc4ca-616d-4a60-98ee-289510120f91") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("4c05da5c-d1cf-4b32-b239-9b5148fd4c4a") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("ccb0bc74-6de5-49b3-acd6-218083d46ce0") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("f23b20ca-2587-4f1a-9ad0-446bcb594a04") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("1e6e3d01-c29d-4f5a-9c49-dc7a54201f36") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("e58e52cf-9e6f-4de0-a81e-b785c6bfe5bb") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("c60dc4ca-616d-4a60-98ee-289510120f91") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("4c05da5c-d1cf-4b32-b239-9b5148fd4c4a") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("ccb0bc74-6de5-49b3-acd6-218083d46ce0") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("f23b20ca-2587-4f1a-9ad0-446bcb594a04") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("a4b6d6d2-c38e-4d23-8338-60de1f12cef1") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("6084cf3e-81a3-40b6-b4b3-24b9735a8272") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("86e2579b-692a-461b-8d00-cb79347f2c79") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("ff8846d6-305a-4144-b7e8-4fa3f3a15f05") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("221d353f-708b-4520-b728-5c8c7385db1b") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("b86a724d-0312-40c3-9bd7-f1af1351793d") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("a4b6d6d2-c38e-4d23-8338-60de1f12cef1") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("6084cf3e-81a3-40b6-b4b3-24b9735a8272") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("86e2579b-692a-461b-8d00-cb79347f2c79") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("ff8846d6-305a-4144-b7e8-4fa3f3a15f05") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("221d353f-708b-4520-b728-5c8c7385db1b") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("b86a724d-0312-40c3-9bd7-f1af1351793d") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("a4b6d6d2-c38e-4d23-8338-60de1f12cef1") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("6084cf3e-81a3-40b6-b4b3-24b9735a8272") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("86e2579b-692a-461b-8d00-cb79347f2c79") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("ff8846d6-305a-4144-b7e8-4fa3f3a15f05") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("221d353f-708b-4520-b728-5c8c7385db1b") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("b86a724d-0312-40c3-9bd7-f1af1351793d") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("a4b6d6d2-c38e-4d23-8338-60de1f12cef1") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("6084cf3e-81a3-40b6-b4b3-24b9735a8272") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("86e2579b-692a-461b-8d00-cb79347f2c79") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("ff8846d6-305a-4144-b7e8-4fa3f3a15f05") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("221d353f-708b-4520-b728-5c8c7385db1b") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("b86a724d-0312-40c3-9bd7-f1af1351793d") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("a4b6d6d2-c38e-4d23-8338-60de1f12cef1") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("6084cf3e-81a3-40b6-b4b3-24b9735a8272") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("86e2579b-692a-461b-8d00-cb79347f2c79") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("ff8846d6-305a-4144-b7e8-4fa3f3a15f05") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("221d353f-708b-4520-b728-5c8c7385db1b") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("b86a724d-0312-40c3-9bd7-f1af1351793d") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-tap-highlight-color: transparent; }
+  body { background: #0c1016; color: #eef2f7; font-family: 'Manrope', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #f0a92e; text-decoration: none; }
+  a:hover { color: #ffc457; }
+  button { font-family: inherit; border: none; background: none; cursor: pointer; color: inherit; }
+  input, select, textarea { font-family: inherit; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes pop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; display: flex; flex-direction: column; background: #0c1016; color: #eef2f7; font-family: 'Manrope', system-ui, sans-serif; max-width: 520px; margin: 0 auto; position: relative">
+
+  <!-- ═══ BIENVENIDA ═══ -->
+  <sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; padding: 34px 26px; text-align: center; min-height: 100vh">
+      <div style="width: 74px; height: 74px; border-radius: 20px; background: #f0a92e; color: #12161d; display: grid; place-items: center; font-size: 36px; font-weight: 800">C</div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em">Reporte de fallas</div>
+        <div style="font-size: 14px; color: #8b96a8; line-height: 1.55">Cimplast · Mantenimiento<br>Ingresá tus datos para empezar</div>
+      </div>
+      <div style="width: 100%; display: flex; flex-direction: column; gap: 12px">
+        <input type="text" placeholder="Nombre y apellido" value="{{ welcomeNombre }}" sc-camel-on-change="{{ onWelcomeNombre }}" autocomplete="name" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 13px; color: #eef2f7; font-size: 17px; padding: 17px; outline: none; text-align: center">
+        <select value="{{ welcomePlanta }}" sc-camel-on-change="{{ onWelcomePlanta }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 13px; color: #eef2f7; font-size: 16px; padding: 17px; outline: none; text-align: center; appearance: none; -webkit-appearance: none">
+          <option value="">— Seleccioná tu planta —</option>
+          <option value="Titese">Titese</option>
+          <option value="Planta 3">Planta 3</option>
+          <option value="Planta 4">Planta 4</option>
+          <option value="Planta 5">Planta 5</option>
+          <option value="Matricería">Matricería</option>
+          <option value="Otros">Otros</option>
+        </select>
+        <input type="password" placeholder="PIN de planta" value="{{ welcomePin }}" sc-camel-on-change="{{ onWelcomePin }}" sc-camel-on-key-down="{{ onWelcomeKey }}" inputmode="numeric" maxlength="3" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 13px; color: #eef2f7; font-size: 22px; padding: 17px; outline: none; text-align: center; letter-spacing: 8px">
+        <button sc-camel-on-click="{{ onWelcomeEnter }}" style="width: 100%; background: #f0a92e; color: #12161d; font-size: 16px; font-weight: 800; padding: 17px; border-radius: 13px">Entrar →</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ true }}">
+  <div style="flex: 1; display: flex; flex-direction: column; min-height: 100vh">
+
+    <header style="background: #12161d; border-bottom: 1px solid #232c39; box-shadow: inset 0 -2px 0 #f0a92e; padding: 12px 16px; display: flex; align-items: center; gap: 11px; position: sticky; top: 0; z-index: 60">
+      <div style="width: 34px; height: 34px; border-radius: 9px; background: #f0a92e; color: #12161d; display: grid; place-items: center; font-size: 17px; font-weight: 800; flex-shrink: 0">C</div>
+      <div style="display: flex; flex-direction: column; line-height: 1.25; flex: 1; min-width: 0">
+        <span style="font-size: 14px; font-weight: 800; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ headerTitulo }}</span>
+        <span style="font-size: 10.5px; color: #6f7c90; letter-spacing: .06em; text-transform: uppercase; font-weight: 600">{{ headerSub }}</span>
+      </div>
+      <span style="{{ turnoPillStyle }}">{{ turnoActual }}</span>
+    </header>
+
+    <sc-if value="{{ showColaBanner }}" hint-placeholder-val="{{ false }}">
+      <div sc-camel-on-click="{{ onReintentar }}" style="{{ colaBannerStyle }}">
+        <span style="flex: 1">{{ colaTexto }}</span>
+        <span style="font-weight: 800; text-decoration: underline">Reintentar</span>
+      </div>
+    </sc-if>
+
+    <!-- ═══ REPORTAR ═══ -->
+    <sc-if value="{{ isForm }}" hint-placeholder-val="{{ true }}">
+    <div style="flex: 1; overflow-y: auto; padding: 18px 16px 128px; display: flex; flex-direction: column; gap: 18px">
+
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span style="font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6f7c90">Quién reporta</span>
+        <input type="text" placeholder="Tu nombre" value="{{ fNombre }}" sc-camel-on-change="{{ onNombre }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 14px 15px; outline: none">
+        <div style="display: flex; gap: 8px">
+          <sc-for list="{{ turnos }}" as="c" hint-placeholder-count="3">
+            <button sc-camel-on-click="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span style="font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6f7c90">Equipo</span>
+        <sc-raw-select value="{{ fPlanta }}" sc-camel-on-change="{{ onPlanta }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 14px 15px; outline: none">
+          <option value="">Seleccionar planta</option>
+          <sc-for list="{{ plantas }}" as="p" hint-placeholder-count="5">
+            <option value="{{ p }}">{{ p }}</option>
+          </sc-for>
+        </sc-raw-select>
+        <button sc-camel-on-click="{{ onAbrirPicker }}" style="{{ equipoBtnStyle }}">
+          <span style="flex: 1; text-align: left; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ equipoBtnTexto }}</span>
+          <span style="color: #6f7c90; font-size: 13px">buscar</span>
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span style="font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6f7c90">Qué está pasando</span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <sc-for list="{{ sistemas }}" as="c" hint-placeholder-count="6">
+            <button sc-camel-on-click="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
+        <textarea placeholder="Ruidos, alarmas, comportamiento anormal, desde cuándo…" value="{{ fSintoma }}" sc-camel-on-change="{{ onSintoma }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 14px 15px; outline: none; min-height: 104px; resize: vertical; line-height: 1.55"></textarea>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span style="font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6f7c90">Estado del equipo</span>
+        <div style="display: flex; gap: 8px">
+          <sc-for list="{{ detenidos }}" as="c" hint-placeholder-count="3">
+            <button sc-camel-on-click="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span style="font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6f7c90">Cuándo ocurrió</span>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <input type="date" value="{{ fFecha }}" sc-camel-on-change="{{ onFecha }}" style="background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 14px 15px; outline: none; font-family: 'JetBrains Mono', monospace">
+          <input type="time" value="{{ fHora }}" sc-camel-on-change="{{ onHora }}" style="background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 14px 15px; outline: none; font-family: 'JetBrains Mono', monospace">
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span style="font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6f7c90">Evidencia</span>
+        <label style="border: 1.5px dashed #2b3444; border-radius: 14px; padding: 20px; text-align: center; display: flex; flex-direction: column; gap: 5px; cursor: pointer; background: #10151d">
+          <span style="font-size: 14px; font-weight: 700; color: #c3cdda">Sacar foto o adjuntar</span>
+          <span style="font-size: 12px; color: #6f7c90">Se envía la primera foto al parte</span>
+          <input type="file" accept="image/*" multiple="" capture="environment" sc-camel-on-change="{{ onFotos }}" style="display: none">
+        </label>
+        <sc-if value="{{ hayFotos }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 9px; flex-wrap: wrap">
+            <sc-for list="{{ fotos }}" as="f" hint-placeholder-count="2">
+              <div style="position: relative">
+                <img src="{{ f.src }}" alt="foto" style="width: 76px; height: 76px; border-radius: 11px; object-fit: cover; border: 1.5px solid #2b3444">
+                <button sc-camel-on-click="{{ f.onDel }}" style="position: absolute; top: -7px; right: -7px; width: 24px; height: 24px; border-radius: 50%; background: #e5544a; color: #fff; font-size: 12px; font-weight: 800; display: grid; place-items: center">✕</button>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="position: fixed; bottom: 66px; left: 0; right: 0; max-width: 520px; margin: 0 auto; padding: 14px 16px 16px; background: linear-gradient(to top, #0c1016 72%, rgba(12,16,22,0))">
+        <button sc-camel-on-click="{{ onEnviar }}" style="{{ btnEnviarStyle }}">{{ btnEnviarTxt }}</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ═══ MIS REPORTES ═══ -->
+    <sc-if value="{{ isHistorial }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden">
+      <div style="padding: 12px 16px; background: #12161d; border-bottom: 1px solid #232c39; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; gap: 8px">
+          <button sc-camel-on-click="{{ onMios }}" style="{{ tabMiosStyle }}">Míos</button>
+          <button sc-camel-on-click="{{ onTodos }}" style="{{ tabTodosStyle }}">Toda la planta</button>
+        </div>
+        <input type="text" placeholder="Buscar equipo…" value="{{ hEquipo }}" sc-camel-on-change="{{ onHEquipo }}" style="width: 100%; background: #1b222c; border: 1px solid #2b3444; border-radius: 10px; color: #eef2f7; font-size: 15px; padding: 10px 13px; outline: none">
+      </div>
+      <div style="flex: 1; overflow-y: auto; padding: 14px 16px 96px; display: flex; flex-direction: column; gap: 11px">
+        <sc-for list="{{ reportes }}" as="r" hint-placeholder-count="3">
+          <div style="{{ r.cardStyle }}">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 9px">
+              <span style="font-size: 15px; font-weight: 700; line-height: 1.3">{{ r.equipo }}</span>
+              <span style="font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; {{ r.badgeStyle }}">{{ r.badge }}</span>
+            </div>
+            <div style="font-size: 13px; color: #8b96a8; line-height: 1.5">{{ r.sintoma }}</div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: #5e6a7d; font-family: 'JetBrains Mono', monospace">
+              <span>{{ r.planta }}</span>
+              <span>{{ r.cuando }}</span>
+              <span>{{ r.autor }}</span>
+            </div>
+            <sc-if value="{{ r.puedeOT }}" hint-placeholder-val="{{ false }}">
+              <button sc-camel-on-click="{{ r.onGenOT }}" style="margin-top: 3px; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 700; border: 1.5px solid #f0a92e; color: #f0a92e; background: rgba(240,169,46,.07)">Generar orden de trabajo</button>
+            </sc-if>
+            <sc-if value="{{ r.puedeCerrar }}" hint-placeholder-val="{{ false }}">
+              <button sc-camel-on-click="{{ r.onCerrar }}" style="margin-top: 3px; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 700; border: 1.5px solid #4bb85f; color: #4bb85f; background: rgba(75,184,95,.07)">Cerrar OT</button>
+            </sc-if>
+          </div>
+        </sc-for>
+        <sc-if value="{{ sinReportes }}" hint-placeholder-val="{{ false }}">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 56px 20px; text-align: center">
+            <span style="font-size: 14px; font-weight: 700; color: #6f7c90">{{ vacioTitulo }}</span>
+            <span style="font-size: 13px; color: #465266; line-height: 1.5">{{ vacioTexto }}</span>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ═══ OTs ═══ -->
+    <sc-if value="{{ isOTs }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; overflow-y: auto; padding: 14px 16px 96px; display: flex; flex-direction: column; gap: 11px">
+      <sc-for list="{{ ots }}" as="o" hint-placeholder-count="3">
+        <div style="background: #12161d; border: 1px solid #232c39; border-radius: 13px; padding: 14px; display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 9px">
+            <span style="font-size: 13px; font-weight: 700; color: #f0a92e; font-family: 'JetBrains Mono', monospace">{{ o.nro }}</span>
+            <span style="font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; {{ o.badgeStyle }}">{{ o.badge }}</span>
+          </div>
+          <div style="font-size: 15px; font-weight: 700; line-height: 1.3">{{ o.equipo }}</div>
+          <div style="font-size: 13px; color: #8b96a8; line-height: 1.5">{{ o.desc }}</div>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: #5e6a7d; font-family: 'JetBrains Mono', monospace">
+            <span>{{ o.planta }}</span>
+            <span>{{ o.tecnico }}</span>
+            <span>{{ o.prioridad }}</span>
+          </div>
+          <sc-if value="{{ o.abierta }}" hint-placeholder-val="{{ true }}">
+            <button sc-camel-on-click="{{ o.onCerrar }}" style="margin-top: 3px; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 700; border: 1.5px solid #4bb85f; color: #4bb85f; background: rgba(75,184,95,.07)">Cerrar esta OT</button>
+          </sc-if>
+        </div>
+      </sc-for>
+      <sc-if value="{{ sinOTs }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 56px 20px; text-align: center">
+          <span style="font-size: 14px; font-weight: 700; color: #6f7c90">Sin órdenes de trabajo</span>
+          <span style="font-size: 13px; color: #465266; line-height: 1.5">Cuando mantenimiento genere una OT vas a verla acá.</span>
+        </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ═══ AJUSTES ═══ -->
+    <sc-if value="{{ isAjustes }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; overflow-y: auto; padding: 18px 16px 96px; display: flex; flex-direction: column; gap: 14px">
+      <div style="background: #12161d; border: 1px solid #232c39; border-radius: 14px; padding: 17px; display: flex; flex-direction: column; gap: 11px">
+        <span style="font-size: 12.5px; font-weight: 700">Tu nombre</span>
+        <input type="text" value="{{ fNombre }}" sc-camel-on-change="{{ onNombre }}" style="width: 100%; background: #171d26; border: 1.5px solid #2b3444; border-radius: 11px; color: #eef2f7; font-size: 16px; padding: 12px 14px; outline: none">
+        <button sc-camel-on-click="{{ onGuardarNombre }}" style="background: #f0a92e; color: #12161d; font-size: 14px; font-weight: 800; padding: 12px; border-radius: 11px">Guardar</button>
+      </div>
+      <div style="background: #12161d; border: 1px solid #232c39; border-radius: 14px; padding: 17px; display: flex; flex-direction: column; gap: 11px">
+        <span style="font-size: 12.5px; font-weight: 700">Conexión</span>
+        <div style="display: flex; align-items: center; gap: 9px">
+          <span style="width: 9px; height: 9px; border-radius: 50%; {{ estadoDotStyle }}"></span>
+          <span style="font-size: 13px; color: #a9b4c4; flex: 1">{{ estadoConexion }}</span>
+        </div>
+        <span style="font-size: 12px; color: #6f7c90; line-height: 1.55">{{ colaDetalle }}</span>
+        <button sc-camel-on-click="{{ onReintentar }}" style="border: 1px solid #2b3444; border-radius: 11px; padding: 12px; font-size: 13.5px; font-weight: 700; color: #a9b4c4">Enviar pendientes ahora</button>
+      </div>
+      <div style="background: #12161d; border: 1px solid #232c39; border-radius: 14px; padding: 17px; display: flex; flex-direction: column; gap: 11px">
+        <span style="font-size: 12.5px; font-weight: 700">Respaldo local</span>
+        <span style="font-size: 12px; color: #6f7c90; line-height: 1.55">Descargá tus reportes guardados en este teléfono como archivo Excel (.csv).</span>
+        <button sc-camel-on-click="{{ onExport }}" style="border: 1px solid #2b3444; border-radius: 11px; padding: 12px; font-size: 13.5px; font-weight: 700; color: #a9b4c4">Descargar CSV</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ═══ GENERAR / CERRAR OT ═══ -->
+    <sc-if value="{{ isOTForm }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; overflow-y: auto; padding: 16px 16px 128px; display: flex; flex-direction: column; gap: 16px">
+      <button sc-camel-on-click="{{ onVolver }}" style="align-self: flex-start; font-size: 13px; font-weight: 700; color: #8b96a8; padding: 8px 0">← Volver</button>
+
+      <div style="background: #171d26; border: 1px solid #232c39; border-left: 3px solid #f0a92e; border-radius: 11px; padding: 13px 14px">
+        <div style="font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: #6f7c90">{{ otOrigenLabel }}</div>
+        <div style="font-size: 15px; font-weight: 700; margin-top: 3px">{{ otOrigenTitulo }}</div>
+        <div style="font-size: 12.5px; color: #8b96a8; margin-top: 3px; line-height: 1.5">{{ otOrigenDesc }}</div>
+      </div>
+
+      <sc-if value="{{ isGenOT }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">N° de OT</label>
+          <input type="text" value="{{ otNro }}" sc-camel-on-change="{{ onOtNro }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 13px 15px; outline: none; font-family: 'JetBrains Mono', monospace">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">Tipo</label>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <sc-for list="{{ tiposOT }}" as="c" hint-placeholder-count="3">
+              <button sc-camel-on-click="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">Prioridad</label>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <sc-for list="{{ priosOT }}" as="c" hint-placeholder-count="3">
+              <button sc-camel-on-click="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">Técnico asignado</label>
+          <sc-raw-select value="{{ otTecnico }}" sc-camel-on-change="{{ onOtTecnico }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 13px 15px; outline: none">
+            <option value="">Seleccionar técnico</option>
+            <sc-for list="{{ tecnicos }}" as="t" hint-placeholder-count="12">
+              <option value="{{ t.nombre }}">{{ t.label }}</option>
+            </sc-for>
+          </sc-raw-select>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">Tarea a realizar</label>
+          <textarea value="{{ otDesc }}" sc-camel-on-change="{{ onOtDesc }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 13px 15px; outline: none; min-height: 96px; resize: vertical; line-height: 1.55"></textarea>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 9px">
+            <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">Horas est.</label>
+            <input type="number" min="0" step="0.5" value="{{ otHoras }}" sc-camel-on-change="{{ onOtHoras }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 13px 15px; outline: none">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 9px">
+            <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">Fecha</label>
+            <input type="date" value="{{ otFecha }}" sc-camel-on-change="{{ onOtFecha }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 13px 15px; outline: none">
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCerrarOT }}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 9px">
+            <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">Horas reales</label>
+            <input type="number" min="0" step="0.5" placeholder="Ej: 3.5" value="{{ cHoras }}" sc-camel-on-change="{{ onCHoras }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 13px 15px; outline: none">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 9px">
+            <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">Fecha cierre</label>
+            <input type="date" value="{{ cFecha }}" sc-camel-on-change="{{ onCFecha }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 13px 15px; outline: none">
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">Repuestos utilizados</label>
+          <textarea placeholder="Ej: Rodamiento 6205 x1, retén 40x60 x2…" value="{{ cRepuestos }}" sc-camel-on-change="{{ onCRepuestos }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 13px 15px; outline: none; min-height: 76px; resize: vertical; line-height: 1.55"></textarea>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">Costo total (Gs.)</label>
+          <input type="number" min="0" placeholder="Ej: 150000" value="{{ cCosto }}" sc-camel-on-change="{{ onCCosto }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 13px 15px; outline: none">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <label style="font-size: 12.5px; font-weight: 600; color: #a9b4c4">Qué se hizo</label>
+          <textarea placeholder="Trabajo realizado, causa encontrada, recomendaciones…" value="{{ cObs }}" sc-camel-on-change="{{ onCObs }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 12px; color: #eef2f7; font-size: 16px; padding: 13px 15px; outline: none; min-height: 96px; resize: vertical; line-height: 1.55"></textarea>
+        </div>
+      </sc-if>
+
+      <div style="position: fixed; bottom: 66px; left: 0; right: 0; max-width: 520px; margin: 0 auto; padding: 14px 16px 16px; background: linear-gradient(to top, #0c1016 72%, rgba(12,16,22,0))">
+        <button sc-camel-on-click="{{ onOTSubmit }}" style="{{ btnOTStyle }}">{{ btnOTTxt }}</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ═══ NAV ═══ -->
+    <nav style="position: fixed; bottom: 0; left: 0; right: 0; max-width: 520px; margin: 0 auto; background: #12161d; border-top: 1px solid #232c39; display: grid; grid-template-columns: repeat(4, 1fr); z-index: 70">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+        <button sc-camel-on-click="{{ n.onPick }}" style="{{ n.style }}">
+          <span>{{ n.label }}</span>
+          <sc-if value="{{ n.showDot }}" hint-placeholder-val="{{ false }}">
+            <span style="position: absolute; top: 8px; right: 50%; margin-right: -26px; width: 7px; height: 7px; border-radius: 50%; background: #f0a92e"></span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </nav>
+  </div>
+  </sc-if>
+
+  <!-- ═══ BUSCADOR DE EQUIPO ═══ -->
+  <sc-if value="{{ pickerOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 220; background: #0c1016; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; animation: fadeUp .18s ease">
+      <div style="padding: 14px 16px; background: #12161d; border-bottom: 1px solid #232c39; display: flex; flex-direction: column; gap: 11px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <span style="font-size: 15px; font-weight: 800; flex: 1">Elegir equipo</span>
+          <button sc-camel-on-click="{{ onCerrarPicker }}" style="font-size: 13px; font-weight: 700; color: #8b96a8">Cerrar</button>
+        </div>
+        <input type="text" placeholder="Código o nombre — ej. SOP 24, Uniloy, chiller" value="{{ pickerQuery }}" sc-camel-on-change="{{ onPickerQuery }}" style="width: 100%; background: #1b222c; border: 1px solid #2b3444; border-radius: 11px; color: #eef2f7; font-size: 16px; padding: 12px 14px; outline: none">
+      </div>
+      <div style="flex: 1; overflow-y: auto; padding: 12px 16px 28px; display: flex; flex-direction: column; gap: 7px">
+        <sc-if value="{{ hayRecientes }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6f7c90; margin: 4px 0 2px">Usados recientemente</span>
+        </sc-if>
+        <sc-for list="{{ pickerResultados }}" as="e" hint-placeholder-count="8">
+          <button sc-camel-on-click="{{ e.onPick }}" style="{{ e.style }}">
+            <span style="font-size: 11.5px; font-weight: 700; color: #f0a92e; font-family: 'JetBrains Mono', monospace; width: 74px; flex-shrink: 0; text-align: left">{{ e.cod }}</span>
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left">
+              <span style="font-size: 14px; font-weight: 600; line-height: 1.3">{{ e.nombre }}</span>
+              <span style="font-size: 11px; color: #6f7c90">{{ e.meta }}</span>
+            </span>
+          </button>
+        </sc-for>
+        <sc-if value="{{ pickerVacio }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 40px 16px; text-align: center; display: flex; flex-direction: column; gap: 12px">
+            <span style="font-size: 13px; color: #6f7c90; line-height: 1.6">Ningún equipo coincide con la búsqueda.</span>
+            <button sc-camel-on-click="{{ onUsarLibre }}" style="border: 1.5px solid #2b3444; border-radius: 11px; padding: 12px; font-size: 13.5px; font-weight: 700; color: #c3cdda">Usar "{{ pickerQuery }}" igual</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ═══ ÉXITO ═══ -->
+  <sc-if value="{{ successOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 240; background: rgba(8,11,16,.96); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 40px 28px; text-align: center; max-width: 520px; margin: 0 auto">
+      <div style="width: 82px; height: 82px; border-radius: 50%; border: 2px solid #4bb85f; background: rgba(75,184,95,.12); display: grid; place-items: center; font-size: 34px; color: #6cd07e; animation: pop .25s ease">✓</div>
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span style="font-size: 21px; font-weight: 800; letter-spacing: -0.02em">{{ successTitulo }}</span>
+        <span style="font-size: 14px; color: #8b96a8; line-height: 1.6">{{ successTexto }}</span>
+      </div>
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #f0a92e; background: rgba(240,169,46,.08); border: 1px solid rgba(240,169,46,.22); border-radius: 9px; padding: 9px 16px">{{ successRef }}</span>
+      <button sc-camel-on-click="{{ onNuevaFalla }}" style="margin-top: 6px; background: #f0a92e; color: #12161d; font-size: 15px; font-weight: 800; padding: 15px 34px; border-radius: 13px">Reportar otra falla</button>
+      <button sc-camel-on-click="{{ onVerMisReportes }}" style="font-size: 13.5px; font-weight: 700; color: #8b96a8">Ver mis reportes</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ toastStyle }}">{{ toastMsg }}</div>
+  </sc-if>
+
+</div>
+
+
+
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:420,&quot;height&quot;:880},&quot;apiUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Conexión&quot;}}">
+const TECNICOS = [
+  { id: 14, nombre: 'Carlos Mongelos', esp: 'Eléctrico' },
+  { id: 4,  nombre: 'Claudio Cerezo',  esp: 'Eléctrico' },
+  { id: 11, nombre: 'Edgar Maqueda',   esp: 'Matricero' },
+  { id: 13, nombre: 'Enrique Monges',  esp: 'Eléctrico' },
+  { id: 10, nombre: 'Jose Caballero',  esp: 'Mecánico' },
+  { id: 2,  nombre: 'José González',   esp: 'Mecánico' },
+  { id: 16, nombre: 'Maximo Duarte',   esp: 'Eléctrico' },
+  { id: 15, nombre: 'Nicolas Vazquez', esp: 'Mecánico' },
+  { id: 7,  nombre: 'Oscar Duarte',    esp: 'Electromecánico' },
+  { id: 6,  nombre: 'Pablo Gomez',     esp: 'Herrero' },
+  { id: 8,  nombre: 'Valentin Escobar',esp: 'Herrero' },
+  { id: 12, nombre: 'Victor Saucedo',  esp: 'Mecánico' }
+];
+
+const PLANTAS = ['Planta 3', 'Planta 4', 'Planta 5', 'Planta 6 (Titese)', 'Administración'];
+const ALIAS_PLANTA = { 'titese': 'Planta 6 (Titese)', 'planta 6': 'Planta 6 (Titese)', 'matriceria': 'Matricería' };
+
+const CHIP = 'border-radius: 11px; padding: 12px 14px; font-size: 13.5px; font-weight: 700; border: 1.5px solid; flex: 1; min-width: 92px; text-align: center; transition: all .14s;';
+const CHIP_OFF = CHIP + ' background: #151b24; border-color: #2b3444; color: #8b96a8;';
+const CHIP_ON = CHIP + ' background: rgba(240,169,46,.13); border-color: #f0a92e; color: #f0a92e;';
+
+class Component extends DCLogic {
+  state = {
+    vista: 'form', user: null, welcomeNombre: '', welcomePlanta: '', welcomePin: '',
+    catalogo: {}, plantasMaster: PLANTAS, recientes: [],
+    fNombre: '', fTurno: '', fPlanta: '', fEquipo: '', fSistema: '', fSintoma: '', fDetenido: '', fFecha: '', fHora: '',
+    fotos: [], enviando: false,
+    pickerOpen: false, pickerQuery: '',
+    locales: [], remotas: [], ots: [], cola: [],
+    filtro: 'mios', hEquipo: '',
+    success: null, toast: null, online: true,
+    otModo: null, otFalla: null,
+    otNro: '', otTipo: 'Correctivo', otPrio: 'Media', otTecnico: '', otDesc: '', otHoras: '', otFecha: '',
+    cHoras: '', cFecha: '', cRepuestos: '', cCosto: '', cObs: ''
+  };
+
+  get api() { return this.props.apiUrl || 'https://script.google.com/macros/s/AKfycbwaw-wAoQh7iEv-tdNmnT7X17jvY3ZDx7x-WN3upqv0aq8uUSZSOFcP4pqwv9vdIqmTkA/exec'; }
+
+  componentDidMount() {
+    const hoy = this.iso(new Date());
+    let locales = [], cola = [], recientes = [], user = null, plantaGuardada = '';
+    try { locales = JSON.parse(localStorage.getItem('cimplast_fallas') || '[]'); } catch (e) {}
+    try { cola = JSON.parse(localStorage.getItem('cimplast_cola') || '[]'); } catch (e) {}
+    try { recientes = JSON.parse(localStorage.getItem('cimplast_recientes') || '[]'); } catch (e) {}
+    try { user = localStorage.getItem('cimplast_nombre') || null; } catch (e) {}
+    try { plantaGuardada = localStorage.getItem('cimplast_planta') || ''; } catch (e) {}
+    this.setState({
+      locales, cola, recientes, user, fNombre: user || '', fPlanta: plantaGuardada,
+      fFecha: hoy, fHora: this.horaActual(), otFecha: hoy, cFecha: hoy,
+      fTurno: this.turnoAuto(), online: navigator.onLine
+    });
+    import('./equipos.js')
+      .then(m => this.setState({ catalogo: m.EQUIPOS || {}, plantasMaster: m.PLANTAS || PLANTAS }))
+      .catch(() => {});
+    this.onOnline = () => { this.setState({ online: true }); this.vaciarCola(true); };
+    this.onOffline = () => this.setState({ online: false });
+    window.addEventListener('online', this.onOnline);
+    window.addEventListener('offline', this.onOffline);
+    this.timer = setInterval(() => { this.sincronizar(); this.vaciarCola(true); }, 60000);
+    this.sincronizar();
+    this.vaciarCola(true);
+  }
+  componentWillUnmount() {
+    clearInterval(this.timer); clearTimeout(this.toastT);
+    window.removeEventListener('online', this.onOnline);
+    window.removeEventListener('offline', this.onOffline);
+  }
+
+  iso(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); }
+  horaActual() { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  turnoAuto() { const h = new Date().getHours(); return h >= 6 && h < 14 ? 'Mañana' : h >= 14 && h < 22 ? 'Tarde' : 'Noche'; }
+  bind(k) { return e => this.setState({ [k]: e.target.value }); }
+  set(k, v) { this.setState({ [k]: v }); }
+  normPlanta(p) { const r = (p || '').toString().trim(); return r ? (ALIAS_PLANTA[r.toLowerCase()] || r) : ''; }
+  hhmm(v) { const s = (v || '').toString(); return s.indexOf('T') > 0 ? s.slice(11, 16) : s.slice(0, 5); }
+  fmtFecha(f, h) {
+    const d = (f || '').toString().slice(0, 10); const t = this.hhmm(h);
+    if (!d) return '—';
+    const p = d.split('-'); return p[2] + '/' + p[1] + (t ? ' ' + t : '');
+  }
+  toast(msg, tipo) {
+    clearTimeout(this.toastT);
+    this.setState({ toast: { msg, tipo: tipo || 'ok' } });
+    this.toastT = setTimeout(() => this.setState({ toast: null }), 3400);
+  }
+  guardar(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+  // ── red ───────────────────────────────────────────────
+  async post(body) {
+    const r = await fetch(this.api, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Error en la API');
+    return d;
+  }
+  async sincronizar() {
+    try {
+      const [rf, ro] = await Promise.all([
+        fetch(this.api + '?accion=fallas').then(r => r.json()),
+        fetch(this.api + '?accion=ots').then(r => r.json())
+      ]);
+      const remotas = rf.fallas || [];
+      // refrescar estado de los reportes locales
+      const mapa = {};
+      remotas.forEach(f => { if (f.ID) mapa[f.ID] = f.Estado; });
+      const locales = this.state.locales.map(l => mapa[l.id] && mapa[l.id] !== l.estado ? Object.assign({}, l, { estado: mapa[l.id] }) : l);
+      this.guardar('cimplast_fallas', locales);
+      this.setState({ remotas, ots: ro.ots || [], locales, online: true });
+    } catch (e) { this.setState({ online: navigator.onLine }); }
+  }
+  async vaciarCola(silencioso) {
+    const cola = this.state.cola;
+    if (!cola.length || !navigator.onLine) return;
+    const quedan = []; let ok = 0;
+    for (const item of cola) {
+      try { await this.post(item.body); ok++; } catch (e) { quedan.push(item); }
+    }
+    this.setState({ cola: quedan });
+    this.guardar('cimplast_cola', quedan);
+    if (ok) {
+      const locales = this.state.locales.map(l => l.estado === 'en cola' ? Object.assign({}, l, { estado: 'Pendiente' }) : l);
+      this.setState({ locales });
+      this.guardar('cimplast_fallas', locales);
+      this.toast(ok === 1 ? 'Se envió 1 reporte pendiente' : 'Se enviaron ' + ok + ' reportes pendientes');
+      this.sincronizar();
+    } else if (!silencioso) {
+      this.toast('Todavía sin conexión — quedan guardados', 'err');
+    }
+  }
+
+  // ── equipos ───────────────────────────────────────────
+  catalogoPlano() {
+    const cat = this.state.catalogo || {};
+    return Object.keys(cat).reduce((acc, planta) => acc.concat(cat[planta].map(e => ({ c: e.c, n: e.n, t: e.t, planta }))), []);
+  }
+  buscarEquipos() {
+    const q = this.state.pickerQuery.toLowerCase().trim();
+    const planta = this.state.fPlanta;
+    let base = this.catalogoPlano();
+    if (planta) base = base.filter(e => e.planta === planta);
+    if (q) {
+      base = base.filter(e => (e.c + ' ' + e.n + ' ' + e.t).toLowerCase().includes(q));
+      return base.slice(0, 60);
+    }
+    const rec = this.state.recientes
+      .map(r => base.find(e => e.n === r) || this.catalogoPlano().find(e => e.n === r))
+      .filter(Boolean);
+    const resto = base.filter(e => rec.indexOf(e) < 0);
+    return rec.concat(resto).slice(0, 60);
+  }
+  elegirEquipo(e) {
+    const recientes = [e.n].concat(this.state.recientes.filter(r => r !== e.n)).slice(0, 6);
+    this.guardar('cimplast_recientes', recientes);
+    this.setState({
+      fEquipo: e.n, fEquipoCod: e.c, recientes, pickerOpen: false, pickerQuery: '',
+      fPlanta: this.state.fPlanta || e.planta
+    });
+  }
+
+  // ── reporte ───────────────────────────────────────────
+  async enviarReporte() {
+    const s = this.state;
+    const faltan = [];
+    if (!s.fNombre.trim()) faltan.push('tu nombre');
+    if (!s.fTurno) faltan.push('el turno');
+    if (!s.fPlanta) faltan.push('la planta');
+    if (!s.fEquipo) faltan.push('el equipo');
+    if (!s.fSistema) faltan.push('el sistema');
+    if (!s.fSintoma.trim()) faltan.push('la descripción');
+    if (faltan.length) { this.toast('Falta ' + faltan.slice(0, 2).join(' y ') + (faltan.length > 2 ? '…' : ''), 'err'); return; }
+
+    this.setState({ enviando: true });
+    const id = 'CF-' + Date.now();
+    const reporte = {
+      id, timestamp: new Date().toISOString(), nombre: s.fNombre.trim(), turno: s.fTurno,
+      planta: s.fPlanta, equipo: s.fEquipo, sistema: s.fSistema, sintoma: s.fSintoma.trim(),
+      detenido: s.fDetenido || 'No especificado', fecha: s.fFecha, hora: s.fHora,
+      fotos: s.fotos.length, estado: 'Pendiente'
+    };
+    const body = {
+      accion: 'falla', id, timestamp: reporte.timestamp, operador: reporte.nombre, turno: reporte.turno,
+      planta: reporte.planta, equipo: reporte.equipo, sistema: reporte.sistema, sintoma: reporte.sintoma,
+      detenido: reporte.detenido, fecha: reporte.fecha, hora: reporte.hora, cantFotos: reporte.fotos,
+      fotoBase64: s.fotos.length ? s.fotos[0] : '',
+      fotoMime: s.fotos.length ? (s.fotos[0].split(';')[0].replace('data:', '') || 'image/jpeg') : 'image/jpeg'
+    };
+
+    let enCola = false;
+    try {
+      if (!navigator.onLine) throw new Error('offline');
+      await this.post(body);
+    } catch (e) {
+      enCola = true;
+      reporte.estado = 'en cola';
+      const cola = this.state.cola.concat([{ id, body }]);
+      this.setState({ cola });
+      this.guardar('cimplast_cola', cola);
+    }
+    const locales = [reporte].concat(this.state.locales);
+    this.guardar('cimplast_fallas', locales);
+    try { localStorage.setItem('cimplast_nombre', reporte.nombre); } catch (e) {}
+    this.setState({
+      locales, enviando: false, user: reporte.nombre,
+      success: {
+        ref: id, enCola,
+        titulo: enCola ? 'Guardado sin conexión' : 'Reporte enviado',
+        texto: enCola
+          ? 'Se envía solo apenas vuelva la señal. Podés seguir trabajando.'
+          : 'Mantenimiento ya lo ve en el tablero. Seguí el estado en Mis reportes.'
+      }
+    });
+    if (!enCola) setTimeout(() => this.sincronizar(), 1500);
+  }
+
+  nuevaFalla() {
+    this.setState({
+      success: null, vista: 'form', fEquipo: '', fSistema: '', fSintoma: '', fDetenido: '',
+      fotos: [], fFecha: this.iso(new Date()), fHora: this.horaActual()
+    });
+  }
+
+  // ── OTs ───────────────────────────────────────────────
+  abrirGenOT(f) {
+    const prio = (f.detenido || '').includes('parado') ? 'Alta' : (f.detenido || '').includes('Parcial') ? 'Media' : 'Baja';
+    this.setState({
+      vista: 'ot', otModo: 'gen', otFalla: f, otNro: 'OT-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4),
+      otTipo: 'Correctivo', otPrio: prio, otTecnico: '', otDesc: f.sintoma || '', otHoras: '', otFecha: this.iso(new Date())
+    });
+  }
+  abrirCerrarOT(f) {
+    this.setState({
+      vista: 'ot', otModo: 'cerrar', otFalla: f,
+      cHoras: '', cRepuestos: '', cCosto: '', cObs: '', cFecha: this.iso(new Date())
+    });
+  }
+  actualizarLocal(id, cambios) {
+    const locales = this.state.locales.map(l => l.id === id ? Object.assign({}, l, cambios) : l);
+    this.setState({ locales });
+    this.guardar('cimplast_fallas', locales);
+  }
+  async enviarOT() {
+    const s = this.state, f = s.otFalla || {};
+    if (s.otModo === 'gen') {
+      if (!s.otNro.trim()) { this.toast('Falta el N° de OT', 'err'); return; }
+      if (!s.otTecnico) { this.toast('Elegí un técnico', 'err'); return; }
+      this.setState({ enviando: true });
+      try {
+        await this.post({
+          accion: 'ot', nroOT: s.otNro.trim(), fallaId: f.id || f.ID || '', equipo: f.equipo || f.Equipo || '',
+          planta: f.planta || f.Planta || '', tipo: s.otTipo, prioridad: s.otPrio, tecnico: s.otTecnico,
+          descripcion: s.otDesc.trim(), horasEstimadas: s.otHoras || '', fechaProgramada: s.otFecha, observaciones: ''
+        });
+        if (f.id) this.actualizarLocal(f.id, { estado: 'En curso', otNro: s.otNro.trim() });
+        this.toast('OT ' + s.otNro.trim() + ' creada');
+        this.setState({ enviando: false, vista: 'historial', otFalla: null, otModo: null });
+        setTimeout(() => this.sincronizar(), 1500);
+      } catch (e) { this.setState({ enviando: false }); this.toast('Error: ' + e.message, 'err'); }
+      return;
+    }
+    if (!s.cHoras) { this.toast('Falta las horas reales', 'err'); return; }
+    if (!s.cObs.trim()) { this.toast('Contá qué se hizo', 'err'); return; }
+    this.setState({ enviando: true });
+    try {
+      await this.post({
+        accion: 'cerrarOT', fallaId: f.id || f.ID || '', otNro: f.otNro || f.NroOT || '',
+        horasReales: parseFloat(s.cHoras), repuestos: s.cRepuestos.trim(),
+        costo: parseFloat(s.cCosto) || 0, observaciones: s.cObs.trim(), fechaCierre: s.cFecha
+      });
+      if (f.id) this.actualizarLocal(f.id, { estado: 'Concluido' });
+      this.toast('OT cerrada');
+      this.setState({ enviando: false, vista: 'historial', otFalla: null, otModo: null });
+      setTimeout(() => this.sincronizar(), 1500);
+    } catch (e) { this.setState({ enviando: false }); this.toast('Error: ' + e.message, 'err'); }
+  }
+
+  exportCSV() {
+    const filas = this.state.locales;
+    if (!filas.length) { this.toast('No hay reportes guardados', 'err'); return; }
+    const cols = ['id', 'timestamp', 'nombre', 'turno', 'planta', 'equipo', 'sistema', 'sintoma', 'detenido', 'fecha', 'hora', 'fotos', 'estado'];
+    const csv = [cols.join(';')].concat(filas.map(f => cols.map(c => '"' + String(f[c] === undefined ? '' : f[c]).replace(/"/g, '""') + '"').join(';'))).join('\n');
+    const url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = 'fallas_cimplast_' + this.iso(new Date()) + '.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  badge(estado) {
+    const e = (estado || '').toLowerCase().trim();
+    if (e === 'en cola') return { txt: 'Sin enviar', style: 'background: rgba(240,119,107,.15); color: #ff8d81' };
+    if (e === 'concluido' || e === 'cerrada') return { txt: 'Concluido', style: 'background: rgba(75,184,95,.14); color: #6cd07e' };
+    if (e === 'en curso') return { txt: 'En curso', style: 'background: rgba(63,142,240,.15); color: #6aa8f5' };
+    return { txt: 'Pendiente', style: 'background: rgba(240,169,46,.14); color: #f0a92e' };
+  }
+
+  chips(valor, opciones, key) {
+    return opciones.map(o => ({ label: o, style: valor === o ? CHIP_ON : CHIP_OFF, onPick: () => this.set(key, o) }));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const vista = s.vista;
+    const plantas = (s.plantasMaster && s.plantasMaster.length ? s.plantasMaster : PLANTAS);
+
+    // reportes
+    const q = s.hEquipo.toLowerCase().trim();
+    let reportes;
+    if (s.filtro === 'todos') {
+      reportes = (s.remotas || []).filter(f => !q || (f.Equipo || '').toLowerCase().includes(q)).slice(0, 60).map(f => {
+        const b = this.badge(f.Estado);
+        return {
+          equipo: f.Equipo || '—', sintoma: (f.Sintoma || '').slice(0, 120),
+          planta: this.normPlanta(f.Planta) || '—', cuando: this.fmtFecha(f.Fecha, f.Hora),
+          autor: f.Operador || '—', badge: b.txt, badgeStyle: b.style,
+          cardStyle: 'background: #12161d; border: 1px solid #232c39; border-radius: 13px; padding: 14px; display: flex; flex-direction: column; gap: 8px',
+          puedeOT: false, puedeCerrar: false, onGenOT: () => {}, onCerrar: () => {}
+        };
+      });
+    } else {
+      reportes = s.locales.filter(f => !q || (f.equipo || '').toLowerCase().includes(q)).map(f => {
+        const b = this.badge(f.estado);
+        const est = (f.estado || '').toLowerCase();
+        return {
+          equipo: f.equipo || '—', sintoma: (f.sintoma || '').slice(0, 120),
+          planta: this.normPlanta(f.planta) || '—', cuando: this.fmtFecha(f.fecha, f.hora),
+          autor: f.nombre || '—', badge: b.txt, badgeStyle: b.style,
+          cardStyle: 'background: #12161d; border: 1px solid ' + (est === 'en cola' ? '#4a2a28' : '#232c39') + '; border-radius: 13px; padding: 14px; display: flex; flex-direction: column; gap: 8px',
+          puedeOT: est === 'pendiente',
+          puedeCerrar: est === 'en curso',
+          onGenOT: () => this.abrirGenOT(f),
+          onCerrar: () => this.abrirCerrarOT(f)
+        };
+      });
+    }
+
+    const ots = (s.ots || []).slice(0, 40).map(o => {
+      const abierta = (o.Estado || '').toLowerCase().trim() !== 'cerrada';
+      const b = this.badge(abierta ? 'en curso' : 'concluido');
+      return {
+        nro: o.NroOT || '—', equipo: o.Equipo || '—', desc: (o.Descripcion || '').slice(0, 110),
+        planta: this.normPlanta(o.Planta) || '—', tecnico: o.Tecnico || 'Sin asignar',
+        prioridad: o.Prioridad || '—', badge: abierta ? 'Abierta' : 'Cerrada', badgeStyle: b.style, abierta,
+        onCerrar: () => this.abrirCerrarOT({ id: o.FallaID || o.FallaId || null, otNro: o.NroOT, equipo: o.Equipo, planta: o.Planta })
+      };
+    });
+
+    const navDef = [
+      { key: 'form', label: 'Reportar' },
+      { key: 'historial', label: 'Mis reportes' },
+      { key: 'ots', label: 'OTs' },
+      { key: 'ajustes', label: 'Ajustes' }
+    ];
+    const pendLocal = s.locales.filter(f => (f.estado || '').toLowerCase() === 'en curso').length;
+
+    const f = s.otFalla || {};
+    const esGen = s.otModo === 'gen';
+
+    return {
+      isWelcome: !s.user, isApp: !!s.user,
+      welcomeNombre: s.welcomeNombre,
+      onWelcomeNombre: this.bind('welcomeNombre'),
+      onWelcomePlanta: this.bind('welcomePlanta'),
+      onWelcomePin: this.bind('welcomePin'),
+      onWelcomeKey: e => { if (e.key === 'Enter') this.entrar(); },
+      onWelcomeEnter: () => this.entrar(),
+
+      headerTitulo: vista === 'form' ? 'Reportar falla' : vista === 'historial' ? 'Mis reportes' : vista === 'ots' ? 'Órdenes de trabajo' : vista === 'ajustes' ? 'Ajustes' : (esGen ? 'Nueva OT' : 'Cerrar OT'),
+      headerSub: s.user || 'Cimplast',
+      turnoActual: s.fTurno || '—',
+      turnoPillStyle: 'background: #1b222c; border: 1px solid #2b3444; border-radius: 20px; padding: 5px 11px; font-size: 11.5px; color: #a9b4c4; font-family: "JetBrains Mono", monospace; flex-shrink: 0',
+
+      showColaBanner: s.cola.length > 0 || !s.online,
+      colaBannerStyle: 'background: ' + (s.cola.length ? 'rgba(240,119,107,.1)' : 'rgba(240,169,46,.08)') +
+        '; border-bottom: 1px solid ' + (s.cola.length ? 'rgba(240,119,107,.26)' : 'rgba(240,169,46,.22)') +
+        '; color: ' + (s.cola.length ? '#ff8d81' : '#f0a92e') +
+        '; padding: 10px 16px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer',
+      colaTexto: s.cola.length
+        ? (s.cola.length === 1 ? '1 reporte esperando señal' : s.cola.length + ' reportes esperando señal')
+        : 'Sin conexión — lo que cargues se guarda en el teléfono',
+      onReintentar: () => this.vaciarCola(false),
+
+      isForm: vista === 'form', isHistorial: vista === 'historial', isOTs: vista === 'ots',
+      isAjustes: vista === 'ajustes', isOTForm: vista === 'ot',
+
+      // formulario
+      fNombre: s.fNombre, onNombre: this.bind('fNombre'),
+      turnos: this.chips(s.fTurno, ['Mañana', 'Tarde', 'Noche'], 'fTurno'),
+      plantas,
+      fPlanta: s.fPlanta,
+      onPlanta: e => this.setState({ fPlanta: e.target.value, fEquipo: '' }),
+      equipoBtnTexto: s.fEquipo || 'Buscar equipo por código o nombre',
+      equipoBtnStyle: 'width: 100%; background: #151b24; border: 1.5px solid ' + (s.fEquipo ? '#f0a92e' : '#2b3444') +
+        '; border-radius: 12px; color: ' + (s.fEquipo ? '#eef2f7' : '#6f7c90') +
+        '; font-size: 16px; padding: 14px 15px; display: flex; align-items: center; gap: 10px; text-align: left',
+      onAbrirPicker: () => this.setState({ pickerOpen: true, pickerQuery: '' }),
+      sistemas: this.chips(s.fSistema, ['Eléctrico', 'Hidráulico', 'Neumático', 'Mecánico', 'Automatización', 'No sé'], 'fSistema'),
+      fSintoma: s.fSintoma, onSintoma: this.bind('fSintoma'),
+      detenidos: this.chips(s.fDetenido, ['Parado', 'Parcial', 'Sigue'], 'fDetenido'),
+      fFecha: s.fFecha, fHora: s.fHora, onFecha: this.bind('fFecha'), onHora: this.bind('fHora'),
+      fotos: s.fotos.map((src, i) => ({ src, onDel: () => this.setState({ fotos: s.fotos.filter((_, j) => j !== i) }) })),
+      hayFotos: s.fotos.length > 0,
+      onFotos: e => {
+        const files = Array.from(e.target.files || []);
+        files.forEach(file => {
+          const rd = new FileReader();
+          rd.onload = ev => this.setState(st => ({ fotos: st.fotos.concat([ev.target.result]) }));
+          rd.readAsDataURL(file);
+        });
+      },
+      btnEnviarTxt: s.enviando ? 'Enviando…' : 'Enviar reporte',
+      btnEnviarStyle: 'width: 100%; background: #f0a92e; color: #12161d; font-size: 16px; font-weight: 800; padding: 17px; border-radius: 14px' + (s.enviando ? '; opacity: .55' : ''),
+      onEnviar: () => this.enviarReporte(),
+
+      // picker
+      pickerOpen: s.pickerOpen, pickerQuery: s.pickerQuery,
+      onPickerQuery: this.bind('pickerQuery'),
+      onCerrarPicker: () => this.setState({ pickerOpen: false }),
+      hayRecientes: !s.pickerQuery.trim() && s.recientes.length > 0,
+      pickerResultados: this.buscarEquipos().map(e => ({
+        cod: e.c || '—', nombre: e.n, meta: [e.t, e.planta].filter(Boolean).join(' · '),
+        style: 'display: flex; align-items: center; gap: 12px; padding: 12px 13px; border-radius: 11px; background: #12161d; border: 1px solid ' +
+          (s.fEquipo === e.n ? '#f0a92e' : '#1e2632') + '; width: 100%',
+        onPick: () => this.elegirEquipo(e)
+      })),
+      pickerVacio: this.buscarEquipos().length === 0,
+      onUsarLibre: () => {
+        const n = s.pickerQuery.trim();
+        if (n) this.elegirEquipo({ c: '', n, t: '', planta: s.fPlanta });
+      },
+
+      // historial
+      filtroMios: s.filtro === 'mios',
+      tabMiosStyle: 'flex: 1; padding: 11px; border-radius: 10px; font-size: 13.5px; font-weight: 700; ' +
+        (s.filtro === 'mios' ? 'background: #f0a92e; color: #12161d' : 'background: #1b222c; color: #8b96a8; border: 1px solid #2b3444'),
+      tabTodosStyle: 'flex: 1; padding: 11px; border-radius: 10px; font-size: 13.5px; font-weight: 700; ' +
+        (s.filtro === 'todos' ? 'background: #f0a92e; color: #12161d' : 'background: #1b222c; color: #8b96a8; border: 1px solid #2b3444'),
+      onMios: () => this.setState({ filtro: 'mios' }),
+      onTodos: () => { this.setState({ filtro: 'todos' }); this.sincronizar(); },
+      hEquipo: s.hEquipo, onHEquipo: this.bind('hEquipo'),
+      reportes, sinReportes: reportes.length === 0,
+      vacioTitulo: s.filtro === 'todos' ? 'Sin reportes en la planta' : 'Todavía no reportaste nada',
+      vacioTexto: s.filtro === 'todos' ? 'Cuando alguien cargue una falla vas a verla acá.' : 'Los reportes que cargues quedan guardados en este teléfono.',
+
+      // ots
+      ots, sinOTs: ots.length === 0,
+
+      // ajustes
+      onGuardarNombre: () => {
+        const n = s.fNombre.trim();
+        if (!n) { this.toast('Escribí tu nombre', 'err'); return; }
+        try { localStorage.setItem('cimplast_nombre', n); } catch (e) {}
+        this.setState({ user: n });
+        this.toast('Nombre guardado');
+      },
+      estadoConexion: s.online ? 'Conectado' : 'Sin conexión',
+      estadoDotStyle: 'background: ' + (s.online ? '#4bb85f' : '#e5544a'),
+      colaDetalle: s.cola.length
+        ? s.cola.length + ' reporte(s) esperando enviarse. Se mandan solos al recuperar señal.'
+        : 'No hay reportes pendientes de envío.',
+      onExport: () => this.exportCSV(),
+
+      // OT form
+      isGenOT: esGen, isCerrarOT: s.otModo === 'cerrar',
+      otOrigenLabel: esGen ? 'Falla reportada' : 'Orden de trabajo',
+      otOrigenTitulo: esGen ? ((f.equipo || '—') + ' — ' + this.normPlanta(f.planta)) : (f.otNro || 'OT vinculada'),
+      otOrigenDesc: esGen ? (f.sintoma || '') : ((f.equipo || '') + ' — ' + this.normPlanta(f.planta)),
+      otNro: s.otNro, onOtNro: this.bind('otNro'),
+      tiposOT: this.chips(s.otTipo, ['Correctivo', 'Preventivo', 'Mejora'], 'otTipo'),
+      priosOT: this.chips(s.otPrio, ['Alta', 'Media', 'Baja'], 'otPrio'),
+      tecnicos: TECNICOS.map(t => ({ nombre: t.nombre, label: t.nombre + ' — ' + t.esp })),
+      otTecnico: s.otTecnico, onOtTecnico: this.bind('otTecnico'),
+      otDesc: s.otDesc, onOtDesc: this.bind('otDesc'),
+      otHoras: s.otHoras, onOtHoras: this.bind('otHoras'),
+      otFecha: s.otFecha, onOtFecha: this.bind('otFecha'),
+      cHoras: s.cHoras, onCHoras: this.bind('cHoras'),
+      cFecha: s.cFecha, onCFecha: this.bind('cFecha'),
+      cRepuestos: s.cRepuestos, onCRepuestos: this.bind('cRepuestos'),
+      cCosto: s.cCosto, onCCosto: this.bind('cCosto'),
+      cObs: s.cObs, onCObs: this.bind('cObs'),
+      onVolver: () => this.setState({ vista: 'historial', otModo: null, otFalla: null }),
+      btnOTTxt: s.enviando ? 'Guardando…' : (esGen ? 'Crear orden de trabajo' : 'Confirmar cierre'),
+      btnOTStyle: 'width: 100%; background: ' + (esGen ? '#f0a92e' : '#4bb85f') + '; color: ' + (esGen ? '#12161d' : '#0b1410') +
+        '; font-size: 16px; font-weight: 800; padding: 17px; border-radius: 14px' + (s.enviando ? '; opacity: .55' : ''),
+      onOTSubmit: () => this.enviarOT(),
+
+      // nav
+      navItems: navDef.map(n => ({
+        label: n.label,
+        showDot: n.key === 'historial' && pendLocal > 0,
+        style: 'position: relative; padding: 13px 4px 17px; font-size: 11.5px; font-weight: 700; letter-spacing: .01em; color: ' +
+          (vista === n.key ? '#f0a92e' : '#6f7c90') + '; border-top: 2px solid ' + (vista === n.key ? '#f0a92e' : 'transparent'),
+        onPick: () => this.setState({ vista: n.key })
+      })),
+
+      // éxito / toast
+      successOpen: !!s.success,
+      successTitulo: s.success ? s.success.titulo : '',
+      successTexto: s.success ? s.success.texto : '',
+      successRef: s.success ? s.success.ref : '',
+      onNuevaFalla: () => this.nuevaFalla(),
+      onVerMisReportes: () => { this.nuevaFalla(); this.setState({ vista: 'historial' }); },
+
+      toastOpen: !!s.toast, toastMsg: s.toast ? s.toast.msg : '',
+      toastStyle: 'position: fixed; bottom: 84px; left: 16px; right: 16px; max-width: 488px; margin: 0 auto; z-index: 260; background: #171d26; border: 1px solid ' +
+        (s.toast && s.toast.tipo === 'err' ? '#e5544a' : '#4bb85f') + '; color: ' +
+        (s.toast && s.toast.tipo === 'err' ? '#ff8d81' : '#6cd07e') +
+        '; border-radius: 12px; padding: 13px 16px; font-size: 13.5px; font-weight: 600; text-align: center; animation: fadeUp .2s ease'
+    };
+  }
+
+  entrar() {
+    const PINES = { 'Titese': '666', 'Planta 3': '333', 'Planta 4': '444', 'Planta 5': '555', 'Matricería': '111', 'Otros': '222' };
+    const n = this.state.welcomeNombre.trim();
+    const p = this.state.welcomePlanta;
+    const pin = this.state.welcomePin.trim();
+    if (!n) { this.toast('Escribí tu nombre', 'err'); return; }
+    if (!p) { this.toast('Seleccioná tu planta', 'err'); return; }
+    if (!pin) { this.toast('Ingresá el PIN de tu planta', 'err'); return; }
+    if (pin !== PINES[p]) { this.toast('PIN incorrecto', 'err'); return; }
+    try { localStorage.setItem('cimplast_nombre', n); localStorage.setItem('cimplast_planta', p); } catch (e) {}
+    this.setState({ user: n, fNombre: n, fPlanta: p });
+  }
+}
+
+</script>
+
+
+</body></html>
