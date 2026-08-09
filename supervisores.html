@@ -271,7 +271,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
         <button class="chip" data-val="Media" onclick="selChip(this,'nOtPrioGroup')">Media</button>
         <button class="chip" data-val="Baja" onclick="selChip(this,'nOtPrioGroup')">Baja</button>
       </div></div>
-      <div class="field"><label>Técnico asignado *</label><div class="select-wrap"><select id="nOtTecnico"></select></div></div>
+      <div class="field"><label>Técnico(s) asignado(s) *</label><select id="nOtTecnico" multiple style="height:130px;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;padding:6px;outline:none"></select><small style="color:var(--muted);font-size:11px">Ctrl/Cmd para seleccionar más de uno</small></div>
       <div class="field"><label>Descripción de la tarea *</label><textarea id="nOtDesc" placeholder="Qué hay que hacer, alcance, criterio de aceptación…"></textarea></div>
       <div class="row-2">
         <div class="field"><label>Horas estimadas</label><input type="number" id="nOtHoras" placeholder="2" min="0" step="0.5"></div>
@@ -299,7 +299,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
       <button class="chip" data-val="Media" onclick="selChip(this,'mOtPrioGroup')">Media</button>
       <button class="chip" data-val="Baja" onclick="selChip(this,'mOtPrioGroup')">Baja</button>
     </div></div>
-    <div class="field"><label>Técnico *</label><div class="select-wrap"><select id="mOtTecnico"></select></div></div>
+    <div class="field"><label>Técnico(s) *</label><select id="mOtTecnico" multiple style="height:130px;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;padding:6px;outline:none"></select><small style="color:var(--muted);font-size:11px">Ctrl/Cmd para seleccionar más de uno</small></div>
     <div class="row-2">
       <div class="field"><label>Horas estimadas</label><input type="number" id="mOtHoras" min="0" step="0.5"></div>
       <div class="field"><label>Fecha programada</label><input type="date" id="mOtFecha"></div>
@@ -603,19 +603,21 @@ async function submitModalOT(){
   const nro=document.getElementById('mOtNro').value.trim();
   const tipo=getChipVal('mOtTipoGroup'), prio=getChipVal('mOtPrioGroup');
   const ts=document.getElementById('mOtTecnico');
-  if(!nro||!tipo||!prio||!ts.value){ showToast('Completá los campos obligatorios','err'); return; }
+  const tecnicos=Array.from(ts.selectedOptions).map(o=>o.dataset.nombre||o.text.split('·')[0].trim()).filter(Boolean).join(', ');
+  if(!nro||!tipo||!prio||!tecnicos){ showToast('Completá los campos obligatorios','err'); return; }
   const btn=document.getElementById('btnModalOT'); btn.disabled=true; btn.textContent='Creando…';
   try{
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({
       accion:'ot', nroOT:nro, fallaId:fallaActual?.ID||'',
       equipo:fallaActual?.Equipo||'', planta:fallaActual?.Planta||'',
-      tipo, prioridad:prio, tecnico:ts.selectedOptions[0].dataset.nombre,
+      tipo, prioridad:prio, tecnico:tecnicos,
       descripcion:document.getElementById('mOtObs').value.trim(),
       horasEstimadas:document.getElementById('mOtHoras').value||'',
       fechaProgramada:document.getElementById('mOtFecha').value, observaciones:''
     })});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
-    showToast('OT '+nro+' creada'); closeModal('modalGenOT'); recargar();
+    showToast('OT '+nro+' creada'); closeModal('modalGenOT');
+    setTimeout(recargar, 1500);
   }catch(e){ showToast('Error: '+e.message,'err'); }
   btn.disabled=false; btn.textContent='Crear OT';
 }
@@ -643,7 +645,8 @@ async function submitCerrar(){
       observaciones:obs, fechaCierre:document.getElementById('mCerrarFecha').value
     })});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
-    showToast('OT '+otActual.NroOT+' cerrada'); closeModal('modalCerrar'); recargar();
+    showToast('OT '+otActual.NroOT+' cerrada'); closeModal('modalCerrar');
+    setTimeout(recargar, 1500);
   }catch(e){ showToast('Error: '+e.message,'err'); }
   btn.disabled=false; btn.textContent='Confirmar cierre';
 }
@@ -676,13 +679,16 @@ async function crearOTDirecta(){
   const g=id=>document.getElementById(id).value;
   const nro=g('nOtNro').trim(), planta=g('nOtPlanta'), equipo=g('nOtEquipo');
   const tipo=getChipVal('nOtTipoGroup'), prio=getChipVal('nOtPrioGroup');
-  const ts=document.getElementById('nOtTecnico'), desc=g('nOtDesc').trim();
-  if(!nro||!planta||!equipo||!tipo||!prio||!ts.value||!desc){ showToast('Completá todos los campos obligatorios','err'); return; }
+  const ts=document.getElementById('nOtTecnico');
+  // Soporte múltiples técnicos
+  const tecnicos=Array.from(ts.selectedOptions).map(o=>o.dataset.nombre||o.text.split('·')[0].trim()).filter(Boolean).join(', ');
+  const desc=g('nOtDesc').trim();
+  if(!nro||!planta||!equipo||!tipo||!prio||!tecnicos||!desc){ showToast('Completá todos los campos obligatorios','err'); return; }
   const btn=document.getElementById('btnNuevaOT'); btn.disabled=true; btn.textContent='Creando…';
   try{
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({
       accion:'ot', nroOT:nro, fallaId:'', equipo, planta, tipo, prioridad:prio,
-      tecnico:ts.selectedOptions[0].dataset.nombre, descripcion:desc,
+      tecnico:tecnicos, descripcion:desc,
       horasEstimadas:g('nOtHoras')||'', fechaProgramada:g('nOtFecha'), observaciones:g('nOtObs').trim()
     })});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
@@ -690,8 +696,9 @@ async function crearOTDirecta(){
     ['nOtDesc','nOtObs','nOtHoras'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('nOtNro').value=nuevoNro();
     document.querySelectorAll('#viewNuevaOt .chip').forEach(c=>c.classList.remove('selected'));
+    ts.selectedIndex=-1;
     switchView('kanban',document.querySelector('.nav-btn[data-view=kanban]'));
-    recargar();
+    setTimeout(recargar, 1500);
   }catch(e){ showToast('Error: '+e.message,'err'); }
   btn.disabled=false; btn.textContent='Crear orden de trabajo';
 }
