@@ -2327,21 +2327,11 @@
       <div style="width: 74px; height: 74px; border-radius: 20px; background: #f0a92e; color: #12161d; display: grid; place-items: center; font-size: 36px; font-weight: 800">C</div>
       <div style="display: flex; flex-direction: column; gap: 8px">
         <div style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em">Reporte de fallas</div>
-        <div style="font-size: 14px; color: #8b96a8; line-height: 1.55">Cimplast · Mantenimiento<br>Ingresá tus datos para empezar</div>
+        <div style="font-size: 14px; color: #8b96a8; line-height: 1.55">Cimplast · Mantenimiento<br>Ingresá tu nombre para empezar</div>
       </div>
       <div style="width: 100%; display: flex; flex-direction: column; gap: 12px">
-        <input type="text" placeholder="Nombre y apellido" value="{{ welcomeNombre }}" sc-camel-on-change="{{ onWelcomeNombre }}" autocomplete="name" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 13px; color: #eef2f7; font-size: 17px; padding: 17px; outline: none; text-align: center">
-        <select value="{{ welcomePlanta }}" sc-camel-on-change="{{ onWelcomePlanta }}" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 13px; color: #eef2f7; font-size: 16px; padding: 17px; outline: none; appearance: none; -webkit-appearance: none">
-          <option value="">— Seleccioná tu planta —</option>
-          <option value="Titese">Titese</option>
-          <option value="Planta 3">Planta 3</option>
-          <option value="Planta 4">Planta 4</option>
-          <option value="Planta 5">Planta 5</option>
-          <option value="Matricería">Matricería</option>
-          <option value="Otros">Otros</option>
-        </select>
-        <input type="password" placeholder="PIN de planta" value="{{ welcomePin }}" sc-camel-on-change="{{ onWelcomePin }}" sc-camel-on-key-down="{{ onWelcomeKey }}" inputmode="numeric" maxlength="3" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 13px; color: #eef2f7; font-size: 22px; padding: 17px; outline: none; text-align: center; letter-spacing: 8px">
-        <button sc-camel-on-click="{{ onWelcomeEnter }}" style="width: 100%; background: #f0a92e; color: #12161d; font-size: 16px; font-weight: 800; padding: 17px; border-radius: 13px">Entrar →</button>
+        <input type="text" placeholder="Nombre y apellido" value="{{ welcomeNombre }}" sc-camel-on-change="{{ onWelcomeNombre }}" sc-camel-on-key-down="{{ onWelcomeKey }}" autocomplete="name" style="width: 100%; background: #151b24; border: 1.5px solid #2b3444; border-radius: 13px; color: #eef2f7; font-size: 17px; padding: 17px; outline: none; text-align: center">
+        <button sc-camel-on-click="{{ onWelcomeEnter }}" style="width: 100%; background: #f0a92e; color: #12161d; font-size: 16px; font-weight: 800; padding: 17px; border-radius: 13px">Entrar</button>
       </div>
     </div>
   </sc-if>
@@ -2724,7 +2714,7 @@ const CHIP_ON = CHIP + ' background: rgba(240,169,46,.13); border-color: #f0a92e
 
 class Component extends DCLogic {
   state = {
-    vista: 'form', user: null, welcomeNombre: '', welcomePlanta: '', welcomePin: '',
+    vista: 'form', user: null, welcomeNombre: '', welcomePin: '',
     catalogo: {}, plantasMaster: PLANTAS, recientes: [],
     fNombre: '', fTurno: '', fPlanta: '', fEquipo: '', fSistema: '', fSintoma: '', fDetenido: '', fFecha: '', fHora: '',
     fotos: [], enviando: false,
@@ -2743,9 +2733,9 @@ class Component extends DCLogic {
     const hoy = this.iso(new Date());
     let locales = [], cola = [], recientes = [], user = null, plantaGuardada = '';
     try { locales = JSON.parse(localStorage.getItem('cimplast_fallas') || '[]'); } catch (e) {}
-    try { cola   = JSON.parse(localStorage.getItem('cimplast_cola')   || '[]'); } catch (e) {}
+    try { cola = JSON.parse(localStorage.getItem('cimplast_cola') || '[]'); } catch (e) {}
     try { recientes = JSON.parse(localStorage.getItem('cimplast_recientes') || '[]'); } catch (e) {}
-    try { user   = localStorage.getItem('cimplast_nombre') || null; } catch (e) {}
+    try { user = localStorage.getItem('cimplast_nombre') || null; } catch (e) {}
     try { plantaGuardada = localStorage.getItem('cimplast_planta') || ''; } catch (e) {}
     this.setState({
       locales, cola, recientes, user, fNombre: user || '', fPlanta: plantaGuardada,
@@ -3061,8 +3051,6 @@ class Component extends DCLogic {
       isWelcome: !s.user, isApp: !!s.user,
       welcomeNombre: s.welcomeNombre,
       onWelcomeNombre: this.bind('welcomeNombre'),
-      onWelcomePlanta: this.bind('welcomePlanta'),
-      onWelcomePin:    this.bind('welcomePin'),
       onWelcomeKey: e => { if (e.key === 'Enter') this.entrar(); },
       onWelcomeEnter: () => this.entrar(),
 
@@ -3212,15 +3200,14 @@ class Component extends DCLogic {
 
   entrar() {
     const PINES = { 'Titese': '666', 'Planta 3': '333', 'Planta 4': '444', 'Planta 5': '555', 'Matricería': '111', 'Otros': '222' };
-    const n   = this.state.welcomeNombre.trim();
-    const p   = this.state.welcomePlanta;
-    const pin = this.state.welcomePin.trim();
-    if (!n)   { this.toast('Escribí tu nombre', 'err'); return; }
-    if (!p)   { this.toast('Seleccioná tu planta', 'err'); return; }
-    if (!pin) { this.toast('Ingresá el PIN de tu planta', 'err'); return; }
-    if (pin !== PINES[p]) { this.toast('PIN incorrecto', 'err'); return; }
-    try { localStorage.setItem('cimplast_nombre', n); localStorage.setItem('cimplast_planta', p); } catch (e) {}
-    this.setState({ user: n, fNombre: n, fPlanta: p });
+    const n = this.state.welcomeNombre.trim();
+    if (!n) { this.toast('Escribí tu nombre', 'err'); return; }
+    // Validar PIN si hay planta seleccionada
+    const p = this.state.fPlanta || '';
+    const pin = this.state.welcomePin || '';
+    if (p && PINES[p] && pin !== PINES[p]) { this.toast('PIN incorrecto', 'err'); return; }
+    try { localStorage.setItem('cimplast_nombre', n); if (p) localStorage.setItem('cimplast_planta', p); } catch (e) {}
+    this.setState({ user: n, fNombre: n });
   }
 }
 
