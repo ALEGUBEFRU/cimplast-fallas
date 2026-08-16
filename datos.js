@@ -510,10 +510,12 @@ window.CIMPLAST_DATA = (function() {
     },
 
     fmtFechaHora(fecha, hora) {
-      const f = this.fmtFecha(fecha);
-      if (!hora) return f;
-      const h = String(hora).slice(0, 5);
-      return f + ' ' + h;
-    }
+  const f = this.fmtFecha(fecha);
+  if (!hora) return f;
+  let h = String(hora);
+  if (h.includes('T')) h = h.substring(11, 16); // formato ISO: extraer HH:mm
+  else h = h.slice(0, 5);
+  return f + ' ' + h;
+}
   };
 })();
