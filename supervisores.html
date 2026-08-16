@@ -278,9 +278,13 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   <div class="agenda-wrap">
     <div class="agenda-toolbar">
       <div class="agenda-nav">
-        <button class="btn-clear" onclick="agendaSemana(-1)">← Anterior</button>
+        <button class="btn-clear" onclick="agendaNavegar(-1)">← Anterior</button>
         <button class="btn-clear" onclick="agendaHoy()">Hoy</button>
-        <button class="btn-clear" onclick="agendaSemana(1)">Siguiente →</button>
+        <button class="btn-clear" onclick="agendaNavegar(1)">Siguiente →</button>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="chip" id="btnModoSemana" onclick="setAgendaModo('semana')" style="font-size:11px;padding:5px 12px">Semana</button>
+        <button class="chip" id="btnModoMes" onclick="setAgendaModo('mes')" style="font-size:11px;padding:5px 12px">Mes</button>
       </div>
       <span class="agenda-rango" id="agendaRango"></span>
       <div class="agenda-filtros">
@@ -787,20 +791,39 @@ function agendaIniciar(){
   agendaHoy();
 }
 
-function agendaHoy(){
-  const hoy = new Date();
-  const dia = hoy.getDay(); // 0=dom
-  const lunes = new Date(hoy);
-  lunes.setDate(hoy.getDate() - (dia === 0 ? 6 : dia - 1));
-  lunes.setHours(0,0,0,0);
-  agendaInicioSemana = lunes;
+let agendaModo = 'semana'; // 'semana' o 'mes'
+
+function setAgendaModo(modo){
+  agendaModo = modo;
+  document.getElementById('btnModoSemana').style.borderColor = modo==='semana' ? 'var(--accent)' : '';
+  document.getElementById('btnModoSemana').style.color = modo==='semana' ? 'var(--accent)' : '';
+  document.getElementById('btnModoMes').style.borderColor = modo==='mes' ? 'var(--accent)' : '';
+  document.getElementById('btnModoMes').style.color = modo==='mes' ? 'var(--accent)' : '';
   renderAgenda();
 }
 
-function agendaSemana(dir){
+function agendaHoy(){
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+  if(agendaModo === 'mes'){
+    agendaInicioSemana = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  } else {
+    const dia = hoy.getDay();
+    const lunes = new Date(hoy);
+    lunes.setDate(hoy.getDate() - (dia === 0 ? 6 : dia - 1));
+    agendaInicioSemana = lunes;
+  }
+  renderAgenda();
+}
+
+function agendaNavegar(dir){
   if(!agendaInicioSemana) agendaHoy();
   const d = new Date(agendaInicioSemana);
-  d.setDate(d.getDate() + dir * 7);
+  if(agendaModo === 'mes'){
+    d.setMonth(d.getMonth() + dir);
+  } else {
+    d.setDate(d.getDate() + dir * 7);
+  }
   agendaInicioSemana = d;
   renderAgenda();
 }
@@ -808,11 +831,23 @@ function agendaSemana(dir){
 function renderAgenda(){
   if(!agendaInicioSemana) agendaHoy();
   const inicio = agendaInicioSemana;
-  const fin = new Date(inicio); fin.setDate(inicio.getDate() + 6);
+  let fin, dias = [];
+
+  if(agendaModo === 'mes'){
+    fin = new Date(inicio.getFullYear(), inicio.getMonth()+1, 0);
+    const totalDias = fin.getDate();
+    for(let i=1; i<=totalDias; i++) dias.push(new Date(inicio.getFullYear(), inicio.getMonth(), i));
+  } else {
+    fin = new Date(inicio); fin.setDate(inicio.getDate() + 6);
+    for(let i=0; i<7; i++){ const d=new Date(inicio); d.setDate(inicio.getDate()+i); dias.push(d); }
+  }
 
   // Rango header
   const fmt = d => d.toLocaleDateString('es-PY',{day:'2-digit',month:'short',year:'numeric'});
-  document.getElementById('agendaRango').textContent = fmt(inicio) + ' — ' + fmt(fin);
+  const fmtMes = d => d.toLocaleDateString('es-PY',{month:'long',year:'numeric'});
+  document.getElementById('agendaRango').textContent = agendaModo==='mes'
+    ? fmtMes(inicio).charAt(0).toUpperCase() + fmtMes(inicio).slice(1)
+    : fmt(inicio) + ' — ' + fmt(fin);
 
   const filtPlanta  = document.getElementById('agFiltroPlanta')?.value  || '';
   const filtTecnico = document.getElementById('agFiltroTecnico')?.value || '';
@@ -829,14 +864,6 @@ function renderAgenda(){
   // Separar con fecha programada vs sin fecha
   const conFecha = ots.filter(o => o.FechaProgramada);
   const sinFecha = ots.filter(o => !o.FechaProgramada && (o.Estado === 'Abierta' || o.Estado === 'En curso'));
-
-  // Agrupar por día de la semana
-  const dias = [];
-  for(let i=0; i<7; i++){
-    const d = new Date(inicio);
-    d.setDate(inicio.getDate() + i);
-    dias.push(d);
-  }
 
   const hoyStr = new Date().toISOString().slice(0,10);
   const body = document.getElementById('agendaBody');
