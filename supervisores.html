@@ -392,6 +392,39 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalCerrar')">Cancelar</button><button class="btn-primary green" id="btnModalCerrar" onclick="submitCerrar()">Confirmar cierre</button></div>
 </div></div>
 
+<!-- ═══ MODAL: DETALLE OT ═══ -->
+<div class="overlay" id="modalDetalleOT"><div class="modal" style="max-width:500px">
+  <div class="modal-h"><span class="modal-t">Detalle de orden de trabajo</span><button class="modal-x" onclick="closeModal('modalDetalleOT')">✕</button></div>
+  <div class="modal-b">
+    <div class="origin" id="dOtOrigen">
+      <div class="l">OT</div>
+      <div class="e" id="dOtNro">—</div>
+      <div class="d" id="dOtEquipoPlanta">—</div>
+    </div>
+    <div class="row-2">
+      <div class="field"><label>Tipo</label><div id="dOtTipo" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
+      <div class="field"><label>Prioridad</label><div id="dOtPrio" style="font-size:13px;font-weight:700;padding:6px 0">—</div></div>
+    </div>
+    <div class="field"><label>Técnico(s)</label><div id="dOtTecnico" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
+    <div class="field"><label>Descripción</label><div id="dOtDesc" style="font-size:13px;color:var(--label);padding:6px 0;line-height:1.5">—</div></div>
+    <div class="row-2">
+      <div class="field"><label>Fecha programada</label><div id="dOtFechaProg" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
+      <div class="field"><label>Horas estimadas</label><div id="dOtHoras" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
+    </div>
+    <div class="field"><label>Estado</label><div id="dOtEstado" style="font-size:13px;font-weight:700;padding:6px 0">—</div></div>
+    <div id="dOtCierreWrap" style="display:none">
+      <div style="height:1px;background:var(--border);margin:4px 0"></div>
+      <div class="row-2">
+        <div class="field"><label>Horas reales</label><div id="dOtHorasReales" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
+        <div class="field"><label>Fecha de cierre</label><div id="dOtFechaCierre" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
+      </div>
+      <div class="field"><label>Costo (Gs.)</label><div id="dOtCosto" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
+      <div class="field"><label>Causa raíz / trabajo realizado</label><div id="dOtObsCierre" style="font-size:13px;color:var(--label);padding:6px 0;line-height:1.5">—</div></div>
+    </div>
+  </div>
+  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalDetalleOT')">Cerrar</button></div>
+</div></div>
+
 <!-- ═══ MODAL: WHATSAPP ═══ -->
 <div class="overlay" id="modalWA"><div class="modal" style="max-width:440px">
   <div class="modal-h"><span class="modal-t">Compartir por WhatsApp</span><button class="modal-x" onclick="closeModal('modalWA')">✕</button></div>
@@ -943,6 +976,35 @@ function agendaOtRow(o){
   </div>`;
 }
 
+function abrirDetalleOT(nroOT){
+  const o = otsTodas.find(x => x.NroOT === nroOT);
+  if(!o) return;
+  document.getElementById('dOtNro').textContent = o.NroOT || '—';
+  document.getElementById('dOtEquipoPlanta').textContent = (o.Equipo||'—') + ' · ' + (o.Planta||'—');
+  document.getElementById('dOtTipo').textContent = o.Tipo || '—';
+  const prio = o.Prioridad==='Alta' ? '#f0938c' : o.Prioridad==='Media' ? 'var(--accent)' : 'var(--muted)';
+  const dPrio = document.getElementById('dOtPrio');
+  dPrio.textContent = o.Prioridad || '—';
+  dPrio.style.color = prio;
+  document.getElementById('dOtTecnico').textContent = o.Tecnico || 'Sin asignar';
+  document.getElementById('dOtDesc').textContent = o.Descripcion || '—';
+  document.getElementById('dOtFechaProg').textContent = o.FechaProgramada ? D.fmtFecha(o.FechaProgramada) : '—';
+  document.getElementById('dOtHoras').textContent = o.HorasEstimada ? o.HorasEstimada + ' h' : '—';
+  const estado = o.Estado==='Cerrada' ? 'var(--ok)' : o.Estado==='En curso' ? 'var(--info)' : 'var(--accent)';
+  const dEst = document.getElementById('dOtEstado');
+  dEst.textContent = o.Estado || '—';
+  dEst.style.color = estado;
+  const cerrada = o.Estado === 'Cerrada';
+  document.getElementById('dOtCierreWrap').style.display = cerrada ? 'block' : 'none';
+  if(cerrada){
+    document.getElementById('dOtHorasReales').textContent = o.HorasReales ? o.HorasReales + ' h' : '—';
+    document.getElementById('dOtFechaCierre').textContent = o.FechaCierre ? D.fmtFecha(o.FechaCierre) : '—';
+    document.getElementById('dOtCosto').textContent = o.Costo ? Number(o.Costo).toLocaleString('es-PY') + ' Gs.' : '—';
+    document.getElementById('dOtObsCierre').textContent = o.ObservacionesCierre || '—';
+  }
+  openModal('modalDetalleOT');
+}
+
 function renderCalendario(){
   const inicio = agendaInicioSemana || new Date();
   const anio = inicio.getFullYear();
@@ -995,7 +1057,7 @@ function renderCalendario(){
     const chips = otsDelDia.slice(0,MAX).map(o => {
       const cls = o.Prioridad==='Alta'?'alta':o.Prioridad==='Media'?'media':'baja';
       const cerrada = o.Estado==='Cerrada'?' cerrada':'';
-      return `<span class="cal-chip ${cls}${cerrada}" title="${o.NroOT} · ${o.Equipo||''} · ${o.Tecnico||''}">${o.Equipo||o.NroOT}</span>`;
+      return `<span class="cal-chip ${cls}${cerrada}" title="${o.NroOT} · ${o.Equipo||''} · ${o.Tecnico||''}" onclick="abrirDetalleOT('${o.NroOT}')">${o.Equipo||o.NroOT}</span>`;
     }).join('');
     const mas = otsDelDia.length > MAX ? `<span class="cal-mas">+${otsDelDia.length-MAX} más</span>` : '';
     html += `<div class="cal-cell${esHoy?' hoy-cell':''}">
