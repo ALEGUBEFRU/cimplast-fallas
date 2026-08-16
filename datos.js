@@ -457,6 +457,26 @@ window.CIMPLAST_DATA = (function() {
     "id": 12,
     "nombre": "Victor Saucedo",
     "esp": "Mecánico"
+  },
+  {
+    "id": 17,
+    "nombre": "Agustín Dure",
+    "esp": "Electrónico"
+  },
+  {
+    "id": 18,
+    "nombre": "Jose Bogado",
+    "esp": "Mecánico"
+  },
+  {
+    "id": 19,
+    "nombre": "Operador/Encargado",
+    "esp": "Producción"
+  },
+  {
+    "id": 20,
+    "nombre": "Tercerizado",
+    "esp": "Externo"
   }
 ];
 
