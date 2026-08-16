@@ -50,7 +50,7 @@ body.off .net-pill i{background:var(--danger)}
 .badge-count{background:var(--danger);color:#fff;font-size:11px;font-weight:700;border-radius:100px;padding:3px 8px;min-width:22px;text-align:center;font-family:var(--mono)}
 .btn-refresh{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:7px 13px;font-size:12px;font-weight:600;color:var(--label);display:flex;align-items:center;gap:7px;transition:border-color .15s,color .15s}
 .btn-refresh:hover{border-color:var(--accent);color:var(--accent)}
-.spin.loading{display:inline-block;animation:spin .7s linear infinite}
+.spin.spinning{display:inline-block;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 .view{display:none;flex:1;flex-direction:column}
@@ -373,7 +373,7 @@ function cargarCache(){
 }
 async function recargar(){
   const icon=document.getElementById('refreshIcon');
-  icon.classList.add('loading');
+  icon.classList.add('spinning');
   try{
     const [rf,ro]=await Promise.all([
       fetch(API+'?accion=fallas').then(r=>r.json()),
@@ -384,7 +384,7 @@ async function recargar(){
     aplicarFiltros();
   }catch(e){
     showToast(ultimaCarga?'Sin conexión — mostrando la última carga':'No se pudieron cargar los datos','err');
-  }finally{ icon.classList.remove('loading'); hideLoading(); }
+  }finally{ icon.classList.remove('spinning'); hideLoading(); }
 }
 
 /* ══ FILTROS ══ */
