@@ -374,7 +374,6 @@ function cargarCache(){
 async function recargar(){
   const icon=document.getElementById('refreshIcon');
   icon.classList.add('loading');
-  if(!fallasTodas.length&&!otsTodas.length) showLoading('Cargando datos…');
   try{
     const [rf,ro]=await Promise.all([
       fetch(API+'?accion=fallas').then(r=>r.json()),
