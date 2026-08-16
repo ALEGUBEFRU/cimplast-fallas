@@ -154,6 +154,29 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--label);font-size:13px;font-weight:600;padding:11px 17px;border-radius:var(--r);transition:border-color .15s}
 .btn-secondary:hover{border-color:var(--border-hi)}
 
+/* ── AGENDA ── */
+.agenda-wrap{display:flex;flex-direction:column;gap:16px;padding:20px;height:100%;overflow-y:auto}
+.agenda-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.agenda-nav{display:flex;gap:6px}
+.agenda-rango{font-size:14px;font-weight:700;color:var(--text);flex:1;text-align:center}
+.agenda-filtros{display:flex;gap:8px;flex-wrap:wrap}
+.agenda-body{display:flex;flex-direction:column;gap:12px}
+.agenda-dia{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.agenda-dia-header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.agenda-dia-fecha{font-size:13px;font-weight:700;color:var(--text);min-width:120px}
+.agenda-dia-fecha.hoy{color:var(--accent)}
+.agenda-dia-count{font-size:11px;color:var(--muted);background:var(--surface3);border-radius:100px;padding:2px 8px}
+.agenda-dia-body{display:flex;flex-direction:column;gap:0}
+.agenda-ot-row{display:grid;grid-template-columns:120px 1fr 140px 120px 90px 80px;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px}
+.agenda-ot-row:last-child{border-bottom:none}
+.agenda-ot-row:hover{background:var(--surface2)}
+.agenda-nro{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700}
+.agenda-equipo{font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agenda-tecnico{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agenda-planta{color:var(--muted)}
+.agenda-empty{padding:16px;color:var(--muted);font-size:12px;text-align:center}
+.agenda-sin-fecha{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-top:4px}
+
 /* ── TOAST / LOADING ── */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--r-lg);padding:13px 18px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .22s,transform .22s;z-index:999;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -194,6 +217,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   </div>
   <nav class="nav">
     <button class="nav-btn active" data-view="kanban" onclick="switchView('kanban',this)">Tablero</button>
+    <button class="nav-btn" data-view="agenda" onclick="switchView('agenda',this)">Planificación</button>
     <button class="nav-btn" data-view="nuevaOt" onclick="switchView('nuevaOt',this)">Nueva OT</button>
   </nav>
   <div class="topbar-right">
@@ -246,6 +270,29 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
       <div class="rank" id="rankSistemas"></div>
       <div class="rank" id="rankTecnicos"></div>
     </div>
+  </div>
+</div>
+
+<!-- ═══ PLANIFICACIÓN / AGENDA ═══ -->
+<div class="view" id="viewAgenda">
+  <div class="agenda-wrap">
+    <div class="agenda-toolbar">
+      <div class="agenda-nav">
+        <button class="btn-clear" onclick="agendaSemana(-1)">← Anterior</button>
+        <button class="btn-clear" onclick="agendaHoy()">Hoy</button>
+        <button class="btn-clear" onclick="agendaSemana(1)">Siguiente →</button>
+      </div>
+      <span class="agenda-rango" id="agendaRango"></span>
+      <div class="agenda-filtros">
+        <select class="f-in" id="agFiltroPlanta" onchange="renderAgenda()"><option value="">Todas las plantas</option></select>
+        <select class="f-in" id="agFiltroTecnico" onchange="renderAgenda()"><option value="">Todos los técnicos</option></select>
+        <select class="f-in" id="agFiltroEstado" onchange="renderAgenda()">
+          <option value="">Todos los estados</option>
+          <option>Abierta</option><option>En curso</option><option>Cerrada</option>
+        </select>
+      </div>
+    </div>
+    <div class="agenda-body" id="agendaBody"></div>
   </div>
 </div>
 
@@ -362,6 +409,7 @@ function switchView(name,btn){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b===btn));
+  if(name==='agenda') agendaIniciar();
 }
 
 /* ══ CARGA ══ */
@@ -723,6 +771,133 @@ function showToast(msg,type='ok'){
   t.textContent=(type==='ok'?'✓ ':'⚠ ')+msg; t.className='toast '+type+' show';
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3600);
 }
+/* ══ AGENDA ══ */
+let agendaInicioSemana = null;
+
+function agendaIniciar(){
+  // Poblar filtros de planta y técnico
+  const sp = document.getElementById('agFiltroPlanta');
+  const st = document.getElementById('agFiltroTecnico');
+  if(sp.options.length <= 1){
+    D.listaPlantas().forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; sp.appendChild(o); });
+  }
+  if(st.options.length <= 1){
+    TECNICOS.forEach(t=>{ const o=document.createElement('option'); o.value=t.nombre; o.textContent=t.nombre; st.appendChild(o); });
+  }
+  agendaHoy();
+}
+
+function agendaHoy(){
+  const hoy = new Date();
+  const dia = hoy.getDay(); // 0=dom
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - (dia === 0 ? 6 : dia - 1));
+  lunes.setHours(0,0,0,0);
+  agendaInicioSemana = lunes;
+  renderAgenda();
+}
+
+function agendaSemana(dir){
+  if(!agendaInicioSemana) agendaHoy();
+  const d = new Date(agendaInicioSemana);
+  d.setDate(d.getDate() + dir * 7);
+  agendaInicioSemana = d;
+  renderAgenda();
+}
+
+function renderAgenda(){
+  if(!agendaInicioSemana) agendaHoy();
+  const inicio = agendaInicioSemana;
+  const fin = new Date(inicio); fin.setDate(inicio.getDate() + 6);
+
+  // Rango header
+  const fmt = d => d.toLocaleDateString('es-PY',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('agendaRango').textContent = fmt(inicio) + ' — ' + fmt(fin);
+
+  const filtPlanta  = document.getElementById('agFiltroPlanta')?.value  || '';
+  const filtTecnico = document.getElementById('agFiltroTecnico')?.value || '';
+  const filtEstado  = document.getElementById('agFiltroEstado')?.value  || '';
+
+  // Filtrar OTs
+  let ots = otsTodas.filter(o => {
+    if(filtPlanta  && o.Planta  !== filtPlanta)  return false;
+    if(filtTecnico && !(o.Tecnico||'').includes(filtTecnico)) return false;
+    if(filtEstado  && o.Estado  !== filtEstado)  return false;
+    return true;
+  });
+
+  // Separar con fecha programada vs sin fecha
+  const conFecha = ots.filter(o => o.FechaProgramada);
+  const sinFecha = ots.filter(o => !o.FechaProgramada && (o.Estado === 'Abierta' || o.Estado === 'En curso'));
+
+  // Agrupar por día de la semana
+  const dias = [];
+  for(let i=0; i<7; i++){
+    const d = new Date(inicio);
+    d.setDate(inicio.getDate() + i);
+    dias.push(d);
+  }
+
+  const hoyStr = new Date().toISOString().slice(0,10);
+  const body = document.getElementById('agendaBody');
+  body.innerHTML = '';
+
+  dias.forEach(dia => {
+    const diaStr = dia.toISOString().slice(0,10);
+    const otsDelDia = conFecha.filter(o => (o.FechaProgramada||'').slice(0,10) === diaStr)
+      .sort((a,b) => (a.Prioridad==='Alta'?0:a.Prioridad==='Media'?1:2) - (b.Prioridad==='Alta'?0:b.Prioridad==='Media'?1:2));
+
+    const esCritico = otsDelDia.length > 0;
+    const esHoy = diaStr === hoyStr;
+    const nombreDia = dia.toLocaleDateString('es-PY',{weekday:'long',day:'2-digit',month:'long'});
+
+    const div = document.createElement('div');
+    div.className = 'agenda-dia';
+    if(esHoy) div.style.borderColor = 'var(--accent)';
+
+    div.innerHTML = `
+      <div class="agenda-dia-header">
+        <span class="agenda-dia-fecha ${esHoy?'hoy':''}">${nombreDia.charAt(0).toUpperCase()+nombreDia.slice(1)}</span>
+        <span class="agenda-dia-count">${otsDelDia.length} OT</span>
+      </div>
+      <div class="agenda-dia-body">
+        ${otsDelDia.length === 0
+          ? '<div class="agenda-empty">Sin OT programadas</div>'
+          : otsDelDia.map(o => agendaOtRow(o)).join('')
+        }
+      </div>`;
+    body.appendChild(div);
+  });
+
+  // Sin fecha programada
+  if(sinFecha.length > 0){
+    const div = document.createElement('div');
+    div.className = 'agenda-sin-fecha';
+    div.innerHTML = `
+      <div class="agenda-dia-header" style="border-color:var(--danger)">
+        <span class="agenda-dia-fecha" style="color:var(--danger)">⚠ Sin fecha programada</span>
+        <span class="agenda-dia-count">${sinFecha.length} OT</span>
+      </div>
+      <div class="agenda-dia-body">
+        ${sinFecha.map(o => agendaOtRow(o)).join('')}
+      </div>`;
+    body.appendChild(div);
+  }
+}
+
+function agendaOtRow(o){
+  const prio = o.Prioridad==='Alta' ? '#e5574f' : o.Prioridad==='Media' ? 'var(--accent)' : 'var(--muted)';
+  const estado = o.Estado === 'Cerrada' ? 'var(--ok)' : o.Estado === 'En curso' ? 'var(--info)' : 'var(--accent)';
+  return `<div class="agenda-ot-row">
+    <span class="agenda-nro">${o.NroOT||'—'}</span>
+    <span class="agenda-equipo" title="${o.Equipo||''}">${o.Equipo||'—'}</span>
+    <span class="agenda-tecnico" title="${o.Tecnico||''}">${o.Tecnico||'Sin asignar'}</span>
+    <span class="agenda-planta">${o.Planta||'—'}</span>
+    <span style="color:${prio};font-weight:700;font-size:11px">${o.Prioridad||'—'}</span>
+    <span style="color:${estado};font-weight:700;font-size:11px">${o.Estado||'—'}</span>
+  </div>`;
+}
+
 function showLoading(m){ document.getElementById('loadingMsg').textContent=m; document.getElementById('loadingOverlay').classList.add('show'); }
 function hideLoading(){ document.getElementById('loadingOverlay').classList.remove('show'); }
 function netUI(){
