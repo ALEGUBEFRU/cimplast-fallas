@@ -177,6 +177,21 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .agenda-empty{padding:16px;color:var(--muted);font-size:12px;text-align:center}
 .agenda-sin-fecha{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-top:4px}
 
+/* ── CALENDARIO ── */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border-radius:var(--r-lg);overflow:hidden}
+.cal-head{background:var(--surface2);padding:8px 4px;text-align:center;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.cal-cell{background:var(--surface);min-height:90px;padding:4px;display:flex;flex-direction:column;gap:2px;cursor:default}
+.cal-cell.otro-mes{background:var(--surface2);opacity:.5}
+.cal-cell.hoy-cell{background:rgba(255,170,0,.06);outline:1px solid var(--accent);outline-offset:-1px}
+.cal-num{font-size:11px;font-weight:700;color:var(--muted);padding:1px 3px;align-self:flex-end}
+.cal-num.hoy-num{color:var(--accent)}
+.cal-chip{font-size:10px;padding:2px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;font-weight:600;line-height:1.4}
+.cal-chip.alta{background:rgba(229,87,79,.2);color:#f0938c;border:1px solid rgba(229,87,79,.3)}
+.cal-chip.media{background:rgba(255,170,0,.15);color:var(--accent);border:1px solid rgba(255,170,0,.25)}
+.cal-chip.baja{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.cal-chip.cerrada{opacity:.5}
+.cal-mas{font-size:10px;color:var(--muted);padding:1px 3px}
+
 /* ── TOAST / LOADING ── */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--r-lg);padding:13px 18px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .22s,transform .22s;z-index:999;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -285,6 +300,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
       <div style="display:flex;gap:4px">
         <button class="chip" id="btnModoSemana" onclick="setAgendaModo('semana')" style="font-size:11px;padding:5px 12px">Semana</button>
         <button class="chip" id="btnModoMes" onclick="setAgendaModo('mes')" style="font-size:11px;padding:5px 12px">Mes</button>
+        <button class="chip" id="btnModoCal" onclick="setAgendaModo('calendario')" style="font-size:11px;padding:5px 12px">Calendario</button>
       </div>
       <span class="agenda-rango" id="agendaRango"></span>
       <div class="agenda-filtros">
@@ -795,11 +811,12 @@ let agendaModo = 'semana'; // 'semana' o 'mes'
 
 function setAgendaModo(modo){
   agendaModo = modo;
-  document.getElementById('btnModoSemana').style.borderColor = modo==='semana' ? 'var(--accent)' : '';
-  document.getElementById('btnModoSemana').style.color = modo==='semana' ? 'var(--accent)' : '';
-  document.getElementById('btnModoMes').style.borderColor = modo==='mes' ? 'var(--accent)' : '';
-  document.getElementById('btnModoMes').style.color = modo==='mes' ? 'var(--accent)' : '';
-  renderAgenda();
+  ['semana','mes','calendario'].forEach(m => {
+    const btn = document.getElementById('btnModo'+m.charAt(0).toUpperCase()+m.slice(1));
+    if(btn){ btn.style.borderColor = modo===m ? 'var(--accent)' : ''; btn.style.color = modo===m ? 'var(--accent)' : ''; }
+  });
+  if(modo==='calendario') renderCalendario();
+  else renderAgenda();
 }
 
 function agendaHoy(){
@@ -819,13 +836,14 @@ function agendaHoy(){
 function agendaNavegar(dir){
   if(!agendaInicioSemana) agendaHoy();
   const d = new Date(agendaInicioSemana);
-  if(agendaModo === 'mes'){
+  if(agendaModo === 'mes' || agendaModo === 'calendario'){
     d.setMonth(d.getMonth() + dir);
   } else {
     d.setDate(d.getDate() + dir * 7);
   }
   agendaInicioSemana = d;
-  renderAgenda();
+  if(agendaModo === 'calendario') renderCalendario();
+  else renderAgenda();
 }
 
 function renderAgenda(){
@@ -923,6 +941,79 @@ function agendaOtRow(o){
     <span style="color:${prio};font-weight:700;font-size:11px">${o.Prioridad||'—'}</span>
     <span style="color:${estado};font-weight:700;font-size:11px">${o.Estado||'—'}</span>
   </div>`;
+}
+
+function renderCalendario(){
+  const inicio = agendaInicioSemana || new Date();
+  const anio = inicio.getFullYear();
+  const mes = inicio.getMonth();
+  const fmt = d => d.toLocaleDateString('es-PY',{month:'long',year:'numeric'});
+  document.getElementById('agendaRango').textContent = fmt(new Date(anio,mes,1)).charAt(0).toUpperCase() + fmt(new Date(anio,mes,1)).slice(1);
+
+  const filtPlanta  = document.getElementById('agFiltroPlanta')?.value  || '';
+  const filtTecnico = document.getElementById('agFiltroTecnico')?.value || '';
+  const filtEstado  = document.getElementById('agFiltroEstado')?.value  || '';
+
+  let ots = otsTodas.filter(o => {
+    if(filtPlanta  && o.Planta  !== filtPlanta)  return false;
+    if(filtTecnico && !(o.Tecnico||'').includes(filtTecnico)) return false;
+    if(filtEstado  && o.Estado  !== filtEstado)  return false;
+    return true;
+  }).filter(o => o.FechaProgramada);
+
+  // Agrupar OTs por fecha
+  const porDia = {};
+  ots.forEach(o => {
+    const k = (o.FechaProgramada||'').slice(0,10);
+    if(!porDia[k]) porDia[k] = [];
+    porDia[k].push(o);
+  });
+
+  const hoyStr = new Date().toISOString().slice(0,10);
+  const primerDia = new Date(anio, mes, 1);
+  const ultimoDia = new Date(anio, mes+1, 0);
+  // Lunes como inicio de semana
+  const startOffset = (primerDia.getDay() + 6) % 7;
+  const dias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+  let html = '<div class="cal-grid">';
+  dias.forEach(d => { html += `<div class="cal-head">${d}</div>`; });
+
+  // Celdas vacías al inicio
+  for(let i=0; i<startOffset; i++){
+    const d = new Date(anio, mes, 1-startOffset+i);
+    html += `<div class="cal-cell otro-mes"><span class="cal-num">${d.getDate()}</span></div>`;
+  }
+
+  // Días del mes
+  for(let d=1; d<=ultimoDia.getDate(); d++){
+    const dStr = `${anio}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const esHoy = dStr === hoyStr;
+    const otsDelDia = (porDia[dStr]||[]).sort((a,b)=>
+      (a.Prioridad==='Alta'?0:a.Prioridad==='Media'?1:2)-(b.Prioridad==='Alta'?0:b.Prioridad==='Media'?1:2));
+    const MAX = 3;
+    const chips = otsDelDia.slice(0,MAX).map(o => {
+      const cls = o.Prioridad==='Alta'?'alta':o.Prioridad==='Media'?'media':'baja';
+      const cerrada = o.Estado==='Cerrada'?' cerrada':'';
+      return `<span class="cal-chip ${cls}${cerrada}" title="${o.NroOT} · ${o.Equipo||''} · ${o.Tecnico||''}">${o.Equipo||o.NroOT}</span>`;
+    }).join('');
+    const mas = otsDelDia.length > MAX ? `<span class="cal-mas">+${otsDelDia.length-MAX} más</span>` : '';
+    html += `<div class="cal-cell${esHoy?' hoy-cell':''}">
+      <span class="cal-num${esHoy?' hoy-num':''}">${d}</span>
+      ${chips}${mas}
+    </div>`;
+  }
+
+  // Celdas vacías al final
+  const totalCeldas = startOffset + ultimoDia.getDate();
+  const restantes = (7 - (totalCeldas % 7)) % 7;
+  for(let i=1; i<=restantes; i++){
+    html += `<div class="cal-cell otro-mes"><span class="cal-num">${i}</span></div>`;
+  }
+  html += '</div>';
+
+  const body = document.getElementById('agendaBody');
+  body.innerHTML = html;
 }
 
 function showLoading(m){ document.getElementById('loadingMsg').textContent=m; document.getElementById('loadingOverlay').classList.add('show'); }
