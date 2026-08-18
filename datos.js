@@ -143,6 +143,10 @@ window.CIMPLAST_DATA = (function() {
     {
       "cod": "INY11",
       "nombre": "Inyecto Sopladora AOKI"
+    },
+    {
+      "cod": "LEC01",
+      "nombre": "Lechita - Embal"
     }
   ],
   "Planta 4": [
