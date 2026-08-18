@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cimplast · Reporte Ejecutivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#14110e; --surface:#1d1915; --surface2:#282219; --surface3:#332b21;
+  --border:#3a3126; --border-hi:#544736;
+  --accent:#f0a92c; --accent-soft:rgba(240,169,44,.13);
+  --danger:#e5574f; --ok:#5cb46b; --info:#5b9bd5; --warn:#e0a33a;
+  --text:#f6f1e8; --label:#c4b8a8; --muted:#8d8175;
+  --font:'Archivo',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --r:10px; --r-lg:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
+input,select{font-family:inherit}
+::-webkit-scrollbar{width:8px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:58px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:33px;height:33px;background:var(--accent);border-radius:8px;display:grid;place-items:center;font-size:17px;font-weight:800;color:#1a1409}
+.logo b{font-size:14px;font-weight:700;line-height:1.15}
+.logo span{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.btn-print{background:var(--accent);color:#1a1409;font-weight:700;font-size:13px;padding:8px 18px;border-radius:var(--r);transition:.15s}
+.btn-print:hover{opacity:.88}
+.btn-nav{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:7px 13px;font-size:12px;font-weight:600;color:var(--label)}
+.btn-nav:hover{border-color:var(--accent);color:var(--accent)}
+.periodo-btn{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:7px 16px;font-size:12px;font-weight:700;color:var(--muted)}
+.periodo-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(240,169,44,.08)}
+.rango-label{font-size:13px;font-weight:700;color:var(--text)}
+
+/* ── CONTENIDO ── */
+.report-wrap{max-width:1200px;margin:0 auto;padding:28px;display:flex;flex-direction:column;gap:24px}
+
+/* ── HEADER DEL REPORTE ── */
+.report-header{display:flex;align-items:flex-start;justify-content:space-between;padding:24px 28px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg)}
+.report-header-left h1{font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px}
+.report-header-left p{font-size:13px;color:var(--muted)}
+.report-header-right{text-align:right}
+.report-header-right .periodo-text{font-size:18px;font-weight:800;color:var(--accent);display:block}
+.report-header-right .generado{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* ── KPIs ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 16px}
+.kpi-card.highlight{border-color:rgba(240,169,44,.35);background:rgba(240,169,44,.04)}
+.kpi-card.danger{border-color:rgba(229,87,79,.35)}
+.kpi-card.ok{border-color:rgba(92,180,107,.35)}
+.kpi-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.kpi-val{font-size:28px;font-weight:800;font-family:var(--mono);color:var(--text);line-height:1}
+.kpi-val.accent{color:var(--accent)}
+.kpi-val.danger{color:var(--danger)}
+.kpi-val.ok{color:var(--ok)}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.4}
+
+/* ── SECCIONES ── */
+.section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.section-h{padding:14px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:space-between}
+.section-body{padding:20px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-full{grid-column:1/-1}
+
+/* ── BARRAS ── */
+.bar-list{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;gap:10px;font-size:12px}
+.bar-label{min-width:130px;color:var(--label);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;background:var(--surface2);border-radius:100px;height:10px;overflow:hidden}
+.bar-fill{height:100%;border-radius:100px;background:var(--accent);transition:width .5s}
+.bar-fill.danger{background:var(--danger)}
+.bar-fill.ok{background:var(--ok)}
+.bar-val{min-width:28px;text-align:right;color:var(--muted);font-family:var(--mono);font-size:11px;font-weight:600}
+
+/* ── TABLAS ── */
+.rep-table{width:100%;border-collapse:collapse;font-size:12px}
+.rep-table th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--surface2)}
+.rep-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--label)}
+.rep-table tr:last-child td{border-bottom:none}
+.rep-table tr:hover td{background:var(--surface2)}
+.badge{display:inline-block;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700}
+.badge-alta{background:rgba(229,87,79,.15);color:#f0938c}
+.badge-media{background:rgba(240,169,44,.15);color:var(--accent)}
+.badge-baja{background:var(--surface2);color:var(--muted)}
+.badge-cerrada{background:rgba(92,180,107,.15);color:var(--ok)}
+.badge-abierta{background:rgba(240,169,44,.1);color:var(--accent)}
+.badge-encurso{background:rgba(91,155,213,.15);color:var(--info)}
+.empty{padding:24px;text-align:center;color:var(--muted);font-size:12px}
+
+/* ── ESTADO CARGA ── */
+.loading-state{display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:12px;color:var(--muted);font-size:13px}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── PRINT ── */
+@media print{
+  body{background:#fff;color:#111}
+  :root{
+    --bg:#fff;--surface:#fff;--surface2:#f5f5f5;--surface3:#eee;
+    --border:#ddd;--border-hi:#ccc;--accent:#c47e00;
+    --text:#111;--label:#444;--muted:#888;
+    --danger:#c0392b;--ok:#27ae60;--info:#2980b9;
+  }
+  .topbar,.no-print{display:none!important}
+  .report-wrap{padding:0;max-width:100%}
+  .report-header{break-inside:avoid}
+  .kpi-grid{grid-template-columns:repeat(6,1fr)}
+  .section{break-inside:avoid;margin-bottom:12px}
+  .bar-fill{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .badge{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar no-print">
+  <div class="logo">
+    <div class="logo-mark">C</div>
+    <div><b>Cimplast</b><span>Reporte Ejecutivo</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-left:24px">
+    <button class="periodo-btn active" id="btnSemanal" onclick="setPeriodo('semana',this)">Semanal</button>
+    <button class="periodo-btn" id="btnMensual" onclick="setPeriodo('mes',this)">Mensual</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;margin-left:8px">
+    <button class="btn-nav" onclick="navegar(-1)">← Anterior</button>
+    <span class="rango-label" id="rangoLabel">—</span>
+    <button class="btn-nav" onclick="navegar(1)">Siguiente →</button>
+    <button class="btn-nav" onclick="irHoy()">Hoy</button>
+  </div>
+  <div class="topbar-right">
+    <span id="statusLabel" style="font-size:12px;color:var(--muted)"></span>
+    <button class="btn-print" onclick="window.print()">🖨 Imprimir / PDF</button>
+  </div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="report-wrap" id="reportWrap">
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <span>Cargando datos…</span>
+  </div>
+  <div id="reportContent" style="display:none;display:flex;flex-direction:column;gap:24px"></div>
+</div>
+
+<script src="datos.js"></script>
+<script>
+const API = window.CIMPLAST_DATA.api;
+const D   = window.CIMPLAST_DATA;
+const num = n => Number(n) || 0;
+
+let modo = 'semana'; // 'semana' | 'mes'
+let ancla = null;    // fecha ancla (lunes de la semana o primer día del mes)
+let fallasTodas = [], otsTodas = [];
+
+// ── INICIALIZAR ───────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  irHoy();
+  await cargarDatos();
+  renderReporte();
+});
+
+async function cargarDatos(){
+  document.getElementById('statusLabel').textContent = 'Actualizando…';
+  try{
+    const [rf, ro] = await Promise.all([
+      fetch(API + '?accion=fallas').then(r => r.json()),
+      fetch(API + '?accion=ots').then(r => r.json())
+    ]);
+    fallasTodas = rf.fallas || [];
+    otsTodas    = ro.ots    || [];
+    document.getElementById('statusLabel').textContent =
+      `${fallasTodas.length} fallas · ${otsTodas.length} OT`;
+  } catch(e){
+    document.getElementById('statusLabel').textContent = 'Sin conexión';
+  }
+}
+
+// ── PERÍODO ───────────────────────────────────────────────
+function setPeriodo(m, btn){
+  modo = m;
+  document.querySelectorAll('.periodo-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  irHoy();
+}
+
+function irHoy(){
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  if(modo === 'mes'){
+    ancla = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  } else {
+    const dia = hoy.getDay();
+    ancla = new Date(hoy);
+    ancla.setDate(hoy.getDate() - (dia === 0 ? 6 : dia - 1));
+  }
+  renderReporte();
+}
+
+function navegar(dir){
+  if(!ancla) return irHoy();
+  const d = new Date(ancla);
+  if(modo === 'mes') d.setMonth(d.getMonth() + dir);
+  else               d.setDate(d.getDate() + dir * 7);
+  ancla = d;
+  renderReporte();
+}
+
+function getRango(){
+  if(!ancla) return null;
+  let desde = new Date(ancla), hasta;
+  if(modo === 'mes'){
+    hasta = new Date(desde.getFullYear(), desde.getMonth() + 1, 0);
+    hasta.setHours(23,59,59,999);
+  } else {
+    hasta = new Date(desde);
+    hasta.setDate(desde.getDate() + 6);
+    hasta.setHours(23,59,59,999);
+  }
+  return { desde, hasta };
+}
+
+function fmtRango(rango){
+  const opts = { day:'2-digit', month:'short', year:'numeric' };
+  if(modo === 'mes'){
+    return rango.desde.toLocaleDateString('es-PY', { month:'long', year:'numeric' })
+      .replace(/^\w/, c => c.toUpperCase());
+  }
+  return rango.desde.toLocaleDateString('es-PY', opts) + ' — ' +
+         rango.hasta.toLocaleDateString('es-PY', opts);
+}
+
+function enRango(fechaStr, rango){
+  if(!fechaStr) return false;
+  const f = new Date(fechaStr);
+  return f >= rango.desde && f <= rango.hasta;
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function renderReporte(){
+  const rango = getRango();
+  if(!rango) return;
+
+  document.getElementById('rangoLabel').textContent = fmtRango(rango);
+  document.getElementById('loadingState').style.display = 'none';
+
+  const fallas      = fallasTodas.filter(f => enRango(f.Fecha, rango));
+  const ots         = otsTodas.filter(o => enRango((o.FechaCreacion||'').slice(0,10), rango));
+  const otsCerradas = ots.filter(o => (o.Estado||'').toLowerCase() === 'cerrada');
+  const otsAbiertas = ots.filter(o => (o.Estado||'').toLowerCase() !== 'cerrada');
+  const hoyStr      = new Date().toISOString().slice(0,10);
+  const vencidas    = otsAbiertas.filter(o => o.FechaProgramada && o.FechaProgramada.slice(0,10) < hoyStr);
+
+  // KPIs
+  const cumplimiento = ots.length ? Math.round(otsCerradas.length / ots.length * 100) : 0;
+  const conHoras     = otsCerradas.filter(o => o.HorasReales);
+  const mttr         = conHoras.length
+    ? (conHoras.reduce((s,o) => s + num(o.HorasReales), 0) / conHoras.length).toFixed(1)
+    : '—';
+  const costo        = otsCerradas.reduce((s,o) => s + num(o.Costo), 0);
+  const fallasParo   = fallas.filter(f => (f.Detenido||'').toLowerCase().includes('parado'));
+
+  // MTBF — horas del período / cantidad de fallas
+  const diasPeriodo  = modo === 'mes'
+    ? new Date(rango.hasta.getFullYear(), rango.hasta.getMonth()+1, 0).getDate()
+    : 7;
+  const mtbf = fallas.length ? Math.round(diasPeriodo * 24 / fallas.length) : '—';
+
+  // Disponibilidad
+  const dispon = (typeof mtbf === 'number' && typeof mttr !== 'string')
+    ? (mtbf / (mtbf + num(mttr)) * 100).toFixed(1)
+    : '—';
+
+  // Por planta — fallas
+  const porPlanta = {};
+  fallas.forEach(f => { const p = f.Planta||'—'; porPlanta[p] = (porPlanta[p]||0)+1; });
+  const maxP = Math.max(1, ...Object.values(porPlanta));
+
+  // Por técnico — OTs
+  const porTec = {};
+  ots.forEach(o => {
+    (o.Tecnico||'Sin asignar').split(',').map(t=>t.trim()).forEach(t => {
+      porTec[t] = (porTec[t]||0)+1;
+    });
+  });
+  const maxT = Math.max(1, ...Object.values(porTec));
+
+  // Top equipos
+  const porEquipo = {};
+  fallas.forEach(f => {
+    const k = (f.Equipo||'—') + '|' + (f.Planta||'—');
+    porEquipo[k] = (porEquipo[k]||0)+1;
+  });
+  const topEquipos = Object.entries(porEquipo).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  // Costo formateado
+  const fmtCosto = c => c >= 1000000
+    ? (c/1000000).toFixed(1) + 'M'
+    : c >= 1000
+      ? Math.round(c/1000) + 'k'
+      : c.toString();
+
+  const html = `
+  <!-- HEADER -->
+  <div class="report-header">
+    <div class="report-header-left">
+      <h1>Reporte Ejecutivo de Mantenimiento</h1>
+      <p>Gerencia Técnica · Cimplast S.A.C.I.</p>
+    </div>
+    <div class="report-header-right">
+      <span class="periodo-text">${fmtRango(rango)}</span>
+      <div class="generado">Generado el ${new Date().toLocaleDateString('es-PY',{day:'2-digit',month:'long',year:'numeric'})}</div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card highlight">
+      <div class="kpi-label">Disponibilidad</div>
+      <div class="kpi-val ${dispon!=='—'&&num(dispon)>=95?'ok':dispon!=='—'&&num(dispon)>=85?'accent':'danger'}">${dispon !== '—' ? dispon+'%' : '—'}</div>
+      <div class="kpi-sub">MTBF / (MTBF+MTTR)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">MTBF</div>
+      <div class="kpi-val accent">${mtbf}${typeof mtbf==='number'?'h':''}</div>
+      <div class="kpi-sub">${fallas.length} fallas · ${diasPeriodo} días</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">MTTR</div>
+      <div class="kpi-val">${mttr}${mttr!=='—'?'h':''}</div>
+      <div class="kpi-sub">${conHoras.length} OT con horas cargadas</div>
+    </div>
+    <div class="kpi-card ${cumplimiento>=80?'ok':cumplimiento>=60?'highlight':'danger'}">
+      <div class="kpi-label">Cumplimiento</div>
+      <div class="kpi-val ${cumplimiento>=80?'ok':cumplimiento>=60?'accent':'danger'}">${cumplimiento}%</div>
+      <div class="kpi-sub">${otsCerradas.length} de ${ots.length} OT cerradas</div>
+    </div>
+    <div class="kpi-card ${vencidas.length>0?'danger':'ok'}">
+      <div class="kpi-label">OT vencidas</div>
+      <div class="kpi-val ${vencidas.length>0?'danger':'ok'}">${vencidas.length}</div>
+      <div class="kpi-sub">${fallasParo.length} fallas con línea parada</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Costo del período</div>
+      <div class="kpi-val accent" style="font-size:22px">${fmtCosto(costo)}</div>
+      <div class="kpi-sub">Gs. en repuestos y servicios</div>
+    </div>
+  </div>
+
+  <!-- FALLAS POR PLANTA + OT POR TÉCNICO -->
+  <div class="grid-2">
+    <div class="section">
+      <div class="section-h">Fallas por planta <span style="color:var(--muted);font-weight:400;font-size:11px">${fallas.length} total</span></div>
+      <div class="section-body">
+        ${Object.keys(porPlanta).length === 0
+          ? '<div class="empty">Sin fallas en el período</div>'
+          : `<div class="bar-list">${Object.entries(porPlanta).sort((a,b)=>b[1]-a[1]).map(([p,n]) => `
+            <div class="bar-row">
+              <span class="bar-label">${p}</span>
+              <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/maxP*100)}%"></div></div>
+              <span class="bar-val">${n}</span>
+            </div>`).join('')}
+          </div>`}
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-h">OT por técnico <span style="color:var(--muted);font-weight:400;font-size:11px">${ots.length} total</span></div>
+      <div class="section-body">
+        ${Object.keys(porTec).length === 0
+          ? '<div class="empty">Sin OT en el período</div>'
+          : `<div class="bar-list">${Object.entries(porTec).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([t,n]) => `
+            <div class="bar-row">
+              <span class="bar-label">${t}</span>
+              <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/maxT*100)}%"></div></div>
+              <span class="bar-val">${n}</span>
+            </div>`).join('')}
+          </div>`}
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP EQUIPOS -->
+  <div class="section">
+    <div class="section-h">Top 5 equipos con más fallas</div>
+    ${topEquipos.length === 0
+      ? '<div class="empty">Sin datos en el período</div>'
+      : `<table class="rep-table">
+          <thead><tr><th>#</th><th>Equipo</th><th>Planta</th><th>Fallas</th><th>% del total</th></tr></thead>
+          <tbody>${topEquipos.map(([k,n],i) => {
+            const [eq,pl] = k.split('|');
+            return `<tr>
+              <td style="font-weight:800;color:${i===0?'var(--danger)':i<=1?'var(--accent)':'var(--muted)'}">${i+1}</td>
+              <td style="font-weight:600;color:var(--text)">${eq}</td>
+              <td>${pl}</td>
+              <td><span style="font-family:var(--mono);font-weight:800;font-size:14px;color:${i===0?'var(--danger)':i<=1?'var(--accent)':'var(--label)'}">${n}</span></td>
+              <td style="color:var(--muted)">${fallas.length?Math.round(n/fallas.length*100):0}%</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>`}
+  </div>
+
+  <!-- OT VENCIDAS -->
+  <div class="section">
+    <div class="section-h">
+      OT vencidas — fecha programada pasada sin cerrar
+      <span style="background:rgba(229,87,79,.15);color:#f0938c;border:1px solid rgba(229,87,79,.3);border-radius:100px;padding:2px 10px;font-size:11px">${vencidas.length}</span>
+    </div>
+    ${vencidas.length === 0
+      ? '<div class="empty">✓ No hay OT vencidas en el período</div>'
+      : `<table class="rep-table">
+          <thead><tr><th>NroOT</th><th>Equipo</th><th>Planta</th><th>Técnico</th><th>Fecha programada</th><th>Prioridad</th><th>Estado</th></tr></thead>
+          <tbody>${vencidas.sort((a,b)=>a.FechaProgramada>b.FechaProgramada?1:-1).map(o => `
+            <tr>
+              <td style="font-family:var(--mono);color:var(--accent);font-weight:700">${o.NroOT||'—'}</td>
+              <td style="font-weight:600;color:var(--text)">${o.Equipo||'—'}</td>
+              <td>${o.Planta||'—'}</td>
+              <td>${o.Tecnico||'—'}</td>
+              <td style="color:var(--danger);font-weight:600">${D.fmtFecha(o.FechaProgramada)}</td>
+              <td><span class="badge badge-${(o.Prioridad||'').toLowerCase()}">${o.Prioridad||'—'}</span></td>
+              <td><span class="badge badge-${(o.Estado||'').toLowerCase().replace(' ','')||'abierta'}">${o.Estado||'—'}</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`}
+  </div>
+  `;
+
+  const content = document.getElementById('reportContent');
+  content.innerHTML = html;
+  content.style.display = 'flex';
+  content.style.flexDirection = 'column';
+  content.style.gap = '24px';
+}
+</script>
+</body>
+</html>
