@@ -392,6 +392,23 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalCerrar')">Cancelar</button><button class="btn-primary green" id="btnModalCerrar" onclick="submitCerrar()">Confirmar cierre</button></div>
 </div></div>
 
+<!-- ═══ MODAL: PROGRAMAR OT ═══ -->
+<div class="overlay" id="modalProgramar"><div class="modal" style="max-width:400px">
+  <div class="modal-h"><span class="modal-t" id="mProgTitulo">Programar OT</span><button class="modal-x" onclick="closeModal('modalProgramar')">✕</button></div>
+  <div class="modal-b">
+    <div class="origin"><div class="l">OT</div><div class="e" id="mProgNro">—</div><div class="d" id="mProgEquipo">—</div></div>
+    <div class="field"><label>Fecha programada *</label><input type="date" id="mProgFecha"></div>
+    <div class="field"><label>Horas estimadas</label><input type="number" id="mProgHoras" min="0" step="0.5" placeholder="4"></div>
+    <div id="mProgAviso" style="display:none;font-size:12px;color:var(--accent);background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.2);border-radius:var(--r);padding:10px 12px;line-height:1.5">
+      ⚠ Esta OT está <strong>En curso</strong>. Al reprogramar volverá a estado <strong>Abierta</strong>.
+    </div>
+  </div>
+  <div class="modal-f">
+    <button class="btn-secondary" onclick="closeModal('modalProgramar')">Cancelar</button>
+    <button class="btn-primary" onclick="submitProgramar()">Guardar</button>
+  </div>
+</div></div>
+
 <!-- ═══ MODAL: DETALLE OT ═══ -->
 <div class="overlay" id="modalDetalleOT"><div class="modal" style="max-width:500px">
   <div class="modal-h"><span class="modal-t">Detalle de orden de trabajo</span><button class="modal-x" onclick="closeModal('modalDetalleOT')">✕</button></div>
@@ -629,6 +646,8 @@ function cardOT(o){
     +(cerrada&&o.HorasReales?'<span>'+esc(o.HorasReales)+'h reales</span>':'')
     +(cerrada&&o.Costo?'<span>Gs '+num(o.Costo).toLocaleString('es-PY')+'</span>':'')+'</div>'
     +'<div class="card-acts">'
+    +(o.Estado==='Abierta'?'<button class="card-btn" data-act="programar" data-id="'+esc(o.NroOT)+'">📅 Programar</button>':'')
+    +(o.Estado==='En curso'?'<button class="card-btn" data-act="reprogramar" data-id="'+esc(o.NroOT)+'">↩ Reprogramar</button>':'')
     +(!cerrada?'<button class="card-btn b-close" data-act="cerrar" data-id="'+esc(o.NroOT)+'">Cerrar</button>':'')
     +'<button class="card-btn b-copy" data-act="wa" data-id="'+esc(o.NroOT)+'">WhatsApp</button></div>'
     +'</div>';
@@ -640,6 +659,8 @@ function bindCards(){
       if(b.dataset.act==='genot') abrirModalOT(id);
       if(b.dataset.act==='cerrar') abrirModalCerrar(id);
       if(b.dataset.act==='wa') abrirWA(id);
+      if(b.dataset.act==='programar') abrirModalProgramar(id, false);
+      if(b.dataset.act==='reprogramar') abrirModalProgramar(id, true);
     };
   });
   document.querySelectorAll('.card[draggable=true]').forEach(c=>{
@@ -975,6 +996,54 @@ function agendaOtRow(o){
     <span style="color:${prio};font-weight:700;font-size:11px">${o.Prioridad||'—'}</span>
     <span style="color:${estado};font-weight:700;font-size:11px">${o.Estado||'—'}</span>
   </div>`;
+}
+
+let otProgramarActual = null;
+let otProgramarEsReprogramar = false;
+
+function abrirModalProgramar(nroOT, esReprogramar){
+  const o = otsTodas.find(x => x.NroOT === nroOT);
+  if(!o) return;
+  otProgramarActual = o;
+  otProgramarEsReprogramar = esReprogramar;
+  document.getElementById('mProgTitulo').textContent = esReprogramar ? 'Reprogramar OT' : 'Programar OT';
+  document.getElementById('mProgNro').textContent = o.NroOT || '—';
+  document.getElementById('mProgEquipo').textContent = (o.Equipo||'—') + ' · ' + (o.Planta||'—');
+  document.getElementById('mProgFecha').value = o.FechaProgramada ? o.FechaProgramada.slice(0,10) : '';
+  document.getElementById('mProgHoras').value = o.HorasEstimada || '';
+  document.getElementById('mProgAviso').style.display = esReprogramar ? 'block' : 'none';
+  openModal('modalProgramar');
+}
+
+async function submitProgramar(){
+  const fecha = document.getElementById('mProgFecha').value;
+  if(!fecha){ showToast('Elegí una fecha','err'); return; }
+  const horas = document.getElementById('mProgHoras').value;
+  const o = otProgramarActual;
+  const btn = document.querySelector('#modalProgramar .btn-primary');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try{
+    const body = {
+      accion: 'actualizarOT',
+      nroOT: o.NroOT,
+      fechaProgramada: fecha,
+      horasEstimadas: horas,
+    };
+    if(otProgramarEsReprogramar) body.estado = 'Abierta';
+    const r = await fetch(API, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if(d.ok){
+      showToast(otProgramarEsReprogramar ? 'OT reprogramada y vuelta a Abierta' : 'OT programada', 'ok');
+      closeModal('modalProgramar');
+      setTimeout(recargar, 1500);
+    } else {
+      showToast(d.error||'Error al guardar','err');
+    }
+  } catch(e){
+    showToast('Error de conexión','err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar';
+  }
 }
 
 function abrirDetalleOT(nroOT){
