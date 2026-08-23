@@ -192,6 +192,14 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .cal-chip.cerrada{opacity:.5}
 .cal-mas{font-size:10px;color:var(--muted);padding:1px 3px}
 
+/* ── FOTOS ── */
+.card-foto-btn{background:rgba(255,170,0,.12);border:1px solid rgba(255,170,0,.3);color:var(--accent);border-radius:var(--r);padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-top:6px;display:inline-flex;align-items:center;gap:5px}
+.card-foto-btn:hover{background:rgba(255,170,0,.22)}
+.modal-foto-img{width:100%;max-height:70vh;object-fit:contain;border-radius:var(--r);background:var(--surface2)}
+.foto-error{padding:20px;text-align:center;color:var(--muted);font-size:12px}
+.ot-foto-wrap{margin-top:8px}
+.ot-foto-wrap img{width:100%;max-height:280px;object-fit:contain;border-radius:var(--r);background:var(--surface2);cursor:zoom-in}
+
 /* ── TOAST / LOADING ── */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--r-lg);padding:13px 18px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .22s,transform .22s;z-index:999;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -409,6 +417,15 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   </div>
 </div></div>
 
+<!-- ═══ MODAL: FOTO ═══ -->
+<div class="overlay" id="modalFoto"><div class="modal" style="max-width:700px">
+  <div class="modal-h"><span class="modal-t" id="mFotoTitulo">Foto de falla</span><button class="modal-x" onclick="closeModal('modalFoto')">✕</button></div>
+  <div class="modal-b" style="padding:12px">
+    <img id="mFotoImg" src="" alt="Foto de falla" class="modal-foto-img" onerror="this.parentElement.innerHTML='<div class=\'foto-error\'>No se pudo cargar la imagen. Puede que requiera acceso a Google Drive.</div>'">
+  </div>
+  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalFoto')">Cerrar</button><a id="mFotoLink" href="" target="_blank" class="btn-primary" style="text-decoration:none;padding:8px 16px;border-radius:var(--r);font-size:13px;font-weight:700;background:var(--accent);color:#1a1409">Abrir en Drive</a></div>
+</div></div>
+
 <!-- ═══ MODAL: DETALLE OT ═══ -->
 <div class="overlay" id="modalDetalleOT"><div class="modal" style="max-width:500px">
   <div class="modal-h"><span class="modal-t">Detalle de orden de trabajo</span><button class="modal-x" onclick="closeModal('modalDetalleOT')">✕</button></div>
@@ -438,6 +455,11 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
       <div class="field"><label>Costo (Gs.)</label><div id="dOtCosto" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
       <div class="field"><label>Causa raíz / trabajo realizado</label><div id="dOtObsCierre" style="font-size:13px;color:var(--label);padding:6px 0;line-height:1.5">—</div></div>
     </div>
+  </div>
+  <div id="dOtFotoWrap" class="ot-foto-wrap" style="display:none">
+    <div style="height:1px;background:var(--border);margin:4px 0"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Foto de la falla</div>
+    <img id="dOtFotoImg" src="" alt="Foto" onclick="verFotoUrl(this.src,'Foto de falla')" onerror="document.getElementById('dOtFotoWrap').style.display='none'">
   </div>
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalDetalleOT')">Cerrar</button></div>
 </div></div>
@@ -630,6 +652,7 @@ function cardFalla(f){
     +'<div class="card-desc">'+esc((f.Sintoma||'').slice(0,100))+((f.Sintoma||'').length>100?'…':'')+'</div>'
     +'<div class="card-meta"><span>'+esc(f.Planta||'—')+'</span><span>'+esc(f.Sistema||'')+'</span><span>'+esc(f.Operador||'')+'</span><span>'+esc(D.fmtFechaHora(f.Fecha,f.Hora))+'</span></div>'
     +(f.Estado==='Pendiente'?'<div class="card-acts"><button class="card-btn b-ot" data-act="genot" data-id="'+esc(f.ID)+'">Generar OT</button></div>':'')
+    +(f.FotoURL?'<button class="card-foto-btn" onclick="verFoto(event,\''+esc(f.FotoURL)+'\',\''+esc(f.Equipo||'Falla')+'\')" >📷 Ver foto</button>':'')
     +'</div>';
 }
 function cardOT(o){
@@ -1046,6 +1069,18 @@ async function submitProgramar(){
   }
 }
 
+function verFoto(e, url, titulo){
+  e.stopPropagation();
+  verFotoUrl(url, titulo);
+}
+
+function verFotoUrl(url, titulo){
+  document.getElementById('mFotoTitulo').textContent = titulo || 'Foto de falla';
+  document.getElementById('mFotoImg').src = url;
+  document.getElementById('mFotoLink').href = url;
+  openModal('modalFoto');
+}
+
 function abrirDetalleOT(nroOT){
   const o = otsTodas.find(x => x.NroOT === nroOT);
   if(!o) return;
@@ -1071,6 +1106,17 @@ function abrirDetalleOT(nroOT){
     document.getElementById('dOtFechaCierre').textContent = o.FechaCierre ? D.fmtFecha(o.FechaCierre) : '—';
     document.getElementById('dOtCosto').textContent = o.Costo ? Number(o.Costo).toLocaleString('es-PY') + ' Gs.' : '—';
     document.getElementById('dOtObsCierre').textContent = o.ObservacionesCierre || '—';
+  }
+  // Buscar foto de la falla asociada
+  const fallaAsoc = o.FallaID ? fallasTodas.find(f => f.ID === o.FallaID) : null;
+  const fotoWrap = document.getElementById('dOtFotoWrap');
+  const fotoImg  = document.getElementById('dOtFotoImg');
+  if(fallaAsoc && fallaAsoc.FotoURL){
+    fotoImg.src = fallaAsoc.FotoURL;
+    fotoWrap.style.display = 'block';
+  } else {
+    fotoWrap.style.display = 'none';
+    fotoImg.src = '';
   }
   openModal('modalDetalleOT');
 }
