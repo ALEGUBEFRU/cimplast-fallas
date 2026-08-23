@@ -6,8 +6,7 @@
 
 window.CIMPLAST_DATA = (function() {
 
-            const API = 'https://script.google.com/macros/s/AKfycbyCh7hsX2uE3iCIDQl9UN-ORJtEcbXN1MwW5U5HWllDz8AFf2n4wWaU2DwgSbiIe7_ocg/exec';
-
+Abrí https://github.com/ALEGUBEFRU/cimplast-fallas/blob/main/datos.js
   const PLANTAS = ["Planta 3", "Planta 4", "Planta 5", "Titese", "Matricería", "Otros"];
 
   const EQUIPOS = {
