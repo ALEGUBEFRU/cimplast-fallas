@@ -202,7 +202,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .ot-foto-wrap img{width:100%;max-height:280px;object-fit:contain;border-radius:var(--r);background:var(--surface2);cursor:zoom-in}
 
 /* ── NUEVO LAYOUT: PANEL FALLAS COMPACTO + OT AMPLIADO ── */
-.board-wrap-v2{height:60vh;flex-shrink:0;padding:4px 22px 20px;display:flex;gap:18px;min-height:0}
+.board-wrap-v2{height:calc(100vh - 260px);flex-shrink:0;padding:4px 22px 20px;display:flex;gap:18px;min-height:0}
 .fallas-panel{width:300px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);display:flex;flex-direction:column;overflow:hidden}
 .fallas-panel-h{padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
 .fallas-panel-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
@@ -222,14 +222,26 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 @media(max-width:1100px){.board-wrap-v2{flex-direction:column;overflow-y:auto}.fallas-panel{width:100%;max-height:280px}.board-lg{grid-template-columns:1fr}.col-lg{min-height:300px}}
 
 /* ── VISTA LISTA DE OT ── */
-.ot-lista-row{display:flex;flex-direction:column;gap:3px;padding:9px 11px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;transition:border-color .15s}
+.ot-lista-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;transition:border-color .15s;font-size:11.5px}
 .ot-lista-row:hover{border-color:var(--border-hi)}
 .ot-lista-row.alta{border-left:3px solid var(--danger)}
-.ot-lista-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.ot-lista-nro{font-size:11px;font-weight:700;color:var(--accent);font-family:var(--mono)}
-.ot-lista-eq{font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ot-lista-meta{display:flex;gap:8px;font-size:10px;color:var(--muted);font-family:var(--mono);flex-wrap:wrap}
-.col-b.vista-lista{gap:6px}
+.ot-lista-nro{font-size:10.5px;font-weight:700;color:var(--accent);font-family:var(--mono);flex-shrink:0;min-width:78px}
+.ot-lista-eq{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.ot-lista-tec{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;flex-shrink:0;display:none}
+.ot-lista-fecha{color:var(--muted);font-family:var(--mono);font-size:10px;flex-shrink:0;display:none}
+.ot-lista-prio{flex-shrink:0;font-size:9px;padding:1px 6px;border-radius:100px;font-weight:700}
+@media(min-width:1500px){.ot-lista-tec,.ot-lista-fecha{display:block}}
+.col-b.vista-lista{gap:4px}
+
+/* ── VISTA LISTA DE FALLAS ── */
+.falla-lista-row{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);font-size:11.5px}
+.falla-lista-row.stopped{border-left:3px solid var(--danger)}
+.falla-lista-id{font-size:10px;font-weight:700;color:var(--accent);font-family:var(--mono);flex-shrink:0;min-width:56px}
+.falla-lista-eq{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.falla-lista-btn{flex-shrink:0;font-size:9.5px;padding:3px 8px;border-radius:6px;font-weight:700;background:var(--accent);color:#1a1409;white-space:nowrap}
+.falla-lista-foto{flex-shrink:0;font-size:13px;cursor:pointer;background:none;border:none;color:var(--accent)}
+.fallas-panel-vista-toggle{display:flex;gap:4px;margin-top:8px}
+.fallas-panel-vista-toggle .chip{flex:1;font-size:10px;padding:4px 6px;text-align:center}
 
 /* ── TOAST / LOADING ── */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--r-lg);padding:13px 18px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .22s,transform .22s;z-index:999;box-shadow:0 8px 28px rgba(0,0,0,.5)}
@@ -317,6 +329,10 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
             <span class="ftab-count" id="ftab-done">0</span><span>Atendido</span>
           </button>
         </div>
+        <div class="fallas-panel-vista-toggle">
+          <button class="chip active" id="btnFallaVistaTarjetas" onclick="setVistaFallas('tarjetas')">🗂 Tarjetas</button>
+          <button class="chip" id="btnFallaVistaLista" onclick="setVistaFallas('lista')">📋 Lista</button>
+        </div>
       </div>
       <div class="fallas-panel-body" id="fallasPanelBody" data-drop-tab="Pendiente"></div>
     </div>
@@ -324,7 +340,6 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
     <div class="ot-panel">
       <div class="sec-title ot-panel-h" style="justify-content:flex-start;gap:10px">
         <span style="white-space:nowrap">Órdenes de trabajo</span>
-        <span class="hint" style="flex:0">soltar en "Cerrada" abre el formulario de cierre</span>
         <span style="flex:1;height:1px;background:var(--border)"></span>
         <div style="display:flex;gap:4px;flex-shrink:0">
           <button class="chip active" id="btnVistaTarjetas" onclick="setVistaOT('tarjetas')" style="font-size:11px;padding:5px 12px">🗂 Tarjetas</button>
@@ -340,7 +355,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   </div>
 
 
-  <div class="board-wrap" style="padding-top:0">
+  <div class="board-wrap" style="padding-top:0;flex:0 0 auto;overflow:visible">
     <div class="board" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
       <div class="rank" id="rankEquipos"></div>
       <div class="rank" id="rankSistemas"></div>
@@ -687,11 +702,13 @@ function setVistaOT(vista){
 
 function cardOTLista(o){
   const p=o.Prioridad||'Media';
+  const prioCls=p==='Alta'?'t-alta':p==='Baja'?'t-baja':'t-media';
   return '<div class="ot-lista-row'+(p==='Alta'&&o.Estado!=='Cerrada'?' alta':'')+'" onclick="abrirDetalleOT(\''+esc(o.NroOT)+'\')">'
-    +'<div class="ot-lista-top"><span class="ot-lista-nro">'+esc(o.NroOT||'—')+'</span><span class="tag '+(p==='Alta'?'t-alta':p==='Baja'?'t-baja':'t-media')+'" style="font-size:9px;padding:2px 6px">'+esc(p)+'</span></div>'
-    +'<div class="ot-lista-eq">'+esc(o.Equipo||'—')+'</div>'
-    +'<div class="ot-lista-meta"><span>'+esc(o.Tecnico||'sin asignar')+'</span>'
-    +(o.FechaProgramada?'<span>'+esc(D.fmtFecha(o.FechaProgramada))+'</span>':'')+'</div>'
+    +'<span class="ot-lista-nro">'+esc(o.NroOT||'—')+'</span>'
+    +'<span class="ot-lista-eq">'+esc(o.Equipo||'—')+'</span>'
+    +'<span class="ot-lista-tec">'+esc(o.Tecnico||'sin asignar')+'</span>'
+    +(o.FechaProgramada?'<span class="ot-lista-fecha">'+esc(D.fmtFecha(o.FechaProgramada))+'</span>':'')
+    +'<span class="tag ot-lista-prio '+prioCls+'">'+esc(p)+'</span>'
     +'</div>';
 }
 
@@ -725,14 +742,35 @@ function setFallasTab(estado,btn){
   renderFallasPanel();
 }
 
+let vistaFallasActiva='tarjetas';
+
+function setVistaFallas(vista){
+  vistaFallasActiva=vista;
+  document.getElementById('btnFallaVistaTarjetas').classList.toggle('active',vista==='tarjetas');
+  document.getElementById('btnFallaVistaLista').classList.toggle('active',vista==='lista');
+  document.getElementById('fallasPanelBody').classList.toggle('vista-lista',vista==='lista');
+  renderFallasPanel();
+}
+
 function renderFallasPanel(){
   const lista=fallasPorEstadoCache[fallasTabActiva]||[];
   const vacios={Pendiente:'Nada pendiente. Buen momento para el preventivo.','En curso':'Ninguna falla con OT en curso',Concluido:'Sin fallas cerradas en el período'};
-  fill('fallasPanelBody',lista.map(cardFalla),vacios[fallasTabActiva]);
+  const renderer = vistaFallasActiva==='lista' ? cardFallaLista : cardFalla;
+  fill('fallasPanelBody',lista.map(renderer),vacios[fallasTabActiva]);
   bindCards();
 }
 const set=(id,v)=>document.getElementById(id).textContent=v;
 function fill(id,html,vacio){ document.getElementById(id).innerHTML=html.length?html.join(''):'<div class="col-empty">'+vacio+'</div>'; }
+
+function cardFallaLista(f){
+  const parado=(f.Detenido||'').includes('parado');
+  return '<div class="falla-lista-row'+(parado?' stopped':'')+'" data-kind="falla" data-id="'+esc(f.ID)+'" data-estado="'+esc(f.Estado)+'">'
+    +'<span class="falla-lista-id">'+esc((f.ID||'').slice(-6)||'—')+'</span>'
+    +'<span class="falla-lista-eq">'+esc(f.Equipo||'—')+'</span>'
+    +(f.Estado==='Pendiente'?'<button class="falla-lista-btn" data-act="genot" data-id="'+esc(f.ID)+'">OT</button>':'')
+    +(f.FotoURL?'<button class="falla-lista-foto" onclick="verFoto(event,\''+esc(f.FotoURL)+'\',\''+esc(f.Equipo||'Falla')+'\')">📷</button>':'')
+    +'</div>';
+}
 
 function cardFalla(f){
   const parado=(f.Detenido||'').includes('parado');
