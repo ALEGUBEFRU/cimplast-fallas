@@ -660,6 +660,8 @@ function cardOT(o){
   const p=o.Prioridad||'Media';
   const cls=p==='Alta'?'t-alta':p==='Baja'?'t-baja':'t-media';
   const cerrada=o.Estado==='Cerrada';
+  const fallaAsoc=o.FallaID?fallasTodas.find(f=>f.ID===o.FallaID):null;
+  const fotoUrl=fallaAsoc&&fallaAsoc.FotoURL?fallaAsoc.FotoURL:'';
   return '<div class="card'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'">'
     +'<div class="card-top"><span class="card-num">'+esc(o.NroOT||'—')+'</span><span class="tag '+cls+'">'+esc(p)+'</span></div>'
     +'<div class="card-eq">'+esc(o.Equipo||'—')+'</div>'
@@ -674,6 +676,7 @@ function cardOT(o){
     +(o.Estado==='En curso'?'<button class="card-btn" data-act="reprogramar" data-id="'+esc(o.NroOT)+'">↩ Reprogramar</button>':'')
     +(!cerrada?'<button class="card-btn b-close" data-act="cerrar" data-id="'+esc(o.NroOT)+'">Cerrar</button>':'')
     +'<button class="card-btn b-copy" data-act="wa" data-id="'+esc(o.NroOT)+'">WhatsApp</button></div>'
+    +(fotoUrl?'<button class="card-foto-btn" onclick="verFoto(event,\''+esc(fotoUrl)+'\',\''+esc(o.Equipo||'OT')+'\')">📷 Ver foto</button>':'')
     +'</div>';
 }
 function bindCards(){
