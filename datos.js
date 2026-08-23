@@ -6,7 +6,7 @@
 
 window.CIMPLAST_DATA = (function() {
 
-Abrí https://github.com/ALEGUBEFRU/cimplast-fallas/blob/main/datos.js
+https://script.google.com/macros/s/AKfycbw6N7o5SAmtED2VL_UEVELEWB0lAlGFUeajLNmqFQaMIiryH9eNDW0ARn1YO2__lCHIfQ/exec
   const PLANTAS = ["Planta 3", "Planta 4", "Planta 5", "Titese", "Matricería", "Otros"];
 
   const EQUIPOS = {
