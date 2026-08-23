@@ -421,7 +421,8 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 <div class="overlay" id="modalFoto"><div class="modal" style="max-width:700px">
   <div class="modal-h"><span class="modal-t" id="mFotoTitulo">Foto de falla</span><button class="modal-x" onclick="closeModal('modalFoto')">✕</button></div>
   <div class="modal-b" style="padding:12px">
-    <img id="mFotoImg" src="" alt="Foto de falla" class="modal-foto-img" onerror="this.parentElement.innerHTML='<div class=\'foto-error\'>No se pudo cargar la imagen. Puede que requiera acceso a Google Drive.</div>'">
+    <img id="mFotoImg" alt="Foto de falla" class="modal-foto-img">
+    <div id="mFotoErrorMsg" class="foto-error" style="display:none">No se pudo cargar la imagen. Puede que requiera acceso a Google Drive.</div>
   </div>
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalFoto')">Cerrar</button><a id="mFotoLink" href="" target="_blank" class="btn-primary" style="text-decoration:none;padding:8px 16px;border-radius:var(--r);font-size:13px;font-weight:700;background:var(--accent);color:#1a1409">Abrir en Drive</a></div>
 </div></div>
@@ -459,7 +460,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   <div id="dOtFotoWrap" class="ot-foto-wrap" style="display:none">
     <div style="height:1px;background:var(--border);margin:4px 0"></div>
     <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Foto de la falla</div>
-    <img id="dOtFotoImg" src="" alt="Foto" onclick="verFotoUrl(this.src,'Foto de falla')" onerror="document.getElementById('dOtFotoWrap').style.display='none'">
+    <img id="dOtFotoImg" alt="Foto" onclick="verFotoUrl(this.src,'Foto de falla')" onerror="document.getElementById('dOtFotoWrap').style.display='none'">
   </div>
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalDetalleOT')">Cerrar</button></div>
 </div></div>
@@ -1076,7 +1077,12 @@ function verFoto(e, url, titulo){
 
 function verFotoUrl(url, titulo){
   document.getElementById('mFotoTitulo').textContent = titulo || 'Foto de falla';
-  document.getElementById('mFotoImg').src = url;
+  const img = document.getElementById('mFotoImg');
+  const errMsg = document.getElementById('mFotoErrorMsg');
+  img.style.display = 'block';
+  errMsg.style.display = 'none';
+  img.onerror = () => { img.style.display = 'none'; errMsg.style.display = 'block'; };
+  img.src = url;
   document.getElementById('mFotoLink').href = url;
   openModal('modalFoto');
 }
