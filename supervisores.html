@@ -22,7 +22,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:15px}
-body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;flex-direction:column}
+body{background:var(--bg);color:var(--text);font-family:var(--font);height:100vh;overflow:hidden;display:flex;flex-direction:column}
 button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
 input,select,textarea{font-family:inherit}
 a{color:var(--accent);text-decoration:none}
@@ -53,7 +53,7 @@ body.off .net-pill i{background:var(--danger)}
 .spin.spinning{display:inline-block;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.view{display:none;flex:1;flex-direction:column}
+.view{display:none;flex:1;flex-direction:column;overflow-y:auto;min-height:0}
 .view.active{display:flex}
 
 /* ── KPIs ── */
@@ -90,10 +90,10 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .col-dot{width:8px;height:8px;border-radius:100px;flex-shrink:0}
 .col-t{font-size:12.5px;font-weight:700;flex:1;letter-spacing:-.01em}
 .col-c{background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:11px;font-weight:700;color:var(--muted);padding:2px 9px;font-family:var(--mono)}
-.col-b{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.col-b{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px;min-height:0}
 
 /* ── CARDS ── */
-.card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:8px;transition:border-color .15s,box-shadow .15s,opacity .15s}
+.card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;display:flex;flex-direction:column;gap:4px;transition:border-color .15s,box-shadow .15s,opacity .15s}
 .card[draggable=true]{cursor:grab}
 .card:hover{border-color:var(--border-hi);box-shadow:0 3px 12px rgba(0,0,0,.35)}
 .card.dragging{opacity:.4}
@@ -107,11 +107,11 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .t-baja{background:rgba(92,180,107,.14);color:#8fd39a}
 .t-stop{background:rgba(229,87,79,.2);color:#f5a19a}
 .t-run{background:rgba(141,129,117,.16);color:var(--muted)}
-.card-eq{font-size:14px;font-weight:700;line-height:1.3;letter-spacing:-.01em}
-.card-desc{font-size:12px;color:var(--label);line-height:1.5}
-.card-meta{display:flex;gap:9px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);font-family:var(--mono)}
-.card-acts{display:flex;gap:6px;margin-top:2px}
-.card-btn{flex:1;padding:8px;border-radius:7px;font-size:11px;font-weight:700;border:1px solid;transition:background .15s;text-align:center}
+.card-eq{font-size:13px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
+.card-desc{font-size:11px;color:var(--label);line-height:1.35;max-height:1.35em;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.card-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--muted);font-family:var(--mono)}
+.card-acts{display:flex;gap:5px;margin-top:1px}
+.card-btn{flex:1;padding:6px;border-radius:7px;font-size:10.5px;font-weight:700;border:1px solid;transition:background .15s;text-align:center}
 .b-ot{border-color:rgba(240,169,44,.5);color:var(--accent);background:rgba(240,169,44,.07)}
 .b-ot:hover{background:rgba(240,169,44,.18)}
 .b-close{border-color:rgba(92,180,107,.5);color:#8fd39a;background:rgba(92,180,107,.07)}
@@ -147,6 +147,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .chips{display:flex;gap:7px;flex-wrap:wrap}
 .chip{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:600;color:var(--muted);transition:background .15s,border-color .15s,color .15s}
 .chip.selected{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .btn-primary{background:var(--accent);color:#1a1409;font-size:13px;font-weight:800;padding:11px 20px;border-radius:var(--r);transition:filter .15s}
 .btn-primary:hover{filter:brightness(1.07)}
 .btn-primary:disabled{background:var(--border);color:var(--muted)}
@@ -183,7 +184,8 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .cal-cell{background:var(--surface);min-height:90px;padding:4px;display:flex;flex-direction:column;gap:2px;cursor:default}
 .cal-cell.otro-mes{background:var(--surface2);opacity:.5}
 .cal-cell.hoy-cell{background:rgba(255,170,0,.06);outline:1px solid var(--accent);outline-offset:-1px}
-.cal-num{font-size:11px;font-weight:700;color:var(--muted);padding:1px 3px;align-self:flex-end}
+.cal-num{font-size:11px;font-weight:700;color:var(--muted);padding:1px 3px;align-self:flex-end;cursor:pointer;border-radius:4px;transition:background .15s}
+.cal-num:hover{background:rgba(255,170,0,.15);color:var(--accent)}
 .cal-num.hoy-num{color:var(--accent)}
 .cal-chip{font-size:10px;padding:2px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;font-weight:600;line-height:1.4}
 .cal-chip.alta{background:rgba(229,87,79,.2);color:#f0938c;border:1px solid rgba(229,87,79,.3)}
@@ -200,6 +202,48 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .ot-foto-wrap{margin-top:8px}
 .ot-foto-wrap img{width:100%;max-height:280px;object-fit:contain;border-radius:var(--r);background:var(--surface2);cursor:zoom-in}
 
+/* ── NUEVO LAYOUT: PANEL FALLAS COMPACTO + OT AMPLIADO ── */
+.board-wrap-v2{flex:1;min-height:460px;padding:4px 22px 20px;display:flex;gap:18px}
+.fallas-panel{width:300px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);display:flex;flex-direction:column;overflow:hidden}
+.fallas-panel-h{padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.fallas-panel-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.fallas-tabs{display:flex;gap:6px}
+.fallas-tab{flex:1;padding:7px 4px;border-radius:8px;font-size:11px;font-weight:700;text-align:center;background:var(--surface2);border:1px solid var(--border);color:var(--muted);transition:.15s;display:flex;flex-direction:column;align-items:center;gap:2px}
+.fallas-tab:hover{border-color:var(--border-hi)}
+.fallas-tab.active{border-color:var(--accent);color:var(--accent);background:rgba(240,169,44,.1)}
+.fallas-tab .ftab-count{font-size:14px;font-weight:800;font-family:var(--mono)}
+.fallas-panel-body{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0}
+.fallas-panel-body[data-drop]{transition:background .15s,border-color .15s}
+.fallas-panel-body.dragover{background:#221c14}
+.ot-panel{flex:1;display:flex;flex-direction:column;min-width:0}
+.ot-panel-h{margin-bottom:11px;flex-shrink:0}
+.board-lg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;flex:1;min-height:0}
+.col-lg{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.col-lg.dragover{border-color:var(--accent);background:#221c14}
+@media(max-width:1100px){.board-wrap-v2{flex-direction:column;overflow-y:auto}.fallas-panel{width:100%;max-height:280px}.board-lg{grid-template-columns:1fr}.col-lg{min-height:300px}}
+
+/* ── VISTA LISTA DE OT ── */
+.ot-lista-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;transition:border-color .15s;font-size:11.5px}
+.ot-lista-row:hover{border-color:var(--border-hi)}
+.ot-lista-row.alta{border-left:3px solid var(--danger)}
+.ot-lista-nro{font-size:10.5px;font-weight:700;color:var(--accent);font-family:var(--mono);flex-shrink:0;min-width:78px}
+.ot-lista-eq{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.ot-lista-tec{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;flex-shrink:0;display:none}
+.ot-lista-fecha{color:var(--muted);font-family:var(--mono);font-size:10px;flex-shrink:0;display:none}
+.ot-lista-prio{flex-shrink:0;font-size:9px;padding:1px 6px;border-radius:100px;font-weight:700}
+@media(min-width:1500px){.ot-lista-tec,.ot-lista-fecha{display:block}}
+.col-b.vista-lista{gap:4px}
+
+/* ── VISTA LISTA DE FALLAS ── */
+.falla-lista-row{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);font-size:11.5px}
+.falla-lista-row.stopped{border-left:3px solid var(--danger)}
+.falla-lista-id{font-size:10px;font-weight:700;color:var(--accent);font-family:var(--mono);flex-shrink:0;min-width:56px}
+.falla-lista-eq{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.falla-lista-btn{flex-shrink:0;font-size:9.5px;padding:3px 8px;border-radius:6px;font-weight:700;background:var(--accent);color:#1a1409;white-space:nowrap}
+.falla-lista-foto{flex-shrink:0;font-size:13px;cursor:pointer;background:none;border:none;color:var(--accent)}
+.fallas-panel-vista-toggle{display:flex;gap:4px;margin-top:8px}
+.fallas-panel-vista-toggle .chip{flex:1;font-size:10px;padding:4px 6px;text-align:center}
+
 /* ── TOAST / LOADING ── */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--r-lg);padding:13px 18px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .22s,transform .22s;z-index:999;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -212,7 +256,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .wa{background:#1b2418;border:1px solid #33452e;border-radius:var(--r);padding:15px;font-family:var(--mono);font-size:12.5px;color:#a9d6a4;line-height:1.75;white-space:pre-wrap;user-select:all}
 
 /* ── NUEVA OT ── */
-.form-page{padding:24px 22px 48px;overflow-y:auto;max-width:600px}
+.form-page{padding:24px 22px 48px;overflow-y:auto;max-width:600px;flex:1;min-height:0}
 .form-page h2{font-size:19px;font-weight:800;letter-spacing:-.02em;margin-bottom:5px}
 .form-page .sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5}
 
@@ -271,23 +315,48 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
     <span class="f-count" id="fCount"></span>
   </div>
 
-  <div class="board-wrap">
-    <div>
-      <div class="sec-title">Reportes de fallas <span class="hint">arrastrá una tarjeta para cambiar su estado</span></div>
-      <div class="board">
-        <div class="col" data-drop="falla:Pendiente"><div class="col-h"><i class="col-dot" style="background:var(--accent)"></i><span class="col-t">Pendiente</span><span class="col-c" id="cnt-f-pend">0</span></div><div class="col-b" id="col-fallas-pend"></div></div>
-        <div class="col" data-drop="falla:En curso"><div class="col-h"><i class="col-dot" style="background:var(--info)"></i><span class="col-t">Con OT generada</span><span class="col-c" id="cnt-f-ot">0</span></div><div class="col-b" id="col-fallas-ot"></div></div>
-        <div class="col" data-drop="falla:Concluido"><div class="col-h"><i class="col-dot" style="background:var(--ok)"></i><span class="col-t">Atendido</span><span class="col-c" id="cnt-f-done">0</span></div><div class="col-b" id="col-fallas-done"></div></div>
+  <div class="board-wrap-v2">
+    <div class="fallas-panel">
+      <div class="fallas-panel-h">
+        <div class="fallas-panel-title">Reportes de fallas</div>
+        <div class="fallas-tabs">
+          <button class="fallas-tab active" data-tab="Pendiente" onclick="setFallasTab('Pendiente',this)">
+            <span class="ftab-count" id="ftab-pend">0</span><span>Pendiente</span>
+          </button>
+          <button class="fallas-tab" data-tab="En curso" onclick="setFallasTab('En curso',this)">
+            <span class="ftab-count" id="ftab-ot">0</span><span>Con OT</span>
+          </button>
+          <button class="fallas-tab" data-tab="Concluido" onclick="setFallasTab('Concluido',this)">
+            <span class="ftab-count" id="ftab-done">0</span><span>Atendido</span>
+          </button>
+        </div>
+        <div class="fallas-panel-vista-toggle">
+          <button class="chip active" id="btnFallaVistaTarjetas" onclick="setVistaFallas('tarjetas')">🗂 Tarjetas</button>
+          <button class="chip" id="btnFallaVistaLista" onclick="setVistaFallas('lista')">📋 Lista</button>
+        </div>
+      </div>
+      <div class="fallas-panel-body" id="fallasPanelBody" data-drop-tab="Pendiente"></div>
+    </div>
+
+    <div class="ot-panel">
+      <div class="sec-title ot-panel-h" style="justify-content:flex-start;gap:10px">
+        <span style="white-space:nowrap">Órdenes de trabajo</span>
+        <span style="flex:1;height:1px;background:var(--border)"></span>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button class="chip active" id="btnVistaTarjetas" onclick="setVistaOT('tarjetas')" style="font-size:11px;padding:5px 12px">🗂 Tarjetas</button>
+          <button class="chip" id="btnVistaLista" onclick="setVistaOT('lista')" style="font-size:11px;padding:5px 12px">📋 Lista</button>
+        </div>
+      </div>
+      <div class="board-lg" id="boardOtLg">
+        <div class="col-lg" data-drop="ot:Abierta"><div class="col-h"><i class="col-dot" style="background:var(--accent)"></i><span class="col-t">Abierta</span><span class="col-c" id="cnt-ot-abierta">0</span></div><div class="col-b" id="col-ots-abierta"></div></div>
+        <div class="col-lg" data-drop="ot:En curso"><div class="col-h"><i class="col-dot" style="background:var(--info)"></i><span class="col-t">En curso</span><span class="col-c" id="cnt-ot-curso">0</span></div><div class="col-b" id="col-ots-curso"></div></div>
+        <div class="col-lg" data-drop="ot:Cerrada"><div class="col-h"><i class="col-dot" style="background:var(--ok)"></i><span class="col-t">Cerrada</span><span class="col-c" id="cnt-ot-cerrada">0</span></div><div class="col-b" id="col-ots-cerrada"></div></div>
       </div>
     </div>
-    <div>
-      <div class="sec-title">Órdenes de trabajo <span class="hint">soltar en “Cerrada” abre el formulario de cierre</span></div>
-      <div class="board">
-        <div class="col" data-drop="ot:Abierta"><div class="col-h"><i class="col-dot" style="background:var(--accent)"></i><span class="col-t">Abierta</span><span class="col-c" id="cnt-ot-abierta">0</span></div><div class="col-b" id="col-ots-abierta"></div></div>
-        <div class="col" data-drop="ot:En curso"><div class="col-h"><i class="col-dot" style="background:var(--info)"></i><span class="col-t">En curso</span><span class="col-c" id="cnt-ot-curso">0</span></div><div class="col-b" id="col-ots-curso"></div></div>
-        <div class="col" data-drop="ot:Cerrada"><div class="col-h"><i class="col-dot" style="background:var(--ok)"></i><span class="col-t">Cerrada</span><span class="col-c" id="cnt-ot-cerrada">0</span></div><div class="col-b" id="col-ots-cerrada"></div></div>
-      </div>
-    </div>
+  </div>
+
+
+  <div class="board-wrap" style="padding-top:0;flex:0 0 auto;overflow:visible">
     <div class="board" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
       <div class="rank" id="rankEquipos"></div>
       <div class="rank" id="rankSistemas"></div>
@@ -425,6 +494,13 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
     <div id="mFotoErrorMsg" class="foto-error" style="display:none">No se pudo cargar la imagen. Puede que requiera acceso a Google Drive.</div>
   </div>
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalFoto')">Cerrar</button><a id="mFotoLink" href="" target="_blank" class="btn-primary" style="text-decoration:none;padding:8px 16px;border-radius:var(--r);font-size:13px;font-weight:700;background:var(--accent);color:#1a1409">Abrir en Drive</a></div>
+</div></div>
+
+<!-- ═══ MODAL: EVENTOS DEL DÍA ═══ -->
+<div class="overlay" id="modalEventosDia"><div class="modal" style="max-width:460px">
+  <div class="modal-h"><span class="modal-t" id="mEventosTitulo">Eventos del día</span><button class="modal-x" onclick="closeModal('modalEventosDia')">✕</button></div>
+  <div class="modal-b" id="mEventosLista" style="max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
+  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalEventosDia')">Cerrar</button></div>
 </div></div>
 
 <!-- ═══ MODAL: DETALLE OT ═══ -->
@@ -623,30 +699,90 @@ function renderRankings(fallas,ots){
   document.getElementById('rankTecnicos').innerHTML=rankHTML('Carga por técnico (OT abiertas)',topTecnicos(ots.filter(o=>o.Estado!=='Cerrada'),5),'Sin OT abiertas');
 }
 
+let vistaOTActiva='tarjetas';
+
+function setVistaOT(vista){
+  vistaOTActiva=vista;
+  document.getElementById('btnVistaTarjetas').classList.toggle('active',vista==='tarjetas');
+  document.getElementById('btnVistaLista').classList.toggle('active',vista==='lista');
+  aplicarFiltros();
+}
+
+function cardOTLista(o){
+  const p=o.Prioridad||'Media';
+  const prioCls=p==='Alta'?'t-alta':p==='Baja'?'t-baja':'t-media';
+  return '<div class="ot-lista-row'+(p==='Alta'&&o.Estado!=='Cerrada'?' alta':'')+'" onclick="abrirDetalleOT(\''+esc(o.NroOT)+'\')">'
+    +'<span class="ot-lista-nro">'+esc(o.NroOT||'—')+'</span>'
+    +'<span class="ot-lista-eq">'+esc(o.Equipo||'—')+'</span>'
+    +'<span class="ot-lista-tec">'+esc(o.Tecnico||'sin asignar')+'</span>'
+    +(o.FechaProgramada?'<span class="ot-lista-fecha">'+esc(D.fmtFecha(o.FechaProgramada))+'</span>':'')
+    +'<span class="tag ot-lista-prio '+prioCls+'">'+esc(p)+'</span>'
+    +'</div>';
+}
+
 /* ══ KANBAN ══ */
+let fallasTabActiva='Pendiente';
+let fallasPorEstadoCache={Pendiente:[],'En curso':[],Concluido:[]};
+
 function renderKanban(fallas,ots){
   const fP=fallas.filter(f=>f.Estado==='Pendiente'), fC=fallas.filter(f=>f.Estado==='En curso'), fD=fallas.filter(f=>f.Estado==='Concluido');
-  set('cnt-f-pend',fP.length); set('cnt-f-ot',fC.length); set('cnt-f-done',fD.length);
-  fill('col-fallas-pend',fP.map(cardFalla),'Nada pendiente. Buen momento para el preventivo.');
-  fill('col-fallas-ot',fC.map(cardFalla),'Ninguna falla con OT en curso');
-  fill('col-fallas-done',fD.map(cardFalla),'Sin fallas cerradas en el período');
+  fallasPorEstadoCache={Pendiente:fP,'En curso':fC,Concluido:fD};
+  set('ftab-pend',fP.length); set('ftab-ot',fC.length); set('ftab-done',fD.length);
+  renderFallasPanel();
 
   const oA=ots.filter(o=>o.Estado==='Abierta'), oC=ots.filter(o=>o.Estado==='En curso'), oX=ots.filter(o=>o.Estado==='Cerrada');
   set('cnt-ot-abierta',oA.length); set('cnt-ot-curso',oC.length); set('cnt-ot-cerrada',oX.length);
-  fill('col-ots-abierta',oA.map(cardOT),'Sin OT abiertas');
-  fill('col-ots-curso',oC.map(cardOT),'Sin OT en ejecución');
-  fill('col-ots-cerrada',oX.map(cardOT),'Sin OT cerradas en el período');
+  const otRenderer = vistaOTActiva==='lista' ? cardOTLista : cardOT;
+  fill('col-ots-abierta',oA.map(otRenderer),'Sin OT abiertas');
+  fill('col-ots-curso',oC.map(otRenderer),'Sin OT en ejecución');
+  fill('col-ots-cerrada',oX.map(otRenderer),'Sin OT cerradas en el período');
+  document.querySelectorAll('#boardOtLg .col-b').forEach(el=>el.classList.toggle('vista-lista',vistaOTActiva==='lista'));
 
   const badge=document.getElementById('pendCount');
   badge.textContent=fP.length; badge.style.display=fP.length?'inline-block':'none';
   bindCards();
 }
+
+function setFallasTab(estado,btn){
+  fallasTabActiva=estado;
+  document.querySelectorAll('.fallas-tab').forEach(b=>b.classList.toggle('active',b===btn));
+  document.getElementById('fallasPanelBody').dataset.dropTab=estado;
+  renderFallasPanel();
+}
+
+let vistaFallasActiva='tarjetas';
+
+function setVistaFallas(vista){
+  vistaFallasActiva=vista;
+  document.getElementById('btnFallaVistaTarjetas').classList.toggle('active',vista==='tarjetas');
+  document.getElementById('btnFallaVistaLista').classList.toggle('active',vista==='lista');
+  document.getElementById('fallasPanelBody').classList.toggle('vista-lista',vista==='lista');
+  renderFallasPanel();
+}
+
+function renderFallasPanel(){
+  const lista=fallasPorEstadoCache[fallasTabActiva]||[];
+  const vacios={Pendiente:'Nada pendiente. Buen momento para el preventivo.','En curso':'Ninguna falla con OT en curso',Concluido:'Sin fallas cerradas en el período'};
+  const renderer = vistaFallasActiva==='lista' ? cardFallaLista : cardFalla;
+  fill('fallasPanelBody',lista.map(renderer),vacios[fallasTabActiva]);
+  bindCards();
+}
 const set=(id,v)=>document.getElementById(id).textContent=v;
 function fill(id,html,vacio){ document.getElementById(id).innerHTML=html.length?html.join(''):'<div class="col-empty">'+vacio+'</div>'; }
 
+function cardFallaLista(f){
+  const parado=(f.Detenido||'').includes('parado');
+  return '<div class="falla-lista-row'+(parado?' stopped':'')+'" data-kind="falla" data-id="'+esc(f.ID)+'" data-estado="'+esc(f.Estado)+'">'
+    +'<span class="falla-lista-id">'+esc((f.ID||'').slice(-6)||'—')+'</span>'
+    +'<span class="falla-lista-eq">'+esc(f.Equipo||'—')+'</span>'
+    +(f.Estado==='Pendiente'?'<button class="falla-lista-btn" data-act="genot" data-id="'+esc(f.ID)+'">OT</button>':'')
+    +(f.FotoURL?'<button class="falla-lista-foto" onclick="verFoto(event,\''+esc(f.FotoURL)+'\',\''+esc(f.Equipo||'Falla')+'\')">📷</button>':'')
+    +'</div>';
+}
+
 function cardFalla(f){
   const parado=(f.Detenido||'').includes('parado');
-  return '<div class="card'+(parado?' stopped':'')+'" draggable="true" data-kind="falla" data-id="'+esc(f.ID)+'" data-estado="'+esc(f.Estado)+'">'
+  return '<div class="card'+(parado?' stopped':'')+'" data-kind="falla" data-id="'+esc(f.ID)+'" data-estado="'+esc(f.Estado)+'">'
     +'<div class="card-top"><span class="card-num">'+esc((f.ID||'').slice(-8)||'—')+'</span>'
     +'<span class="tag '+(parado?'t-stop':'t-run')+'">'+(parado?'Parado':'En operación')+'</span></div>'
     +'<div class="card-eq">'+esc(f.Equipo||'—')+'</div>'
@@ -662,7 +798,7 @@ function cardOT(o){
   const cerrada=o.Estado==='Cerrada';
   const fallaAsoc=o.FallaID?fallasTodas.find(f=>f.ID===o.FallaID):null;
   const fotoUrl=fallaAsoc&&fallaAsoc.FotoURL?fallaAsoc.FotoURL:'';
-  return '<div class="card'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'">'
+  return '<div class="card'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'" onclick="abrirDetalleOT(\''+esc(o.NroOT)+'\')" style="cursor:pointer">'
     +'<div class="card-top"><span class="card-num">'+esc(o.NroOT||'—')+'</span><span class="tag '+cls+'">'+esc(p)+'</span></div>'
     +'<div class="card-eq">'+esc(o.Equipo||'—')+'</div>'
     +'<div class="card-desc">'+esc((o.Descripcion||'').slice(0,90))+((o.Descripcion||'').length>90?'…':'')+'</div>'
@@ -702,7 +838,7 @@ function bindCards(){
 
 /* ══ DRAG & DROP ══ */
 function initDrop(){
-  document.querySelectorAll('.col[data-drop]').forEach(col=>{
+  document.querySelectorAll('.col[data-drop],.col-lg[data-drop]').forEach(col=>{
     col.addEventListener('dragover',e=>{ e.preventDefault(); col.classList.add('dragover'); e.dataTransfer.dropEffect='move'; });
     col.addEventListener('dragleave',()=>col.classList.remove('dragover'));
     col.addEventListener('drop',async e=>{
@@ -1130,6 +1266,37 @@ function abrirDetalleOT(nroOT){
   openModal('modalDetalleOT');
 }
 
+let porDiaCache = {};
+
+function abrirEventosDia(dStr){
+  const ots = (porDiaCache[dStr]||[]).sort((a,b)=>
+    (a.Prioridad==='Alta'?0:a.Prioridad==='Media'?1:2)-(b.Prioridad==='Alta'?0:b.Prioridad==='Media'?1:2));
+  const fecha = new Date(dStr+'T00:00:00');
+  const fechaTxt = fecha.toLocaleDateString('es-PY',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('mEventosTitulo').textContent = fechaTxt.charAt(0).toUpperCase()+fechaTxt.slice(1);
+
+  const cont = document.getElementById('mEventosLista');
+  if(ots.length===0){
+    cont.innerHTML = '<div class="col-empty">Sin OT programadas este día</div>';
+  } else {
+    cont.innerHTML = ots.map(o => {
+      const p = o.Prioridad||'Media';
+      const prioColor = p==='Alta'?'var(--danger)':p==='Media'?'var(--accent)':'var(--muted)';
+      const estadoColor = o.Estado==='Cerrada'?'var(--ok)':o.Estado==='En curso'?'var(--info)':'var(--accent)';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer" onclick="closeModal('modalEventosDia');abrirDetalleOT('${o.NroOT}')">
+        <input type="checkbox" ${o.Estado==='Cerrada'?'checked':''} disabled style="accent-color:var(--accent);flex-shrink:0">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.Equipo||'—'}</div>
+          <div style="font-size:10.5px;color:var(--muted);font-family:var(--mono)">${o.NroOT||'—'} · ${o.Tecnico||'sin asignar'}</div>
+        </div>
+        <span style="font-size:9.5px;font-weight:700;color:${prioColor}">${p}</span>
+        <span style="font-size:9.5px;font-weight:700;color:${estadoColor}">${o.Estado||'—'}</span>
+      </div>`;
+    }).join('');
+  }
+  openModal('modalEventosDia');
+}
+
 function renderCalendario(){
   const inicio = agendaInicioSemana || new Date();
   const anio = inicio.getFullYear();
@@ -1155,6 +1322,7 @@ function renderCalendario(){
     if(!porDia[k]) porDia[k] = [];
     porDia[k].push(o);
   });
+  porDiaCache = porDia;
 
   const hoyStr = new Date().toISOString().slice(0,10);
   const primerDia = new Date(anio, mes, 1);
@@ -1185,8 +1353,9 @@ function renderCalendario(){
       return `<span class="cal-chip ${cls}${cerrada}" title="${o.NroOT} · ${o.Equipo||''} · ${o.Tecnico||''}" onclick="abrirDetalleOT('${o.NroOT}')">${o.Equipo||o.NroOT}</span>`;
     }).join('');
     const mas = otsDelDia.length > MAX ? `<span class="cal-mas">+${otsDelDia.length-MAX} más</span>` : '';
+    const otsDelDiaTodas = porDia[dStr]||[];
     html += `<div class="cal-cell${esHoy?' hoy-cell':''}">
-      <span class="cal-num${esHoy?' hoy-num':''}">${d}</span>
+      <span class="cal-num${esHoy?' hoy-num':''}" onclick="abrirEventosDia('${dStr}')">${d}</span>
       ${chips}${mas}
     </div>`;
   }
