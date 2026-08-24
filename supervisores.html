@@ -244,6 +244,18 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .fallas-panel-vista-toggle{display:flex;gap:4px;margin-top:8px}
 .fallas-panel-vista-toggle .chip{flex:1;font-size:10px;padding:4px 6px;text-align:center}
 
+/* ── RESUMEN TÉCNICO ── */
+.tec-resumen{margin:0 22px 14px;background:var(--surface);border:1px solid var(--accent);border-radius:var(--r-lg);padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.tec-resumen-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tec-resumen-h b{font-size:14px;color:var(--text)}
+.tec-kpis{display:flex;gap:20px;flex-wrap:wrap}
+.tec-kpi{display:flex;flex-direction:column;gap:2px}
+.tec-kpi .lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.tec-kpi .val{font-size:20px;font-weight:800;font-family:var(--mono);color:var(--accent)}
+.tec-dias{display:flex;flex-wrap:wrap;gap:6px}
+.tec-dia-chip{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:11px;color:var(--label)}
+.tec-dia-chip b{color:var(--text);font-family:var(--mono)}
+
 /* ── TOAST / LOADING ── */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--r-lg);padding:13px 18px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .22s,transform .22s;z-index:999;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -314,6 +326,8 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
     <button class="btn-clear" onclick="limpiarFiltros()">Limpiar</button>
     <span class="f-count" id="fCount"></span>
   </div>
+
+  <div id="tecnicoResumen" style="display:none"></div>
 
   <div class="board-wrap-v2">
     <div class="fallas-panel">
@@ -633,6 +647,7 @@ function aplicarFiltros(){
   renderKPIs(fal,ots,desde,hasta);
   renderKanban(fal,ots);
   renderRankings(fal,ots);
+  renderResumenTecnico(tec,ots,desde,hasta);
 }
 function limpiarFiltros(){
   document.getElementById('fDesde').value=isoShift(-30);
@@ -741,6 +756,45 @@ function renderRankings(fallas,ots){
       '<div class="rank-row"><span class="nm">'+esc(n)+'</span><span class="n">'+c+'h</span>'
       +'<span class="bar"><i style="width:'+(c/max*100)+'%"></i></span></div>').join('');
   })();
+}
+
+/* ══ RESUMEN TÉCNICO ══ */
+function renderResumenTecnico(tec,ots,desde,hasta){
+  const panel=document.getElementById('tecnicoResumen');
+  if(!tec){ panel.style.display='none'; panel.innerHTML=''; return; }
+
+  const otsTec=ots.filter(o=>D.tieneTecnico(o.Tecnico,tec));
+  const cerradas=otsTec.filter(o=>o.Estado==='Cerrada');
+  const abiertas=otsTec.filter(o=>o.Estado!=='Cerrada');
+  const horasTotales=cerradas.reduce((a,o)=>a+num(o.HorasReales),0);
+
+  // Agrupar horas por día (FechaCierre)
+  const porDia={};
+  cerradas.forEach(o=>{
+    if(!o.FechaCierre||!o.HorasReales) return;
+    const d=o.FechaCierre.slice(0,10);
+    porDia[d]=(porDia[d]||0)+num(o.HorasReales);
+  });
+  const diasOrdenados=Object.entries(porDia).sort((a,b)=>a[0]<b[0]?1:-1);
+
+  const chipsDias=diasOrdenados.length
+    ? diasOrdenados.map(([d,h])=>'<span class="tec-dia-chip">'+D.fmtFecha(d)+': <b>'+(Math.round(h*10)/10)+'h</b></span>').join('')
+    : '<span style="font-size:11px;color:var(--muted)">Sin horas cargadas en el período</span>';
+
+  panel.innerHTML=`
+    <div class="tec-resumen">
+      <div class="tec-resumen-h">
+        <b>👤 ${esc(tec)}</b>
+        <span style="font-size:11px;color:var(--muted)">· período ${D.fmtFecha(desde)} — ${D.fmtFecha(hasta)}</span>
+      </div>
+      <div class="tec-kpis">
+        <div class="tec-kpi"><span class="lbl">Horas cargadas</span><span class="val">${Math.round(horasTotales*10)/10}h</span></div>
+        <div class="tec-kpi"><span class="lbl">OT cerradas</span><span class="val">${cerradas.length}</span></div>
+        <div class="tec-kpi"><span class="lbl">OT abiertas/en curso</span><span class="val">${abiertas.length}</span></div>
+      </div>
+      <div class="tec-dias">${chipsDias}</div>
+    </div>`;
+  panel.style.display='block';
 }
 
 let vistaOTActiva='tarjetas';
