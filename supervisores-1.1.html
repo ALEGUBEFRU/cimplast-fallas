@@ -184,7 +184,8 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .cal-cell{background:var(--surface);min-height:90px;padding:4px;display:flex;flex-direction:column;gap:2px;cursor:default}
 .cal-cell.otro-mes{background:var(--surface2);opacity:.5}
 .cal-cell.hoy-cell{background:rgba(255,170,0,.06);outline:1px solid var(--accent);outline-offset:-1px}
-.cal-num{font-size:11px;font-weight:700;color:var(--muted);padding:1px 3px;align-self:flex-end}
+.cal-num{font-size:11px;font-weight:700;color:var(--muted);padding:1px 3px;align-self:flex-end;cursor:pointer;border-radius:4px;transition:background .15s}
+.cal-num:hover{background:rgba(255,170,0,.15);color:var(--accent)}
 .cal-num.hoy-num{color:var(--accent)}
 .cal-chip{font-size:10px;padding:2px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;font-weight:600;line-height:1.4}
 .cal-chip.alta{background:rgba(229,87,79,.2);color:#f0938c;border:1px solid rgba(229,87,79,.3)}
@@ -493,6 +494,13 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
     <div id="mFotoErrorMsg" class="foto-error" style="display:none">No se pudo cargar la imagen. Puede que requiera acceso a Google Drive.</div>
   </div>
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalFoto')">Cerrar</button><a id="mFotoLink" href="" target="_blank" class="btn-primary" style="text-decoration:none;padding:8px 16px;border-radius:var(--r);font-size:13px;font-weight:700;background:var(--accent);color:#1a1409">Abrir en Drive</a></div>
+</div></div>
+
+<!-- ═══ MODAL: EVENTOS DEL DÍA ═══ -->
+<div class="overlay" id="modalEventosDia"><div class="modal" style="max-width:460px">
+  <div class="modal-h"><span class="modal-t" id="mEventosTitulo">Eventos del día</span><button class="modal-x" onclick="closeModal('modalEventosDia')">✕</button></div>
+  <div class="modal-b" id="mEventosLista" style="max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
+  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalEventosDia')">Cerrar</button></div>
 </div></div>
 
 <!-- ═══ MODAL: DETALLE OT ═══ -->
@@ -1258,6 +1266,37 @@ function abrirDetalleOT(nroOT){
   openModal('modalDetalleOT');
 }
 
+let porDiaCache = {};
+
+function abrirEventosDia(dStr){
+  const ots = (porDiaCache[dStr]||[]).sort((a,b)=>
+    (a.Prioridad==='Alta'?0:a.Prioridad==='Media'?1:2)-(b.Prioridad==='Alta'?0:b.Prioridad==='Media'?1:2));
+  const fecha = new Date(dStr+'T00:00:00');
+  const fechaTxt = fecha.toLocaleDateString('es-PY',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('mEventosTitulo').textContent = fechaTxt.charAt(0).toUpperCase()+fechaTxt.slice(1);
+
+  const cont = document.getElementById('mEventosLista');
+  if(ots.length===0){
+    cont.innerHTML = '<div class="col-empty">Sin OT programadas este día</div>';
+  } else {
+    cont.innerHTML = ots.map(o => {
+      const p = o.Prioridad||'Media';
+      const prioColor = p==='Alta'?'var(--danger)':p==='Media'?'var(--accent)':'var(--muted)';
+      const estadoColor = o.Estado==='Cerrada'?'var(--ok)':o.Estado==='En curso'?'var(--info)':'var(--accent)';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer" onclick="closeModal('modalEventosDia');abrirDetalleOT('${o.NroOT}')">
+        <input type="checkbox" ${o.Estado==='Cerrada'?'checked':''} disabled style="accent-color:var(--accent);flex-shrink:0">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.Equipo||'—'}</div>
+          <div style="font-size:10.5px;color:var(--muted);font-family:var(--mono)">${o.NroOT||'—'} · ${o.Tecnico||'sin asignar'}</div>
+        </div>
+        <span style="font-size:9.5px;font-weight:700;color:${prioColor}">${p}</span>
+        <span style="font-size:9.5px;font-weight:700;color:${estadoColor}">${o.Estado||'—'}</span>
+      </div>`;
+    }).join('');
+  }
+  openModal('modalEventosDia');
+}
+
 function renderCalendario(){
   const inicio = agendaInicioSemana || new Date();
   const anio = inicio.getFullYear();
@@ -1283,6 +1322,7 @@ function renderCalendario(){
     if(!porDia[k]) porDia[k] = [];
     porDia[k].push(o);
   });
+  porDiaCache = porDia;
 
   const hoyStr = new Date().toISOString().slice(0,10);
   const primerDia = new Date(anio, mes, 1);
@@ -1313,8 +1353,9 @@ function renderCalendario(){
       return `<span class="cal-chip ${cls}${cerrada}" title="${o.NroOT} · ${o.Equipo||''} · ${o.Tecnico||''}" onclick="abrirDetalleOT('${o.NroOT}')">${o.Equipo||o.NroOT}</span>`;
     }).join('');
     const mas = otsDelDia.length > MAX ? `<span class="cal-mas">+${otsDelDia.length-MAX} más</span>` : '';
+    const otsDelDiaTodas = porDia[dStr]||[];
     html += `<div class="cal-cell${esHoy?' hoy-cell':''}">
-      <span class="cal-num${esHoy?' hoy-num':''}">${d}</span>
+      <span class="cal-num${esHoy?' hoy-num':''}" onclick="abrirEventosDia('${dStr}')">${d}</span>
       ${chips}${mas}
     </div>`;
   }
