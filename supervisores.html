@@ -693,10 +693,54 @@ function rankHTML(titulo,rows,vacio){
     '<div class="rank-row"><span class="nm">'+esc(n)+'</span><span class="n">'+c+'</span>'
     +'<span class="bar"><i style="width:'+(c/max*100)+'%"></i></span></div>').join('');
 }
+/* Horas reales de mantenimiento por equipo (solo OT cerradas con horas cargadas) */
+function topHorasEquipo(ots,n){
+  const m={};
+  ots.filter(o=>o.Estado==='Cerrada'&&o.HorasReales).forEach(o=>{
+    const k=o.Equipo||'—';
+    m[k]=(m[k]||0)+num(o.HorasReales);
+  });
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,n).map(([k,v])=>[k,Math.round(v*10)/10]);
+}
+/* MTTR por equipo: promedio de HorasReales entre OT cerradas con horas cargadas */
+function mttrPorEquipo(ots,n){
+  const sum={}, cnt={};
+  ots.filter(o=>o.Estado==='Cerrada'&&o.HorasReales).forEach(o=>{
+    const k=o.Equipo||'—';
+    sum[k]=(sum[k]||0)+num(o.HorasReales); cnt[k]=(cnt[k]||0)+1;
+  });
+  return Object.keys(sum).map(k=>[k,Math.round(sum[k]/cnt[k]*10)/10]).sort((a,b)=>b[1]-a[1]).slice(0,n);
+}
+/* Distribución de OT por tipo: Correctivo / Preventivo / Mejora */
+function tipoOtHTML(ots){
+  const m={Correctivo:0,Preventivo:0,Mejora:0};
+  ots.forEach(o=>{ const t=o.Tipo||'Correctivo'; if(m[t]!==undefined) m[t]++; else m[t]=1; });
+  const total=Object.values(m).reduce((a,b)=>a+b,0);
+  if(!total) return '<h4>Correctivo vs Preventivo</h4><div style="font-size:12px;color:#5c5347">Sin OT en el período</div>';
+  const colores={Correctivo:'#e5574f',Preventivo:'#5cb46b',Mejora:'#5b9bd5'};
+  const max=Math.max(...Object.values(m));
+  return '<h4>Correctivo vs Preventivo</h4>'+Object.entries(m).filter(([,c])=>c>0).map(([tipo,c])=>
+    '<div class="rank-row"><span class="nm">'+tipo+'</span><span class="n">'+c+' ('+Math.round(c/total*100)+'%)</span>'
+    +'<span class="bar"><i style="width:'+(c/max*100)+'%;background:'+colores[tipo]+'"></i></span></div>').join('');
+}
 function renderRankings(fallas,ots){
-  document.getElementById('rankEquipos').innerHTML=rankHTML('Equipos con más fallas',topN(fallas,'Equipo',5),'Sin fallas en el período');
-  document.getElementById('rankSistemas').innerHTML=rankHTML('Sistemas afectados',topN(fallas,'Sistema',5),'Sin datos');
-  document.getElementById('rankTecnicos').innerHTML=rankHTML('Carga por técnico (OT abiertas)',topTecnicos(ots.filter(o=>o.Estado!=='Cerrada'),5),'Sin OT abiertas');
+  document.getElementById('rankEquipos').innerHTML=(function(){
+    const rows=topHorasEquipo(ots,5);
+    if(!rows.length) return '<h4>Máquinas con más horas de mtto.</h4><div style="font-size:12px;color:#5c5347">Sin OT cerradas con horas cargadas</div>';
+    const max=rows[0][1];
+    return '<h4>Máquinas con más horas de mtto.</h4>'+rows.map(([n,c])=>
+      '<div class="rank-row"><span class="nm">'+esc(n)+'</span><span class="n">'+c+'h</span>'
+      +'<span class="bar"><i style="width:'+(c/max*100)+'%"></i></span></div>').join('');
+  })();
+  document.getElementById('rankSistemas').innerHTML=tipoOtHTML(ots);
+  document.getElementById('rankTecnicos').innerHTML=(function(){
+    const rows=mttrPorEquipo(ots,5);
+    if(!rows.length) return '<h4>MTTR por equipo</h4><div style="font-size:12px;color:#5c5347">Sin OT cerradas con horas cargadas</div>';
+    const max=rows[0][1];
+    return '<h4>MTTR por equipo</h4>'+rows.map(([n,c])=>
+      '<div class="rank-row"><span class="nm">'+esc(n)+'</span><span class="n">'+c+'h</span>'
+      +'<span class="bar"><i style="width:'+(c/max*100)+'%"></i></span></div>').join('');
+  })();
 }
 
 let vistaOTActiva='tarjetas';
@@ -711,7 +755,8 @@ function setVistaOT(vista){
 function cardOTLista(o){
   const p=o.Prioridad||'Media';
   const prioCls=p==='Alta'?'t-alta':p==='Baja'?'t-baja':'t-media';
-  return '<div class="ot-lista-row'+(p==='Alta'&&o.Estado!=='Cerrada'?' alta':'')+'" onclick="abrirDetalleOT(\''+esc(o.NroOT)+'\')">'
+  const cerrada=o.Estado==='Cerrada';
+  return '<div class="ot-lista-row'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'" onclick="abrirDetalleOT(\''+esc(o.NroOT)+'\')">'
     +'<span class="ot-lista-nro">'+esc(o.NroOT||'—')+'</span>'
     +'<span class="ot-lista-eq">'+esc(o.Equipo||'—')+'</span>'
     +'<span class="ot-lista-tec">'+esc(o.Tecnico||'sin asignar')+'</span>'
@@ -816,7 +861,7 @@ function cardOT(o){
     +'</div>';
 }
 function bindCards(){
-  document.querySelectorAll('.card-btn[data-act]').forEach(b=>{
+  document.querySelectorAll('.card-btn[data-act],.falla-lista-btn[data-act]').forEach(b=>{
     b.onclick=e=>{ e.stopPropagation();
       const id=b.dataset.id;
       if(b.dataset.act==='genot') abrirModalOT(id);
@@ -826,7 +871,7 @@ function bindCards(){
       if(b.dataset.act==='reprogramar') abrirModalProgramar(id, true);
     };
   });
-  document.querySelectorAll('.card[draggable=true]').forEach(c=>{
+  document.querySelectorAll('.card[draggable=true],.ot-lista-row[draggable=true]').forEach(c=>{
     c.addEventListener('dragstart',e=>{
       c.classList.add('dragging');
       e.dataTransfer.setData('text/plain',JSON.stringify({kind:c.dataset.kind,id:c.dataset.id,from:c.dataset.estado}));
