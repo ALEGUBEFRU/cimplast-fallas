@@ -472,13 +472,20 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   <div class="modal-h"><span class="modal-t">Cerrar orden de trabajo</span><button class="modal-x" onclick="closeModal('modalCerrar')">✕</button></div>
   <div class="modal-b">
     <div class="origin"><div class="l">OT</div><div class="e" id="mCerrarNro">—</div><div class="d" id="mCerrarEquipo">—</div></div>
-    <div class="row-2">
-      <div class="field"><label>Horas reales *</label><input type="number" id="mCerrarHoras" min="0" step="0.5" placeholder="3.5"></div>
-      <div class="field"><label>Fecha de cierre</label><input type="date" id="mCerrarFecha"></div>
+    <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(229,87,79,.08);border:1px solid rgba(229,87,79,.25);border-radius:var(--r);cursor:pointer;margin-bottom:4px">
+      <input type="checkbox" id="mCerrarAnular" onchange="toggleAnular()" style="accent-color:var(--danger);width:16px;height:16px">
+      <span style="font-size:12.5px;color:var(--label)">Anular esta OT (no se realizó el trabajo — duplicada, cancelada, etc.)</span>
+    </label>
+    <div id="mCerrarCamposNormales">
+      <div class="row-2">
+        <div class="field"><label>Horas reales *</label><input type="number" id="mCerrarHoras" min="0" step="0.5" placeholder="3.5"></div>
+        <div class="field"><label>Fecha de cierre</label><input type="date" id="mCerrarFecha"></div>
+      </div>
+      <div class="field"><label>Repuestos utilizados</label><textarea id="mCerrarRepuestos" placeholder="Rodamiento 6205 x1, retén 40x60 x2…" style="min-height:62px"></textarea></div>
+      <div class="field"><label>Costo total (Gs.)</label><input type="number" id="mCerrarCosto" min="0" placeholder="150000"></div>
+      <div class="field"><label>Causa raíz y trabajo realizado *</label><textarea id="mCerrarObs" placeholder="Qué falló, por qué, qué se hizo y qué recomendás para que no vuelva a pasar."></textarea></div>
     </div>
-    <div class="field"><label>Repuestos utilizados</label><textarea id="mCerrarRepuestos" placeholder="Rodamiento 6205 x1, retén 40x60 x2…" style="min-height:62px"></textarea></div>
-    <div class="field"><label>Costo total (Gs.)</label><input type="number" id="mCerrarCosto" min="0" placeholder="150000"></div>
-    <div class="field"><label>Causa raíz y trabajo realizado *</label><textarea id="mCerrarObs" placeholder="Qué falló, por qué, qué se hizo y qué recomendás para que no vuelva a pasar."></textarea></div>
+    <div class="field" id="mCerrarMotivoWrap" style="display:none"><label>Motivo de anulación *</label><textarea id="mCerrarMotivo" placeholder="Por qué se anula esta OT (duplicada, ya no aplica, error de carga, etc.)"></textarea></div>
   </div>
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalCerrar')">Cancelar</button><button class="btn-primary green" id="btnModalCerrar" onclick="submitCerrar()">Confirmar cierre</button></div>
 </div></div>
@@ -1012,27 +1019,46 @@ function abrirModalCerrar(nroOT){
   otActual=o;
   document.getElementById('mCerrarNro').textContent=nroOT;
   document.getElementById('mCerrarEquipo').textContent=(o.Equipo||'')+' · '+(o.Planta||'');
-  ['mCerrarHoras','mCerrarRepuestos','mCerrarCosto','mCerrarObs'].forEach(id=>document.getElementById(id).value='');
+  ['mCerrarHoras','mCerrarRepuestos','mCerrarCosto','mCerrarObs','mCerrarMotivo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mCerrarAnular').checked=false;
+  toggleAnular();
   if(o.HorasEstimadas) document.getElementById('mCerrarHoras').placeholder='Estimado: '+o.HorasEstimadas+'h';
   openModal('modalCerrar');
 }
+function toggleAnular(){
+  const anulando=document.getElementById('mCerrarAnular').checked;
+  document.getElementById('mCerrarCamposNormales').style.display=anulando?'none':'block';
+  document.getElementById('mCerrarMotivoWrap').style.display=anulando?'block':'none';
+  document.getElementById('btnModalCerrar').textContent=anulando?'Confirmar anulación':'Confirmar cierre';
+}
 async function submitCerrar(){
-  const horas=document.getElementById('mCerrarHoras').value, obs=document.getElementById('mCerrarObs').value.trim();
-  if(!horas){ showToast('Cargá las horas reales — sin eso no hay MTTR','err'); return; }
-  if(!obs){ showToast('Cargá la causa raíz y el trabajo realizado','err'); return; }
-  const btn=document.getElementById('btnModalCerrar'); btn.disabled=true; btn.textContent='Cerrando…';
-  try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({
-      accion:'cerrarOT', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
+  const anulando=document.getElementById('mCerrarAnular').checked;
+  const btn=document.getElementById('btnModalCerrar');
+  let body;
+  if(anulando){
+    const motivo=document.getElementById('mCerrarMotivo').value.trim();
+    if(!motivo){ showToast('Cargá el motivo de anulación','err'); return; }
+    body={accion:'cerrarOT', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
+      horasReales:0, repuestos:'', costo:0,
+      observaciones:'ANULADA: '+motivo, fechaCierre:new Date().toISOString().slice(0,10)};
+    btn.disabled=true; btn.textContent='Anulando…';
+  } else {
+    const horas=document.getElementById('mCerrarHoras').value, obs=document.getElementById('mCerrarObs').value.trim();
+    if(!horas){ showToast('Cargá las horas reales — sin eso no hay MTTR','err'); return; }
+    if(!obs){ showToast('Cargá la causa raíz y el trabajo realizado','err'); return; }
+    body={accion:'cerrarOT', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
       horasReales:parseFloat(horas), repuestos:document.getElementById('mCerrarRepuestos').value.trim(),
       costo:parseFloat(document.getElementById('mCerrarCosto').value)||0,
-      observaciones:obs, fechaCierre:document.getElementById('mCerrarFecha').value
-    })});
+      observaciones:obs, fechaCierre:document.getElementById('mCerrarFecha').value};
+    btn.disabled=true; btn.textContent='Cerrando…';
+  }
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
-    showToast('OT '+otActual.NroOT+' cerrada'); closeModal('modalCerrar');
+    showToast('OT '+otActual.NroOT+(anulando?' anulada':' cerrada')); closeModal('modalCerrar');
     setTimeout(recargar, 1500);
   }catch(e){ showToast('Error: '+e.message,'err'); }
-  btn.disabled=false; btn.textContent='Confirmar cierre';
+  btn.disabled=false; btn.textContent=anulando?'Confirmar anulación':'Confirmar cierre';
 }
 
 /* ══ WHATSAPP ══ */
