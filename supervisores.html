@@ -169,6 +169,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .agenda-dia-count{font-size:11px;color:var(--muted);background:var(--surface3);border-radius:100px;padding:2px 8px}
 .agenda-dia-body{display:flex;flex-direction:column;gap:0}
 .agenda-ot-row{display:grid;grid-template-columns:120px 1fr 140px 120px 90px 80px;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px}
+.agenda-ot-row.con-atraso{grid-template-columns:120px 1fr 140px 120px 90px 80px 90px}
 .agenda-ot-row:last-child{border-bottom:none}
 .agenda-ot-row:hover{background:var(--surface2)}
 .agenda-nro{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700}
@@ -392,12 +393,13 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
         <button class="chip" id="btnModoSemana" onclick="setAgendaModo('semana')" style="font-size:11px;padding:5px 12px">Semana</button>
         <button class="chip" id="btnModoMes" onclick="setAgendaModo('mes')" style="font-size:11px;padding:5px 12px">Mes</button>
         <button class="chip" id="btnModoCal" onclick="setAgendaModo('calendario')" style="font-size:11px;padding:5px 12px">Calendario</button>
+        <button class="chip" id="btnModoLista" onclick="setAgendaModo('lista')" style="font-size:11px;padding:5px 12px">📋 Lista (atrasos)</button>
       </div>
       <span class="agenda-rango" id="agendaRango"></span>
       <div class="agenda-filtros">
-        <select class="f-in" id="agFiltroPlanta" onchange="renderAgenda()"><option value="">Todas las plantas</option></select>
-        <select class="f-in" id="agFiltroTecnico" onchange="renderAgenda()"><option value="">Todos los técnicos</option></select>
-        <select class="f-in" id="agFiltroEstado" onchange="renderAgenda()">
+        <select class="f-in" id="agFiltroPlanta" onchange="renderVistaActiva()"><option value="">Todas las plantas</option></select>
+        <select class="f-in" id="agFiltroTecnico" onchange="renderVistaActiva()"><option value="">Todos los técnicos</option></select>
+        <select class="f-in" id="agFiltroEstado" onchange="renderVistaActiva()">
           <option value="">Todos los estados</option>
           <option>Abierta</option><option>En curso</option><option>Cerrada</option>
         </select>
@@ -1154,12 +1156,77 @@ let agendaModo = 'semana'; // 'semana' o 'mes'
 
 function setAgendaModo(modo){
   agendaModo = modo;
-  ['semana','mes','calendario'].forEach(m => {
+  ['semana','mes','calendario','lista'].forEach(m => {
     const btn = document.getElementById('btnModo'+m.charAt(0).toUpperCase()+m.slice(1));
     if(btn){ btn.style.borderColor = modo===m ? 'var(--accent)' : ''; btn.style.color = modo===m ? 'var(--accent)' : ''; }
   });
-  if(modo==='calendario') renderCalendario();
+  document.querySelector('.agenda-nav').style.display = modo==='lista' ? 'none' : 'flex';
+  renderVistaActiva();
+}
+
+function renderVistaActiva(){
+  if(agendaModo==='calendario') renderCalendario();
+  else if(agendaModo==='lista') renderListaAtrasos();
   else renderAgenda();
+}
+
+function renderListaAtrasos(){
+  document.getElementById('agendaRango').textContent = 'Todas las OT abiertas — ordenadas por atraso';
+
+  const filtPlanta  = document.getElementById('agFiltroPlanta')?.value  || '';
+  const filtTecnico = document.getElementById('agFiltroTecnico')?.value || '';
+  const filtEstado  = document.getElementById('agFiltroEstado')?.value  || '';
+
+  let ots = otsTodas.filter(o => o.Estado!=='Cerrada');
+  if(filtPlanta)  ots = ots.filter(o => o.Planta === filtPlanta);
+  if(filtTecnico) ots = ots.filter(o => (o.Tecnico||'').includes(filtTecnico));
+  if(filtEstado)  ots = ots.filter(o => o.Estado === filtEstado);
+
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const conAtraso = ots.map(o => {
+    let atraso = null;
+    if(o.FechaProgramada){
+      const f = new Date(o.FechaProgramada.slice(0,10)+'T00:00:00');
+      atraso = Math.floor((hoy - f) / (1000*60*60*24));
+    }
+    return {...o, _atraso: atraso};
+  }).sort((a,b) => (b._atraso ?? -9999) - (a._atraso ?? -9999));
+
+  const body = document.getElementById('agendaBody');
+  if(conAtraso.length===0){
+    body.innerHTML = '<div class="agenda-empty">Sin OT abiertas que coincidan con el filtro</div>';
+    return;
+  }
+
+  const filas = conAtraso.map(o => {
+    let atrasoTxt, atrasoColor;
+    if(o._atraso===null){ atrasoTxt='Sin fecha'; atrasoColor='var(--muted)'; }
+    else if(o._atraso>0){ atrasoTxt=o._atraso+' día'+(o._atraso===1?'':'s'); atrasoColor='var(--danger)'; }
+    else if(o._atraso===0){ atrasoTxt='Vence hoy'; atrasoColor='var(--accent)'; }
+    else { atrasoTxt='En '+Math.abs(o._atraso)+' día'+(Math.abs(o._atraso)===1?'':'s'); atrasoColor='var(--ok)'; }
+    const prioColor = o.Prioridad==='Alta'?'var(--danger)':o.Prioridad==='Media'?'var(--accent)':'var(--muted)';
+    const estadoColor = o.Estado==='En curso'?'var(--info)':'var(--accent)';
+    return `<div class="agenda-ot-row con-atraso" onclick="abrirDetalleOT('${o.NroOT}')" style="cursor:pointer">
+      <span class="agenda-nro">${o.NroOT||'—'}</span>
+      <span class="agenda-equipo" title="${o.Equipo||''}">${o.Equipo||'—'}</span>
+      <span class="agenda-tecnico" title="${o.Tecnico||''}">${o.Tecnico||'Sin asignar'}</span>
+      <span class="agenda-planta">${o.Planta||'—'}</span>
+      <span style="color:${prioColor};font-weight:700;font-size:11px">${o.Prioridad||'—'}</span>
+      <span style="color:${estadoColor};font-weight:700;font-size:11px">${o.Estado||'—'}</span>
+      <span style="color:${atrasoColor};font-weight:800;font-size:11px;min-width:80px;text-align:right">${atrasoTxt}</span>
+    </div>`;
+  }).join('');
+
+  body.innerHTML = `<div class="agenda-dia">
+    <div class="agenda-dia-header">
+      <span class="agenda-dia-fecha">Órdenes de trabajo abiertas</span>
+      <span class="agenda-dia-count">${conAtraso.length} OT</span>
+    </div>
+    <div class="agenda-ot-row con-atraso" style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:var(--surface2)">
+      <span>N° OT</span><span>Equipo</span><span>Técnico</span><span>Planta</span><span>Prioridad</span><span>Estado</span><span style="text-align:right">Atraso</span>
+    </div>
+    <div class="agenda-dia-body">${filas}</div>
+  </div>`;
 }
 
 function agendaHoy(){
