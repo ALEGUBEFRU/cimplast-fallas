@@ -82,9 +82,18 @@ input,select{font-family:inherit}
 .tag-baja{background:var(--surface3);color:var(--muted)}
 .empty-msg{font-size:11.5px;color:var(--muted);padding:8px 2px;text-align:center}
 
+.tec-cap{margin-top:6px}
+.tec-cap-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px;font-family:var(--mono)}
+.tec-cap-track{height:6px;background:var(--surface3);border-radius:100px;overflow:hidden}
+.tec-cap-fill{height:100%;border-radius:100px;transition:width .3s}
+.tec-cap-fill.ok{background:var(--ok)}
+.tec-cap-fill.warn{background:var(--accent)}
+.tec-cap-fill.over{background:var(--danger)}
+
 /* ── DÍA VIEW ── */
 .dia-tecnico-group{margin-bottom:14px}
-.dia-tecnico-h{display:flex;align-items:center;gap:8px;padding:6px 2px;margin-bottom:6px}
+.dia-tecnico-h{display:flex;align-items:center;gap:8px;padding:6px 2px 2px}
+.dia-tecnico-group .tec-cap{margin:0 2px 10px}
 .dia-tecnico-h b{font-size:12.5px;color:var(--text)}
 .dia-tecnico-h span{font-size:10px;color:var(--muted)}
 
@@ -133,7 +142,7 @@ let tabActiva = 'tecnico';
 let expandidos = new Set();
 
 document.addEventListener('DOMContentLoaded', () => {
-  irHoy();
+  document.getElementById('fechaSel').value = new Date().toISOString().slice(0,10);
   cargarDatos();
 });
 
@@ -173,6 +182,32 @@ async function cargarDatos(){
   render();
 }
 
+function num(n){ return Number(n)||0; }
+
+function capacidadDia(fechaStr){
+  const d = new Date(fechaStr + 'T00:00:00');
+  const dow = d.getDay(); // 0=domingo, 6=sábado
+  if(dow === 0) return 0;
+  if(dow === 6) return 3;
+  return 9;
+}
+
+function horasAsignadasDia(otsDelDia){
+  return otsDelDia.reduce((s,o) => s + (num(o.HorasEstimadas) || num(o.HorasReales) || 0), 0);
+}
+
+function capBarHTML(horas, capacidad){
+  if(capacidad === 0){
+    return `<div class="tec-cap"><div class="tec-cap-lbl"><span>Día no laboral</span><span>${horas?horas.toFixed(1)+'h asignadas':''}</span></div></div>`;
+  }
+  const pct = Math.min(100, (horas/capacidad)*100);
+  const cls = horas > capacidad ? 'over' : pct >= 75 ? 'warn' : 'ok';
+  return `<div class="tec-cap">
+    <div class="tec-cap-lbl"><span>${horas.toFixed(1)}h / ${capacidad}h disponibles</span><span>${Math.round(pct)}%</span></div>
+    <div class="tec-cap-track"><div class="tec-cap-fill ${cls}" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
 function esc(s){ return String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 function otsDeTecnico(nombreTec){
@@ -198,7 +233,8 @@ function otRowHTML(o){
 }
 
 function render(){
-  document.getElementById('loadingState').style.display = 'none';
+  const ls = document.getElementById('loadingState');
+  if(ls) ls.style.display = 'none';
   if(tabActiva === 'tecnico') renderPorTecnico();
   else renderPorDia();
 }
@@ -212,6 +248,8 @@ function renderPorTecnico(){
     const misOts = otsDeTecnico(nombre);
     const abiertas = ordenarPorPrioridad(misOts.filter(o => o.Estado !== 'Cerrada'));
     const deHoy = abiertas.filter(o => (o.FechaProgramada||'').slice(0,10) === hoyStr);
+    const horasHoy = horasAsignadasDia(deHoy);
+    const capHoy = capacidadDia(hoyStr);
     const expandido = expandidos.has(nombre);
     const iniciales = nombre.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 
@@ -226,7 +264,10 @@ function renderPorTecnico(){
     return `<div class="tec-card${expandido?' expanded':''}" data-tec="${esc(nombre)}">
       <div class="tec-card-h" onclick="toggleTecnico('${esc(nombre)}')">
         <div class="tec-avatar">${iniciales}</div>
-        <div class="tec-info"><b>${esc(nombre)}</b><span>${esc(t.especialidad||t.esp||'')}</span></div>
+        <div class="tec-info">
+          <b>${esc(nombre)}</b><span>${esc(t.especialidad||t.esp||'')}</span>
+          ${capBarHTML(horasHoy, capHoy)}
+        </div>
         <div class="tec-badges">
           ${deHoy.length ? `<span class="tec-badge today">${deHoy.length} hoy</span>` : ''}
           <span class="tec-badge open">${abiertas.length} abiertas</span>
@@ -266,10 +307,13 @@ function renderPorDia(){
     return;
   }
 
+  const capDia = capacidadDia(fecha);
   const html = nombresConTareas.map(tec => {
     const ots = ordenarPorPrioridad(porTecnico[tec]);
+    const horas = horasAsignadasDia(ots);
     return `<div class="dia-tecnico-group">
       <div class="dia-tecnico-h"><b>👤 ${esc(tec)}</b><span>· ${ots.length} OT</span></div>
+      ${capBarHTML(horas, capDia)}
       ${ots.map(otRowHTML).join('')}
     </div>`;
   }).join('');
