@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#14110e">
+<title>Cimplast · Supervisores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#14110e; --surface:#1d1915; --surface2:#282219; --surface3:#332b21;
+  --border:#3a3126; --border-hi:#544736;
+  --accent:#f0a92c; --accent-soft:rgba(240,169,44,.13);
+  --danger:#e5574f; --ok:#5cb46b; --info:#5b9bd5;
+  --text:#f6f1e8; --label:#c4b8a8; --muted:#8d8175;
+  --font:'Archivo',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --r:10px; --r-lg:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:15px}
+body{background:var(--bg);color:var(--text);font-family:var(--font);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:16px}
+::-webkit-scrollbar{display:none}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo-mark{width:30px;height:30px;background:var(--accent);border-radius:8px;display:grid;place-items:center;font-size:14px;font-weight:800;color:#1a1409;flex-shrink:0}
+.topbar-title{flex:1;min-width:0}
+.topbar-title b{font-size:14px;font-weight:700;display:block}
+.topbar-title span{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.btn-icon{background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.btn-icon.spinning{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.badge-count{background:var(--danger);color:#fff;font-size:10px;font-weight:800;border-radius:100px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 4px;position:relative;top:-8px;right:8px}
+
+/* ── PANTALLAS ── */
+.screen{flex:1;overflow-y:auto;display:none;padding:14px 14px 90px}
+.screen.active{display:block}
+
+/* ── KPIS RESUMEN ── */
+.kpi-grid-m{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
+.kpi-card-m{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px}
+.kpi-card-m.accent{border-color:rgba(240,169,44,.3)}
+.kpi-card-m.danger{border-color:rgba(229,87,79,.35)}
+.kpi-card-m .lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.kpi-card-m .val{font-size:22px;font-weight:800;font-family:var(--mono);color:var(--text)}
+.kpi-card-m .sub{font-size:9.5px;color:var(--muted);margin-top:3px;line-height:1.3}
+
+.section-h-m{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:18px 4px 8px}
+.section-h-m:first-child{margin-top:0}
+
+/* ── PESTAÑAS INTERNAS (Fallas/OT) ── */
+.subtabs{display:flex;gap:6px;margin-bottom:12px}
+.subtab{flex:1;padding:9px 4px;border-radius:9px;font-size:12px;font-weight:700;text-align:center;background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+.subtab.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.subtab .n{font-family:var(--mono);font-weight:800}
+
+/* ── TARJETA FILA (fallas/OT) ── */
+.item-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 13px;margin-bottom:8px}
+.item-row.alta{border-left:3px solid var(--danger)}
+.item-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.item-id{font-size:10.5px;font-weight:700;color:var(--accent);font-family:var(--mono)}
+.item-badge{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:100px}
+.b-alta{background:rgba(229,87,79,.15);color:#f0938c}
+.b-media{background:rgba(240,169,44,.15);color:var(--accent)}
+.b-baja{background:var(--surface3);color:var(--muted)}
+.b-parado{background:rgba(229,87,79,.18);color:#f0938c}
+.item-eq{font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:2px}
+.item-desc{font-size:12px;color:var(--label);margin-bottom:6px;line-height:1.4}
+.item-meta{font-size:10.5px;color:var(--muted);font-family:var(--mono);margin-bottom:8px}
+.item-acts{display:flex;gap:6px;flex-wrap:wrap}
+.item-btn{flex:1;min-width:80px;padding:9px 6px;border-radius:8px;font-size:11.5px;font-weight:700;text-align:center;border:1px solid}
+.btn-genot{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.btn-cerrar{background:rgba(92,180,107,.13);border-color:var(--ok);color:var(--ok)}
+.btn-prog{background:var(--surface2);border-color:var(--border-hi);color:var(--label)}
+.btn-foto{background:var(--surface2);border-color:var(--border);color:var(--label);flex:0 0 auto;min-width:44px}
+.empty-m{text-align:center;padding:40px 16px;color:var(--muted);font-size:12.5px}
+
+/* ── FILTROS ── */
+.filter-bar{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
+.filter-bar select{flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:12px;min-width:120px}
+
+/* ── HOY (agenda) ── */
+.hoy-date-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.hoy-nav{background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.hoy-date{flex:1;text-align:center;font-size:13px;font-weight:700}
+
+/* ── BOTTOM NAV ── */
+.bottomnav{background:var(--surface);border-top:1px solid var(--border);display:flex;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px 8px;color:var(--muted);font-size:9.5px;font-weight:700;position:relative}
+.nav-btn.active{color:var(--accent)}
+.nav-btn .ic{font-size:19px}
+
+/* ── OVERLAY / MODAL (mobile bottom sheet) ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:flex-end}
+.overlay.show{display:flex}
+.modal{background:var(--surface);width:100%;max-height:88vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-h{padding:16px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-h::before{content:'';position:absolute}
+.modal-t{font-size:15px;font-weight:700}
+.modal-x{width:30px;height:30px;background:var(--surface2);border-radius:100px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted)}
+.modal-b{padding:16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px}
+.modal-f{padding:12px 16px;display:flex;gap:8px;border-top:1px solid var(--border);flex-shrink:0}
+.btn-secondary,.btn-primary{flex:1;padding:12px;border-radius:10px;font-size:13.5px;font-weight:700;text-align:center}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--label)}
+.btn-primary{background:var(--accent);color:#1a1409}
+.btn-primary.green{background:var(--ok);color:#0d1f0f}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11.5px;font-weight:700;color:var(--label)}
+.field input,.field textarea,.field select{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 12px;color:var(--text)}
+.field textarea{min-height:76px;resize:vertical}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.origin{background:var(--surface2);border-left:3px solid var(--accent);border-radius:8px;padding:10px 12px}
+.origin .l{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.origin .e{font-size:14px;font-weight:800;color:var(--accent);font-family:var(--mono)}
+.origin .d{font-size:12px;color:var(--label);margin-top:2px}
+.chip-group{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:8px 13px;border-radius:8px;font-size:12px;font-weight:700;background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+.chip.selected{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.anular-box{display:flex;align-items:center;gap:8px;padding:11px 12px;background:rgba(229,87,79,.08);border:1px solid rgba(229,87,79,.25);border-radius:9px}
+.anular-box input{width:18px;height:18px;accent-color:var(--danger)}
+.anular-box span{font-size:12px;color:var(--label)}
+.detalle-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.detalle-row:last-child{border-bottom:none}
+.detalle-row .k{color:var(--muted);font-weight:600}
+.detalle-row .v{color:var(--text);font-weight:700;text-align:right}
+.foto-img{width:100%;border-radius:10px;max-height:50vh;object-fit:contain;background:var(--surface2)}
+.toast{position:fixed;bottom:80px;left:16px;right:16px;background:var(--surface3);border:1px solid var(--border-hi);border-radius:12px;padding:13px 16px;font-size:13px;font-weight:600;text-align:center;opacity:0;pointer-events:none;transform:translateY(10px);transition:.22s;z-index:999}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{border-color:rgba(92,180,107,.5);color:#8fd39a}
+.toast.err{border-color:rgba(229,87,79,.5);color:#f0938c}
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px;color:var(--muted);font-size:13px}
+.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo-mark">C</div>
+  <div class="topbar-title"><b>Cimplast</b><span>Panel de Supervisores</span></div>
+  <button class="btn-icon" id="btnRefresh" onclick="cargarDatos()">↻</button>
+</div>
+
+<!-- SCREEN: RESUMEN -->
+<div class="screen active" id="screenResumen">
+  <div class="kpi-grid-m" id="kpiGridM"></div>
+  <div class="section-h-m">Fallas pendientes</div>
+  <div id="resumenFallasPend"></div>
+</div>
+
+<!-- SCREEN: FALLAS -->
+<div class="screen" id="screenFallas">
+  <div class="subtabs">
+    <button class="subtab active" data-tab="Pendiente" onclick="setFallaTab('Pendiente',this)">Pendiente <span class="n" id="ftab-pend">0</span></button>
+    <button class="subtab" data-tab="En curso" onclick="setFallaTab('En curso',this)">Con OT <span class="n" id="ftab-ot">0</span></button>
+    <button class="subtab" data-tab="Concluido" onclick="setFallaTab('Concluido',this)">Atendido <span class="n" id="ftab-done">0</span></button>
+  </div>
+  <div id="fallasLista"></div>
+</div>
+
+<!-- SCREEN: OT -->
+<div class="screen" id="screenOT">
+  <div class="subtabs">
+    <button class="subtab active" data-tab="Abierta" onclick="setOtTab('Abierta',this)">Abierta <span class="n" id="otab-abierta">0</span></button>
+    <button class="subtab" data-tab="En curso" onclick="setOtTab('En curso',this)">En curso <span class="n" id="otab-curso">0</span></button>
+    <button class="subtab" data-tab="Cerrada" onclick="setOtTab('Cerrada',this)">Cerrada <span class="n" id="otab-cerrada">0</span></button>
+  </div>
+  <div class="filter-bar">
+    <select id="fPlantaOT" onchange="renderOtLista()"><option value="">Todas las plantas</option></select>
+    <select id="fTecnicoOT" onchange="renderOtLista()"><option value="">Todos los técnicos</option></select>
+  </div>
+  <div id="otLista"></div>
+</div>
+
+<!-- SCREEN: HOY -->
+<div class="screen" id="screenHoy">
+  <div class="hoy-date-row">
+    <button class="hoy-nav" onclick="navHoy(-1)">‹</button>
+    <div class="hoy-date" id="hoyFechaTxt">—</div>
+    <button class="hoy-nav" onclick="navHoy(1)">›</button>
+  </div>
+  <button class="chip" style="width:100%;text-align:center;margin-bottom:14px" onclick="irHoyReal()">📍 Ir a hoy</button>
+  <div id="hoyLista"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottomnav">
+  <button class="nav-btn active" data-screen="Resumen" onclick="setScreen('Resumen',this)"><span class="ic">🏠</span>Resumen</button>
+  <button class="nav-btn" data-screen="Fallas" onclick="setScreen('Fallas',this)"><span class="ic">🔧</span>Fallas<span class="badge-count" id="navBadgeFallas" style="display:none">0</span></button>
+  <button class="nav-btn" data-screen="OT" onclick="setScreen('OT',this)"><span class="ic">📋</span>OT</button>
+  <button class="nav-btn" data-screen="Hoy" onclick="setScreen('Hoy',this)"><span class="ic">📅</span>Hoy</button>
+</div>
+
+<!-- ═══ MODAL: GENERAR OT ═══ -->
+<div class="overlay" id="modalGenOT"><div class="modal">
+  <div class="modal-h"><span class="modal-t">Generar orden de trabajo</span><button class="modal-x" onclick="closeModal('modalGenOT')">✕</button></div>
+  <div class="modal-b">
+    <div class="origin"><div class="l">Falla de origen</div><div class="e" id="mOtEquipo">—</div><div class="d" id="mOtDesc">—</div></div>
+    <div class="field"><label>N° OT *</label><input type="text" id="mOtNro"></div>
+    <div class="field"><label>Tipo *</label><div class="chip-group" id="mOtTipoGroup">
+      <button class="chip" data-val="Correctivo" onclick="selChip(this,'mOtTipoGroup')">Correctivo</button>
+      <button class="chip" data-val="Preventivo" onclick="selChip(this,'mOtTipoGroup')">Preventivo</button>
+      <button class="chip" data-val="Mejora" onclick="selChip(this,'mOtTipoGroup')">Mejora</button>
+    </div></div>
+    <div class="field"><label>Prioridad *</label><div class="chip-group" id="mOtPrioGroup">
+      <button class="chip" data-val="Alta" onclick="selChip(this,'mOtPrioGroup')">Alta</button>
+      <button class="chip" data-val="Media" onclick="selChip(this,'mOtPrioGroup')">Media</button>
+      <button class="chip" data-val="Baja" onclick="selChip(this,'mOtPrioGroup')">Baja</button>
+    </div></div>
+    <div class="field"><label>Técnico(s) *</label><select id="mOtTecnico" multiple style="height:110px"></select></div>
+    <div class="row-2">
+      <div class="field"><label>Fecha programada *</label><input type="date" id="mOtFecha"></div>
+      <div class="field"><label>Horas estimadas</label><input type="number" id="mOtHoras" min="0" step="0.5"></div>
+    </div>
+    <div class="field"><label>Descripción</label><textarea id="mOtObs"></textarea></div>
+  </div>
+  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalGenOT')">Cancelar</button><button class="btn-primary" id="btnModalOT" onclick="submitModalOT()">Crear OT</button></div>
+</div></div>
+
+<!-- ═══ MODAL: CERRAR OT ═══ -->
+<div class="overlay" id="modalCerrar"><div class="modal">
+  <div class="modal-h"><span class="modal-t">Cerrar orden de trabajo</span><button class="modal-x" onclick="closeModal('modalCerrar')">✕</button></div>
+  <div class="modal-b">
+    <div class="origin"><div class="l">OT</div><div class="e" id="mCerrarNro">—</div><div class="d" id="mCerrarEquipo">—</div></div>
+    <label class="anular-box">
+      <input type="checkbox" id="mCerrarAnular" onchange="toggleAnular()">
+      <span>Anular esta OT (no se realizó el trabajo)</span>
+    </label>
+    <div id="mCerrarCamposNormales" style="display:flex;flex-direction:column;gap:14px">
+      <div class="row-2">
+        <div class="field"><label>Horas reales *</label><input type="number" id="mCerrarHoras" min="0" step="0.5"></div>
+        <div class="field"><label>Fecha de cierre</label><input type="date" id="mCerrarFecha"></div>
+      </div>
+      <div class="field"><label>Repuestos utilizados</label><textarea id="mCerrarRepuestos"></textarea></div>
+      <div class="field"><label>Costo total (Gs.)</label><input type="number" id="mCerrarCosto" min="0"></div>
+      <div class="field"><label>Causa raíz y trabajo realizado *</label><textarea id="mCerrarObs"></textarea></div>
+    </div>
+    <div class="field" id="mCerrarMotivoWrap" style="display:none"><label>Motivo de anulación *</label><textarea id="mCerrarMotivo"></textarea></div>
+  </div>
+  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalCerrar')">Cancelar</button><button class="btn-primary green" id="btnModalCerrar" onclick="submitCerrar()">Confirmar cierre</button></div>
+</div></div>
+
+<!-- ═══ MODAL: PROGRAMAR ═══ -->
+<div class="overlay" id="modalProgramar"><div class="modal">
+  <div class="modal-h"><span class="modal-t" id="mProgTitulo">Programar OT</span><button class="modal-x" onclick="closeModal('modalProgramar')">✕</button></div>
+  <div class="modal-b">
+    <div class="origin"><div class="l">OT</div><div class="e" id="mProgNro">—</div><div class="d" id="mProgEquipo">—</div></div>
+    <div class="field"><label>Fecha programada *</label><input type="date" id="mProgFecha"></div>
+    <div class="field"><label>Horas estimadas</label><input type="number" id="mProgHoras" min="0" step="0.5"></div>
+    <div id="mProgAviso" style="display:none;font-size:12px;color:var(--accent);background:rgba(240,169,44,.08);border:1px solid rgba(240,169,44,.2);border-radius:9px;padding:10px 12px;line-height:1.5">
+      ⚠ Esta OT está <strong>En curso</strong>. Al reprogramar volverá a estado <strong>Abierta</strong>.
+    </div>
+  </div>
+  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalProgramar')">Cancelar</button><button class="btn-primary" onclick="submitProgramar()">Guardar</button></div>
+</div></div>
+
+<!-- ═══ MODAL: DETALLE OT ═══ -->
+<div class="overlay" id="modalDetalleOT"><div class="modal">
+  <div class="modal-h"><span class="modal-t">Detalle de OT</span><button class="modal-x" onclick="closeModal('modalDetalleOT')">✕</button></div>
+  <div class="modal-b">
+    <div class="origin"><div class="l">OT</div><div class="e" id="dOtNro">—</div><div class="d" id="dOtEquipoPlanta">—</div></div>
+    <div class="detalle-row"><span class="k">Tipo</span><span class="v" id="dOtTipo">—</span></div>
+    <div class="detalle-row"><span class="k">Prioridad</span><span class="v" id="dOtPrio">—</span></div>
+    <div class="detalle-row"><span class="k">Técnico(s)</span><span class="v" id="dOtTecnico">—</span></div>
+    <div class="detalle-row"><span class="k">Fecha programada</span><span class="v" id="dOtFechaProg">—</span></div>
+    <div class="detalle-row"><span class="k">Horas estimadas</span><span class="v" id="dOtHoras">—</span></div>
+    <div class="detalle-row"><span class="k">Estado</span><span class="v" id="dOtEstado">—</span></div>
+    <div class="field"><label>Descripción</label><div id="dOtDesc" style="font-size:12.5px;color:var(--label);line-height:1.5">—</div></div>
+    <div id="dOtCierreWrap" style="display:none">
+      <div class="detalle-row"><span class="k">Horas reales</span><span class="v" id="dOtHorasReales">—</span></div>
+      <div class="detalle-row"><span class="k">Fecha de cierre</span><span class="v" id="dOtFechaCierre">—</span></div>
+      <div class="detalle-row"><span class="k">Costo</span><span class="v" id="dOtCosto">—</span></div>
+      <div class="field"><label>Causa raíz / trabajo realizado</label><div id="dOtObsCierre" style="font-size:12.5px;color:var(--label);line-height:1.5">—</div></div>
+    </div>
+    <div id="dOtFotoWrap" style="display:none">
+      <label style="font-size:11.5px;font-weight:700;color:var(--label);display:block;margin-bottom:6px">Foto de la falla</label>
+      <img id="dOtFotoImg" class="foto-img" onclick="verFotoUrl(this.src,'Foto de falla')" onerror="document.getElementById('dOtFotoWrap').style.display='none'">
+    </div>
+  </div>
+  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalDetalleOT')">Cerrar</button></div>
+</div></div>
+
+<!-- ═══ MODAL: FOTO ═══ -->
+<div class="overlay" id="modalFoto"><div class="modal">
+  <div class="modal-h"><span class="modal-t" id="mFotoTitulo">Foto</span><button class="modal-x" onclick="closeModal('modalFoto')">✕</button></div>
+  <div class="modal-b" style="padding:12px">
+    <img id="mFotoImg" class="foto-img" alt="Foto">
+    <div id="mFotoErrorMsg" style="display:none;padding:20px;text-align:center;color:var(--muted);font-size:12px">No se pudo cargar la imagen.</div>
+  </div>
+  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalFoto')">Cerrar</button><a id="mFotoLink" href="" target="_blank" class="btn-primary" style="text-decoration:none;display:flex;align-items:center;justify-content:center">Abrir en Drive</a></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="datos.js"></script>
+<script>
+const API = window.CIMPLAST_DATA.api;
+const TECNICOS = window.CIMPLAST_DATA.tecnicos;
+const D = window.CIMPLAST_DATA;
+const num = n => Number(n) || 0;
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let fallasTodas = [], otsTodas = [];
+let fallaTabActiva = 'Pendiente';
+let otTabActiva = 'Abierta';
+let fallaActual = null, otActual = null;
+let otProgramarActual = null, otProgramarEsReprogramar = false;
+let hoyFecha = new Date();
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded', () => {
+  D.listaPlantas().forEach(p => {
+    ['fPlantaOT'].forEach(id => { const o=document.createElement('option'); o.value=p; o.textContent=p; document.getElementById(id).appendChild(o); });
+  });
+  TECNICOS.forEach(t => {
+    ['fTecnicoOT'].forEach(id => { const o=document.createElement('option'); o.value=t.nombre; o.textContent=t.nombre; document.getElementById(id).appendChild(o); });
+    const o2=document.createElement('option'); o2.value=t.id; o2.dataset.nombre=t.nombre; o2.textContent=t.nombre+' · '+(t.especialidad||t.esp||''); document.getElementById('mOtTecnico').appendChild(o2);
+  });
+  cargarDatos();
+  renderHoyFecha();
+});
+
+async function cargarDatos(){
+  const btn = document.getElementById('btnRefresh');
+  btn.classList.add('spinning');
+  try{
+    const [rf, ro] = await Promise.all([
+      fetch(API + '?accion=fallas').then(r => r.json()),
+      fetch(API + '?accion=ots').then(r => r.json())
+    ]);
+    fallasTodas = rf.fallas || [];
+    otsTodas = ro.ots || [];
+    renderTodo();
+  }catch(e){
+    showToast('Sin conexión', 'err');
+  }
+  btn.classList.remove('spinning');
+}
+
+function renderTodo(){
+  renderResumen();
+  renderFallaTabs();
+  renderFallasLista();
+  renderOtTabs();
+  renderOtLista();
+  renderHoyLista();
+}
+
+/* ══ NAVEGACIÓN ══ */
+function setScreen(name, btn){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b===btn));
+  window.scrollTo(0,0);
+}
+
+/* ══ RESUMEN ══ */
+function renderResumen(){
+  const abiertas = otsTodas.filter(o => o.Estado !== 'Cerrada');
+  const cerradas = otsTodas.filter(o => o.Estado === 'Cerrada');
+  const cumplimiento = otsTodas.length ? Math.round(cerradas.length/otsTodas.length*100) : 0;
+  const conHoras = cerradas.filter(o => o.HorasReales);
+  const mttr = conHoras.length ? (conHoras.reduce((s,o)=>s+num(o.HorasReales),0)/conHoras.length).toFixed(1) : '—';
+  const costo = cerradas.reduce((s,o)=>s+num(o.Costo),0);
+  const fmtCosto = c => c>=1000000?(c/1000000).toFixed(1)+'M':c>=1000?Math.round(c/1000)+'k':c;
+  const pend = fallasTodas.filter(f => f.Estado==='Pendiente');
+
+  document.getElementById('kpiGridM').innerHTML = `
+    <div class="kpi-card-m accent"><div class="lbl">Cumplimiento</div><div class="val">${cumplimiento}%</div><div class="sub">${cerradas.length} de ${otsTodas.length} OT</div></div>
+    <div class="kpi-card-m"><div class="lbl">MTTR</div><div class="val">${mttr}${mttr!=='—'?'h':''}</div><div class="sub">${conHoras.length} OT con horas</div></div>
+    <div class="kpi-card-m danger"><div class="lbl">Backlog</div><div class="val">${abiertas.length}</div><div class="sub">OT abiertas o en curso</div></div>
+    <div class="kpi-card-m"><div class="lbl">Costo período</div><div class="val" style="font-size:18px">${fmtCosto(costo)}</div><div class="sub">Gs. en OT cerradas</div></div>
+  `;
+
+  const badge = document.getElementById('navBadgeFallas');
+  badge.textContent = pend.length;
+  badge.style.display = pend.length ? 'flex' : 'none';
+
+  const cont = document.getElementById('resumenFallasPend');
+  const top5 = pend.slice(0,5);
+  cont.innerHTML = top5.length ? top5.map(cardFallaHTML).join('') : '<div class="empty-m">Nada pendiente 🎉</div>';
+  bindActions();
+}
+
+/* ══ FALLAS ══ */
+function setFallaTab(estado, btn){
+  fallaTabActiva = estado;
+  document.querySelectorAll('#screenFallas .subtab').forEach(b => b.classList.toggle('active', b===btn));
+  renderFallasLista();
+}
+function renderFallaTabs(){
+  document.getElementById('ftab-pend').textContent = fallasTodas.filter(f=>f.Estado==='Pendiente').length;
+  document.getElementById('ftab-ot').textContent = fallasTodas.filter(f=>f.Estado==='En curso').length;
+  document.getElementById('ftab-done').textContent = fallasTodas.filter(f=>f.Estado==='Concluido').length;
+}
+function renderFallasLista(){
+  const lista = fallasTodas.filter(f => f.Estado === fallaTabActiva);
+  const cont = document.getElementById('fallasLista');
+  cont.innerHTML = lista.length ? lista.map(cardFallaHTML).join('') : '<div class="empty-m">Sin fallas en este estado</div>';
+  bindActions();
+}
+function cardFallaHTML(f){
+  const parado = (f.Detenido||'').includes('parado');
+  return `<div class="item-row${parado?' alta':''}">
+    <div class="item-top">
+      <span class="item-id">${esc(f.ID||'').slice(-6)}</span>
+      ${parado?'<span class="item-badge b-parado">Parado</span>':''}
+    </div>
+    <div class="item-eq">${esc(f.Equipo||'—')}</div>
+    <div class="item-desc">${esc(f.Sintoma||'')}</div>
+    <div class="item-meta">${esc(f.Planta||'—')} · ${esc(f.Sistema||'—')} · ${esc(f.Operador||'—')}</div>
+    <div class="item-acts">
+      ${f.Estado==='Pendiente'?`<button class="item-btn btn-genot" data-act="genot" data-id="${esc(f.ID)}">📝 Generar OT</button>`:''}
+      ${f.FotoURL?`<button class="item-btn btn-foto" data-act="verfoto" data-url="${esc(f.FotoURL)}" data-titulo="${esc(f.Equipo||'Falla')}">📷</button>`:''}
+    </div>
+  </div>`;
+}
+
+/* ══ OT ══ */
+function setOtTab(estado, btn){
+  otTabActiva = estado;
+  document.querySelectorAll('#screenOT .subtab').forEach(b => b.classList.toggle('active', b===btn));
+  renderOtLista();
+}
+function renderOtTabs(){
+  document.getElementById('otab-abierta').textContent = otsTodas.filter(o=>o.Estado==='Abierta').length;
+  document.getElementById('otab-curso').textContent = otsTodas.filter(o=>o.Estado==='En curso').length;
+  document.getElementById('otab-cerrada').textContent = otsTodas.filter(o=>o.Estado==='Cerrada').length;
+}
+function renderOtLista(){
+  const fp = document.getElementById('fPlantaOT').value;
+  const ft = document.getElementById('fTecnicoOT').value;
+  let lista = otsTodas.filter(o => o.Estado === otTabActiva);
+  if(fp) lista = lista.filter(o => o.Planta === fp);
+  if(ft) lista = lista.filter(o => (o.Tecnico||'').includes(ft));
+  const cont = document.getElementById('otLista');
+  cont.innerHTML = lista.length ? lista.map(cardOtHTML).join('') : '<div class="empty-m">Sin OT en este estado</div>';
+  bindActions();
+}
+function cardOtHTML(o){
+  const p = o.Prioridad || 'Media';
+  const cls = p==='Alta'?'b-alta':p==='Baja'?'b-baja':'b-media';
+  const cerrada = o.Estado === 'Cerrada';
+  const fallaAsoc = o.FallaID ? fallasTodas.find(f=>f.ID===o.FallaID) : null;
+  const fotoUrl = fallaAsoc && fallaAsoc.FotoURL ? fallaAsoc.FotoURL : '';
+  return `<div class="item-row${p==='Alta'&&!cerrada?' alta':''}" data-act="detalle" data-id="${esc(o.NroOT)}">
+    <div class="item-top">
+      <span class="item-id">${esc(o.NroOT||'—')}</span>
+      <span class="item-badge ${cls}">${esc(p)}</span>
+    </div>
+    <div class="item-eq">${esc(o.Equipo||'—')}</div>
+    <div class="item-desc">${esc((o.Descripcion||'').slice(0,90))}</div>
+    <div class="item-meta">${esc(o.Planta||'—')} · ${esc(o.Tecnico||'sin asignar')}${o.FechaProgramada?' · '+D.fmtFecha(o.FechaProgramada):''}</div>
+    <div class="item-acts">
+      ${o.Estado==='Abierta'?`<button class="item-btn btn-prog" data-act="programar" data-id="${esc(o.NroOT)}">📅 Programar</button>`:''}
+      ${o.Estado==='En curso'?`<button class="item-btn btn-prog" data-act="reprogramar" data-id="${esc(o.NroOT)}">↩ Reprogramar</button>`:''}
+      ${!cerrada?`<button class="item-btn btn-cerrar" data-act="cerrar" data-id="${esc(o.NroOT)}">✓ Cerrar</button>`:''}
+      ${fotoUrl?`<button class="item-btn btn-foto" data-act="verfoto" data-url="${esc(fotoUrl)}" data-titulo="${esc(o.Equipo||'OT')}">📷</button>`:''}
+    </div>
+  </div>`;
+}
+
+/* ══ HOY (agenda) ══ */
+function renderHoyFecha(){
+  const txt = hoyFecha.toLocaleDateString('es-PY',{weekday:'long',day:'2-digit',month:'long'});
+  document.getElementById('hoyFechaTxt').textContent = txt.charAt(0).toUpperCase()+txt.slice(1);
+}
+function navHoy(dir){
+  hoyFecha.setDate(hoyFecha.getDate()+dir);
+  renderHoyFecha();
+  renderHoyLista();
+}
+function irHoyReal(){
+  hoyFecha = new Date();
+  renderHoyFecha();
+  renderHoyLista();
+}
+function renderHoyLista(){
+  const fechaStr = hoyFecha.toISOString().slice(0,10);
+  const lista = otsTodas.filter(o => (o.FechaProgramada||'').slice(0,10) === fechaStr)
+    .sort((a,b) => (a.Prioridad==='Alta'?0:a.Prioridad==='Media'?1:2) - (b.Prioridad==='Alta'?0:b.Prioridad==='Media'?1:2));
+  const cont = document.getElementById('hoyLista');
+  cont.innerHTML = lista.length ? lista.map(cardOtHTML).join('') : '<div class="empty-m">Sin OT programadas este día</div>';
+  bindActions();
+}
+
+/* ══ ACCIONES (delegación de eventos) ══ */
+function bindActions(){
+  document.querySelectorAll('[data-act]').forEach(el => {
+    el.onclick = e => {
+      e.stopPropagation();
+      const act = el.dataset.act, id = el.dataset.id;
+      if(act==='genot') abrirModalOT(id);
+      if(act==='cerrar') abrirModalCerrar(id);
+      if(act==='programar') abrirModalProgramar(id, false);
+      if(act==='reprogramar') abrirModalProgramar(id, true);
+      if(act==='detalle') abrirDetalleOT(id);
+      if(act==='verfoto') verFotoUrl(el.dataset.url, el.dataset.titulo);
+    };
+  });
+}
+
+/* ══ MODAL GENERAR OT ══ */
+function nuevoNro(){ return 'OT-'+new Date().getFullYear()+'-'+Math.floor(1000+Math.random()*9000); }
+function abrirModalOT(id){
+  fallaActual = fallasTodas.find(f => f.ID === id); if(!fallaActual) return;
+  document.getElementById('mOtEquipo').textContent = (fallaActual.Equipo||'')+' · '+(fallaActual.Planta||'');
+  document.getElementById('mOtDesc').textContent = (fallaActual.Sintoma||'').slice(0,140);
+  document.getElementById('mOtNro').value = nuevoNro();
+  document.getElementById('mOtHoras').value = '';
+  document.getElementById('mOtObs').value = fallaActual.Sintoma || '';
+  document.getElementById('mOtFecha').value = new Date().toISOString().slice(0,10);
+  const prio = (fallaActual.Detenido||'').includes('parado')?'Alta':(fallaActual.Detenido||'').includes('Parcial')?'Media':'Baja';
+  document.querySelectorAll('#mOtPrioGroup .chip').forEach(c => c.classList.toggle('selected', c.dataset.val===prio));
+  document.querySelectorAll('#mOtTipoGroup .chip').forEach(c => c.classList.toggle('selected', c.dataset.val==='Correctivo'));
+  openModal('modalGenOT');
+}
+async function submitModalOT(){
+  const nro = document.getElementById('mOtNro').value.trim();
+  const tipo = getChipVal('mOtTipoGroup'), prio = getChipVal('mOtPrioGroup');
+  const ts = document.getElementById('mOtTecnico');
+  const tecnicos = Array.from(ts.selectedOptions).map(o => o.dataset.nombre||o.text.split('·')[0].trim()).filter(Boolean).join(', ');
+  const fechaProg = document.getElementById('mOtFecha').value;
+  if(!nro||!tipo||!prio||!tecnicos||!fechaProg){ showToast('Completá los campos obligatorios','err'); return; }
+  const btn = document.getElementById('btnModalOT'); btn.disabled=true; btn.textContent='Creando…';
+  try{
+    const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({
+      accion:'ot', nroOT:nro, fallaId:fallaActual?.ID||'',
+      equipo:fallaActual?.Equipo||'', planta:fallaActual?.Planta||'',
+      tipo, prioridad:prio, tecnico:tecnicos,
+      descripcion:document.getElementById('mOtObs').value.trim(),
+      horasEstimadas:document.getElementById('mOtHoras').value||'',
+      fechaProgramada:fechaProg, observaciones:''
+    })});
+    const d = await r.json(); if(d.ok===false) throw new Error(d.error);
+    showToast('OT '+nro+' creada'); closeModal('modalGenOT');
+    setTimeout(cargarDatos, 1200);
+  }catch(e){ showToast('Error: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='Crear OT';
+}
+
+/* ══ MODAL CERRAR ══ */
+function abrirModalCerrar(nroOT){
+  const o = otsTodas.find(x => x.NroOT === nroOT); if(!o) return;
+  otActual = o;
+  document.getElementById('mCerrarNro').textContent = nroOT;
+  document.getElementById('mCerrarEquipo').textContent = (o.Equipo||'')+' · '+(o.Planta||'');
+  ['mCerrarHoras','mCerrarRepuestos','mCerrarCosto','mCerrarObs','mCerrarMotivo'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('mCerrarFecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('mCerrarAnular').checked = false;
+  toggleAnular();
+  if(o.HorasEstimadas) document.getElementById('mCerrarHoras').placeholder = 'Estimado: '+o.HorasEstimadas+'h';
+  openModal('modalCerrar');
+}
+function toggleAnular(){
+  const anulando = document.getElementById('mCerrarAnular').checked;
+  document.getElementById('mCerrarCamposNormales').style.display = anulando?'none':'flex';
+  document.getElementById('mCerrarMotivoWrap').style.display = anulando?'block':'none';
+  document.getElementById('btnModalCerrar').textContent = anulando?'Confirmar anulación':'Confirmar cierre';
+}
+async function submitCerrar(){
+  const anulando = document.getElementById('mCerrarAnular').checked;
+  const btn = document.getElementById('btnModalCerrar');
+  let body;
+  if(anulando){
+    const motivo = document.getElementById('mCerrarMotivo').value.trim();
+    if(!motivo){ showToast('Cargá el motivo de anulación','err'); return; }
+    body = {accion:'cerrarOT', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
+      horasReales:0, repuestos:'', costo:0,
+      observaciones:'ANULADA: '+motivo, fechaCierre:new Date().toISOString().slice(0,10)};
+    btn.disabled=true; btn.textContent='Anulando…';
+  } else {
+    const horas = document.getElementById('mCerrarHoras').value, obs = document.getElementById('mCerrarObs').value.trim();
+    if(!horas){ showToast('Cargá las horas reales','err'); return; }
+    if(!obs){ showToast('Cargá la causa raíz y el trabajo realizado','err'); return; }
+    body = {accion:'cerrarOT', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
+      horasReales:parseFloat(horas), repuestos:document.getElementById('mCerrarRepuestos').value.trim(),
+      costo:parseFloat(document.getElementById('mCerrarCosto').value)||0,
+      observaciones:obs, fechaCierre:document.getElementById('mCerrarFecha').value};
+    btn.disabled=true; btn.textContent='Cerrando…';
+  }
+  try{
+    const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+    const d = await r.json(); if(d.ok===false) throw new Error(d.error);
+    showToast('OT '+otActual.NroOT+(anulando?' anulada':' cerrada')); closeModal('modalCerrar');
+    setTimeout(cargarDatos, 1200);
+  }catch(e){ showToast('Error: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent=anulando?'Confirmar anulación':'Confirmar cierre';
+}
+
+/* ══ MODAL PROGRAMAR ══ */
+function abrirModalProgramar(nroOT, esReprogramar){
+  const o = otsTodas.find(x => x.NroOT === nroOT); if(!o) return;
+  otProgramarActual = o;
+  otProgramarEsReprogramar = esReprogramar;
+  document.getElementById('mProgTitulo').textContent = esReprogramar?'Reprogramar OT':'Programar OT';
+  document.getElementById('mProgNro').textContent = o.NroOT||'—';
+  document.getElementById('mProgEquipo').textContent = (o.Equipo||'—')+' · '+(o.Planta||'—');
+  document.getElementById('mProgFecha').value = o.FechaProgramada ? o.FechaProgramada.slice(0,10) : '';
+  document.getElementById('mProgHoras').value = o.HorasEstimada || '';
+  document.getElementById('mProgAviso').style.display = esReprogramar?'block':'none';
+  openModal('modalProgramar');
+}
+async function submitProgramar(){
+  const fecha = document.getElementById('mProgFecha').value;
+  if(!fecha){ showToast('Elegí una fecha','err'); return; }
+  const horas = document.getElementById('mProgHoras').value;
+  const o = otProgramarActual;
+  const btn = document.querySelector('#modalProgramar .btn-primary');
+  btn.disabled=true; btn.textContent='Guardando…';
+  try{
+    const body = {accion:'actualizarOT', nroOT:o.NroOT, fechaProgramada:fecha, horasEstimadas:horas};
+    if(otProgramarEsReprogramar) body.estado = 'Abierta';
+    const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+    const d = await r.json();
+    if(d.ok){
+      showToast(otProgramarEsReprogramar?'OT reprogramada':'OT programada');
+      closeModal('modalProgramar');
+      setTimeout(cargarDatos, 1200);
+    } else showToast(d.error||'Error al guardar','err');
+  }catch(e){ showToast('Error de conexión','err'); }
+  btn.disabled=false; btn.textContent='Guardar';
+}
+
+/* ══ MODAL DETALLE OT ══ */
+function abrirDetalleOT(nroOT){
+  const o = otsTodas.find(x => x.NroOT === nroOT); if(!o) return;
+  document.getElementById('dOtNro').textContent = o.NroOT||'—';
+  document.getElementById('dOtEquipoPlanta').textContent = (o.Equipo||'—')+' · '+(o.Planta||'—');
+  document.getElementById('dOtTipo').textContent = o.Tipo||'—';
+  document.getElementById('dOtPrio').textContent = o.Prioridad||'—';
+  document.getElementById('dOtTecnico').textContent = o.Tecnico||'Sin asignar';
+  document.getElementById('dOtDesc').textContent = o.Descripcion||'—';
+  document.getElementById('dOtFechaProg').textContent = o.FechaProgramada ? D.fmtFecha(o.FechaProgramada) : '—';
+  document.getElementById('dOtHoras').textContent = o.HorasEstimada ? o.HorasEstimada+' h' : '—';
+  document.getElementById('dOtEstado').textContent = o.Estado||'—';
+  const cerrada = o.Estado === 'Cerrada';
+  document.getElementById('dOtCierreWrap').style.display = cerrada?'block':'none';
+  if(cerrada){
+    document.getElementById('dOtHorasReales').textContent = o.HorasReales ? o.HorasReales+' h' : '—';
+    document.getElementById('dOtFechaCierre').textContent = o.FechaCierre ? D.fmtFecha(o.FechaCierre) : '—';
+    document.getElementById('dOtCosto').textContent = o.Costo ? Number(o.Costo).toLocaleString('es-PY')+' Gs.' : '—';
+    document.getElementById('dOtObsCierre').textContent = o.ObservacionesCierre||'—';
+  }
+  const fallaAsoc = o.FallaID ? fallasTodas.find(f=>f.ID===o.FallaID) : null;
+  const fotoWrap = document.getElementById('dOtFotoWrap');
+  const fotoImg = document.getElementById('dOtFotoImg');
+  if(fallaAsoc && fallaAsoc.FotoURL){ fotoImg.src = fallaAsoc.FotoURL; fotoWrap.style.display = 'block'; }
+  else { fotoWrap.style.display = 'none'; fotoImg.src = ''; }
+  openModal('modalDetalleOT');
+}
+
+/* ══ FOTO ══ */
+function verFotoUrl(url, titulo){
+  document.getElementById('mFotoTitulo').textContent = titulo||'Foto';
+  const img = document.getElementById('mFotoImg');
+  const errMsg = document.getElementById('mFotoErrorMsg');
+  img.style.display = 'block'; errMsg.style.display = 'none';
+  img.onerror = () => { img.style.display='none'; errMsg.style.display='block'; };
+  img.src = url;
+  document.getElementById('mFotoLink').href = url;
+  openModal('modalFoto');
+}
+
+/* ══ UTILIDADES ══ */
+function selChip(el, g){ document.querySelectorAll('#'+g+' .chip').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); }
+function getChipVal(g){ return document.querySelector('#'+g+' .chip.selected')?.dataset.val || ''; }
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function showToast(msg, type='ok'){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show '+type;
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+</script>
+</body>
+</html>
