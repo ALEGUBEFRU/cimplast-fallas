@@ -468,7 +468,10 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
         <h2>Mantenimiento preventivo programado</h2>
         <div class="sub">Planes recurrentes que generan OT automáticamente por equipo</div>
       </div>
-      <button class="btn-primary" onclick="abrirModalPlan()">+ Nuevo plan</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-secondary" onclick="ejecutarPlanesAhora()" id="btnEjecutarAhora">▶ Ejecutar ahora</button>
+        <button class="btn-primary" onclick="abrirModalPlan()">+ Nuevo plan</button>
+      </div>
     </div>
     <div class="prev-grid" id="planesGrid"></div>
   </div>
@@ -1321,6 +1324,22 @@ async function cargarPlanes(){
   }catch(e){
     document.getElementById('planesGrid').innerHTML = '<div class="col-empty">No se pudieron cargar los planes</div>';
   }
+}
+
+async function ejecutarPlanesAhora(){
+  const btn = document.getElementById('btnEjecutarAhora');
+  btn.disabled = true; btn.textContent = 'Ejecutando…';
+  try{
+    const r = await fetch(API, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({accion:'ejecutarPlanesAhora'})});
+    const d = await r.json();
+    if(d.ok === false) throw new Error(d.error);
+    const cant = d.totalGeneradas || 0;
+    showToast(cant > 0 ? cant+' OT generadas por preventivo' : 'Sin OT nuevas — ningún plan activo corresponde generar hoy');
+    setTimeout(cargarPlanes, 1000);
+  }catch(e){
+    showToast('Error: '+e.message, 'err');
+  }
+  btn.disabled = false; btn.textContent = '▶ Ejecutar ahora';
 }
 
 function renderPlanes(){
