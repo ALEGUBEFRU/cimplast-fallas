@@ -147,6 +147,10 @@ window.CIMPLAST_DATA = (function() {
     {
       "cod": "LEC01",
       "nombre": "Lechita - Embal"
+    },
+    {
+      "cod": "OTR",
+      "nombre": "Otro"
     }
   ],
   "Planta 4": [
@@ -189,6 +193,10 @@ window.CIMPLAST_DATA = (function() {
     {
       "cod": "INY 15",
       "nombre": "Borche"
+    },
+    {
+      "cod": "OTR",
+      "nombre": "Otro"
     }
   ],
   "Planta 5": [
@@ -247,6 +255,10 @@ window.CIMPLAST_DATA = (function() {
     {
       "cod": "SOP32",
       "nombre": "Ekou 7"
+    },
+    {
+      "cod": "OTR",
+      "nombre": "Otro"
     }
   ],
   "Titese": [
@@ -353,6 +365,10 @@ window.CIMPLAST_DATA = (function() {
     {
       "cod": "SOP 30",
       "nombre": "Sopladora Multipack 4"
+    },
+    {
+      "cod": "OTR",
+      "nombre": "Otro"
     }
   ],
   "Matricería": [
@@ -379,6 +395,10 @@ window.CIMPLAST_DATA = (function() {
     {
       "cod": "MAT-06",
       "nombre": "Compresor Matricería"
+    },
+    {
+      "cod": "OTR",
+      "nombre": "Otro"
     }
   ],
   "Otros": [
