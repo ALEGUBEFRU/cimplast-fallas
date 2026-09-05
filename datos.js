@@ -6,7 +6,7 @@
 
 window.CIMPLAST_DATA = (function() {
 
-  const API = 'https://script.google.com/macros/s/AKfycbwCDsgevdtDam9TwyTqKRj_4cGA7MELT9ZvPKDdnwv2qZs8ocl1Cfkmdv0Q4Z51BShDQQ/exec';
+  const API = 'https://script.google.com/macros/s/AKfycbx3v7Un3AqisgF9nyeHXKZFTHuAwcSQVee8D1iLniodlf-NWUqpMjqUI_4vrC5yQw3z0w/exec';
 
   const PLANTAS = ["Planta 3", "Planta 4", "Planta 5", "Titese", "Matricería", "Otros"];
 
