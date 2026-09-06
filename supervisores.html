@@ -284,8 +284,43 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 
 @media(max-width:1000px){.board{grid-template-columns:1fr}.col{max-height:420px}}
 </style>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
+<div id="pantalla-login-identity" style="position:fixed;inset:0;z-index:999999;background:#14100f;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <div style="background:#1e1a18;border:1px solid #3a332f;border-radius:12px;padding:32px 28px;width:90%;max-width:340px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
+    <div style="width:48px;height:48px;border-radius:10px;background:#f5a623;color:#14100f;font-weight:700;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">C</div>
+    <h2 style="color:#fff;font-size:18px;margin:0 0 6px;">Cimplast &middot; Panel de Supervisores</h2>
+    <p style="color:#9a938d;font-size:13px;margin:0 0 20px;">Acceso restringido &mdash; iniciá sesión para continuar</p>
+    <button id="btn-login-identity" style="width:100%;background:#f5a623;color:#14100f;font-weight:700;font-size:15px;border:none;border-radius:8px;padding:12px;cursor:pointer;">Iniciar sesion</button>
+  </div>
+</div>
+<script>
+(function () {
+  function mostrarContenido() {
+    var pantalla = document.getElementById("pantalla-login-identity");
+    if (pantalla) pantalla.remove();
+  }
+  function mostrarLogin() {
+    if (window.netlifyIdentity) window.netlifyIdentity.open("login");
+  }
+  document.getElementById("btn-login-identity").addEventListener("click", mostrarLogin);
+
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", function (user) {
+      if (user) { mostrarContenido(); } else { mostrarLogin(); }
+    });
+    window.netlifyIdentity.on("login", function () {
+      mostrarContenido();
+      window.netlifyIdentity.close();
+    });
+    window.netlifyIdentity.on("logout", function () {
+      window.location.reload();
+    });
+    window.netlifyIdentity.init();
+  }
+})();
+</script>
 
 <div class="loading" id="loadingOverlay"><div class="loader"></div><span id="loadingMsg">Cargando datos…</span></div>
 <div class="toast" id="toast"></div>
