@@ -291,34 +291,68 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   <div style="background:#1e1a18;border:1px solid #3a332f;border-radius:12px;padding:32px 28px;width:90%;max-width:340px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
     <div style="width:48px;height:48px;border-radius:10px;background:#f5a623;color:#14100f;font-weight:700;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">C</div>
     <h2 style="color:#fff;font-size:18px;margin:0 0 6px;">Cimplast &middot; Panel de Supervisores</h2>
-    <p style="color:#9a938d;font-size:13px;margin:0 0 20px;">Acceso restringido &mdash; iniciá sesión para continuar</p>
-    <button id="btn-login-identity" style="width:100%;background:#f5a623;color:#14100f;font-weight:700;font-size:15px;border:none;border-radius:8px;padding:12px;cursor:pointer;">Iniciar sesion</button>
+    <p id="msg-login-identity" style="color:#9a938d;font-size:13px;margin:0 0 20px;">Verificando sesion...</p>
+    <button id="btn-login-identity" style="display:none;width:100%;background:#f5a623;color:#14100f;font-weight:700;font-size:15px;border:none;border-radius:8px;padding:12px;cursor:pointer;">Iniciar sesion</button>
   </div>
 </div>
 <script>
 (function () {
+  var yaResuelto = false;
+
   function mostrarContenido() {
+    if (yaResuelto) return;
+    yaResuelto = true;
     var pantalla = document.getElementById("pantalla-login-identity");
     if (pantalla) pantalla.remove();
   }
-  function mostrarLogin() {
+
+  function mostrarBotonLogin() {
+    document.getElementById("msg-login-identity").textContent = "Acceso restringido - inicia sesion para continuar";
+    document.getElementById("btn-login-identity").style.display = "block";
+  }
+
+  function abrirModalLogin() {
     if (window.netlifyIdentity) window.netlifyIdentity.open("login");
   }
-  document.getElementById("btn-login-identity").addEventListener("click", mostrarLogin);
 
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", function (user) {
-      if (user) { mostrarContenido(); } else { mostrarLogin(); }
+  document.getElementById("btn-login-identity").addEventListener("click", abrirModalLogin);
+
+  function conectarIdentity() {
+    if (!window.netlifyIdentity) {
+      setTimeout(conectarIdentity, 100);
+      return;
+    }
+
+    var ni = window.netlifyIdentity;
+
+    ni.on("init", function (user) {
+      if (user) {
+        mostrarContenido();
+      } else {
+        mostrarBotonLogin();
+      }
     });
-    window.netlifyIdentity.on("login", function () {
+    ni.on("login", function () {
       mostrarContenido();
-      window.netlifyIdentity.close();
+      ni.close();
     });
-    window.netlifyIdentity.on("logout", function () {
+    ni.on("logout", function () {
       window.location.reload();
     });
-    window.netlifyIdentity.init();
+
+    ni.init();
+
+    var actual = ni.currentUser();
+    if (actual) {
+      mostrarContenido();
+    }
+
+    setTimeout(function () {
+      if (!yaResuelto) mostrarBotonLogin();
+    }, 2500);
   }
+
+  conectarIdentity();
 })();
 </script>
 
