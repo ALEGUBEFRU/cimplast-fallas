@@ -335,6 +335,44 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 </style>
 </head>
 <body>
+<div id="pantalla-clave" style="position:fixed;inset:0;z-index:999999;background:#14100f;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <div style="background:#1e1a18;border:1px solid #3a332f;border-radius:12px;padding:32px 28px;width:90%;max-width:340px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
+    <div style="width:48px;height:48px;border-radius:10px;background:#f5a623;color:#14100f;font-weight:700;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">C</div>
+    <h2 style="color:#fff;font-size:18px;margin:0 0 6px;">Cimplast &middot; Preventivo</h2>
+    <p style="color:#9a938d;font-size:13px;margin:0 0 20px;">Ingresa la clave de acceso</p>
+    <input id="input-clave" type="password" inputmode="text" maxlength="8" autocomplete="off" placeholder="********" style="width:100%;box-sizing:border-box;background:#14100f;border:1px solid #3a332f;border-radius:8px;color:#fff;font-size:20px;text-align:center;letter-spacing:4px;padding:12px;margin-bottom:10px;" />
+    <p id="mensaje-error" style="color:#e05c5c;font-size:13px;min-height:18px;margin:0 0 12px;"></p>
+    <button id="btn-entrar" style="width:100%;background:#f5a623;color:#14100f;font-weight:700;font-size:15px;border:none;border-radius:8px;padding:12px;cursor:pointer;">Entrar</button>
+  </div>
+</div>
+<script>
+(function () {
+  var CLAVE_CORRECTA = "plan653z";
+  var LLAVE_GUARDADA = "cimplast_preventivo_autorizado";
+  if (localStorage.getItem(LLAVE_GUARDADA) === "si") {
+    var pantalla = document.getElementById("pantalla-clave");
+    if (pantalla) pantalla.remove();
+  } else {
+    var input = document.getElementById("input-clave");
+    var boton = document.getElementById("btn-entrar");
+    var error = document.getElementById("mensaje-error");
+    function intentarEntrar() {
+      var valor = (input.value || "").trim().toLowerCase();
+      if (valor === CLAVE_CORRECTA) {
+        localStorage.setItem(LLAVE_GUARDADA, "si");
+        document.getElementById("pantalla-clave").remove();
+      } else {
+        error.textContent = "Contrasena incorrecta, proba de nuevo.";
+        input.value = "";
+        input.focus();
+      }
+    }
+    boton.addEventListener("click", intentarEntrar);
+    input.addEventListener("keyup", function (e) { if (e.key === "Enter") intentarEntrar(); });
+    input.focus();
+  }
+})();
+</script>
 
 <div class="loading" id="loadingOverlay"><div class="loader"></div><span id="loadingMsg">Cargando datos…</span></div>
 <div class="toast" id="toast"></div>

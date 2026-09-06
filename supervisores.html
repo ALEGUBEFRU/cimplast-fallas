@@ -284,75 +284,44 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 
 @media(max-width:1000px){.board{grid-template-columns:1fr}.col{max-height:420px}}
 </style>
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
-<div id="pantalla-login-identity" style="position:fixed;inset:0;z-index:999999;background:#14100f;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<div id="pantalla-clave" style="position:fixed;inset:0;z-index:999999;background:#14100f;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
   <div style="background:#1e1a18;border:1px solid #3a332f;border-radius:12px;padding:32px 28px;width:90%;max-width:340px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
     <div style="width:48px;height:48px;border-radius:10px;background:#f5a623;color:#14100f;font-weight:700;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">C</div>
     <h2 style="color:#fff;font-size:18px;margin:0 0 6px;">Cimplast &middot; Panel de Supervisores</h2>
-    <p id="msg-login-identity" style="color:#9a938d;font-size:13px;margin:0 0 20px;">Verificando sesion...</p>
-    <button id="btn-login-identity" style="display:none;width:100%;background:#f5a623;color:#14100f;font-weight:700;font-size:15px;border:none;border-radius:8px;padding:12px;cursor:pointer;">Iniciar sesion</button>
+    <p style="color:#9a938d;font-size:13px;margin:0 0 20px;">Ingresa la clave de acceso</p>
+    <input id="input-clave" type="password" inputmode="text" maxlength="8" autocomplete="off" placeholder="********" style="width:100%;box-sizing:border-box;background:#14100f;border:1px solid #3a332f;border-radius:8px;color:#fff;font-size:20px;text-align:center;letter-spacing:4px;padding:12px;margin-bottom:10px;" />
+    <p id="mensaje-error" style="color:#e05c5c;font-size:13px;min-height:18px;margin:0 0 12px;"></p>
+    <button id="btn-entrar" style="width:100%;background:#f5a623;color:#14100f;font-weight:700;font-size:15px;border:none;border-radius:8px;padding:12px;cursor:pointer;">Entrar</button>
   </div>
 </div>
 <script>
 (function () {
-  var yaResuelto = false;
-
-  function mostrarContenido() {
-    if (yaResuelto) return;
-    yaResuelto = true;
-    var pantalla = document.getElementById("pantalla-login-identity");
+  var CLAVE_CORRECTA = "rcm2026x";
+  var LLAVE_GUARDADA = "cimplast_supervisores_autorizado";
+  if (localStorage.getItem(LLAVE_GUARDADA) === "si") {
+    var pantalla = document.getElementById("pantalla-clave");
     if (pantalla) pantalla.remove();
-  }
-
-  function mostrarBotonLogin() {
-    document.getElementById("msg-login-identity").textContent = "Acceso restringido - inicia sesion para continuar";
-    document.getElementById("btn-login-identity").style.display = "block";
-  }
-
-  function abrirModalLogin() {
-    if (window.netlifyIdentity) window.netlifyIdentity.open("login");
-  }
-
-  document.getElementById("btn-login-identity").addEventListener("click", abrirModalLogin);
-
-  function conectarIdentity() {
-    if (!window.netlifyIdentity) {
-      setTimeout(conectarIdentity, 100);
-      return;
-    }
-
-    var ni = window.netlifyIdentity;
-
-    ni.on("init", function (user) {
-      if (user) {
-        mostrarContenido();
+  } else {
+    var input = document.getElementById("input-clave");
+    var boton = document.getElementById("btn-entrar");
+    var error = document.getElementById("mensaje-error");
+    function intentarEntrar() {
+      var valor = (input.value || "").trim().toLowerCase();
+      if (valor === CLAVE_CORRECTA) {
+        localStorage.setItem(LLAVE_GUARDADA, "si");
+        document.getElementById("pantalla-clave").remove();
       } else {
-        mostrarBotonLogin();
+        error.textContent = "Contrasena incorrecta, proba de nuevo.";
+        input.value = "";
+        input.focus();
       }
-    });
-    ni.on("login", function () {
-      mostrarContenido();
-      ni.close();
-    });
-    ni.on("logout", function () {
-      window.location.reload();
-    });
-
-    ni.init();
-
-    var actual = ni.currentUser();
-    if (actual) {
-      mostrarContenido();
     }
-
-    setTimeout(function () {
-      if (!yaResuelto) mostrarBotonLogin();
-    }, 2500);
+    boton.addEventListener("click", intentarEntrar);
+    input.addEventListener("keyup", function (e) { if (e.key === "Enter") intentarEntrar(); });
+    input.focus();
   }
-
-  conectarIdentity();
 })();
 </script>
 
