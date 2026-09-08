@@ -1494,7 +1494,8 @@ async function crearOTDirecta(){
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody({
       accion:'ot', nroOT:nro, fallaId:'', equipo, planta, tipo, prioridad:prio,
       tecnico:tecnicos, descripcion:desc,
-      horasEstimadas:g('nOtHoras')||'', fechaProgramada:g('nOtFecha'), observaciones:g('nOtObs').trim())})});
+      horasEstimadas:g('nOtHoras')||'', fechaProgramada:g('nOtFecha'), observaciones:g('nOtObs').trim()
+    }))});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
     showToast('OT '+nro+' creada');
     ['nOtDesc','nOtObs','nOtHoras'].forEach(id=>document.getElementById(id).value='');
@@ -2084,7 +2085,7 @@ async function submitProgramar(){
       horasEstimadas: horas,
     };
     if(otProgramarEsReprogramar) body.estado = 'Abierta';
-    const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody(body))});
+    const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody(body)) });
     const d = await r.json();
     if(d.ok){
       showToast(otProgramarEsReprogramar ? 'OT reprogramada y vuelta a Abierta' : 'OT programada', 'ok');
