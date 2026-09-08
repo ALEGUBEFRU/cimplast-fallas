@@ -212,8 +212,8 @@ async function cargarDatos(){
   document.getElementById('statusLabel').textContent = 'Actualizando…';
   try{
     const [rf, ro] = await Promise.all([
-      fetch(API + '?accion=fallas').then(r => r.json()),
-      fetch(API + '?accion=ots').then(r => r.json())
+      fetch(window.CIMPLAST_DATA.apiGet('accion=fallas')).then(r => r.json()),
+      fetch(window.CIMPLAST_DATA.apiGet('accion=ots')).then(r => r.json())
     ]);
     fallasTodas = rf.fallas || [];
     otsTodas    = ro.ots    || [];

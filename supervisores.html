@@ -654,8 +654,8 @@ async function recargar(){
   icon.classList.add('spinning');
   try{
     const [rf,ro]=await Promise.all([
-      fetch(API+'?accion=fallas').then(r=>r.json()),
-      fetch(API+'?accion=ots').then(r=>r.json())
+      fetch(window.CIMPLAST_DATA.apiGet('accion=fallas')).then(r=>r.json()),
+      fetch(window.CIMPLAST_DATA.apiGet('accion=ots')).then(r=>r.json())
     ]);
     fallasTodas=rf.fallas||[]; otsTodas=ro.ots||[]; ultimaCarga=Date.now();
     try{localStorage.setItem('cimplast_sup_cache',JSON.stringify({fallas:fallasTodas,ots:otsTodas,ts:ultimaCarga}))}catch(e){}
@@ -1005,8 +1005,7 @@ async function cambiarEstado(kind,id,estado){
   if(item) item.Estado=estado;          // optimista: se ve al instante
   aplicarFiltros();
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({accion:kind==='falla'?'estadoFalla':'estadoOT',id,nroOT:id,estado})});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody({accion:kind==='falla'?'estadoFalla':'estadoOT',id,nroOT:id,estado}))});
     const d=await r.json();
     if(d.ok===false) throw new Error(d.error||'API');
     showToast((kind==='falla'?'Falla':'OT')+' '+id+' → '+estado);
@@ -1038,14 +1037,14 @@ async function submitModalOT(){
   if(!nro||!tipo||!prio||!tecnicos||!fechaProg){ showToast('Completá los campos obligatorios','err'); return; }
   const btn=document.getElementById('btnModalOT'); btn.disabled=true; btn.textContent='Creando…';
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody({
       accion:'ot', nroOT:nro, fallaId:fallaActual?.ID||'',
       equipo:fallaActual?.Equipo||'', planta:fallaActual?.Planta||'',
       tipo, prioridad:prio, tecnico:tecnicos,
       descripcion:document.getElementById('mOtObs').value.trim(),
       horasEstimadas:document.getElementById('mOtHoras').value||'',
       fechaProgramada:document.getElementById('mOtFecha').value, observaciones:''
-    })});
+    }))});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
     showToast('OT '+nro+' creada'); closeModal('modalGenOT');
     setTimeout(recargar, 1500);
@@ -1093,7 +1092,7 @@ async function submitCerrar(){
     btn.disabled=true; btn.textContent='Cerrando…';
   }
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody(body))});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
     showToast('OT '+otActual.NroOT+(anulando?' anulada':' cerrada')); closeModal('modalCerrar');
     setTimeout(recargar, 1500);
@@ -1136,11 +1135,11 @@ async function crearOTDirecta(){
   if(!nro||!planta||!equipo||!tipo||!prio||!tecnicos||!desc){ showToast('Completá todos los campos obligatorios','err'); return; }
   const btn=document.getElementById('btnNuevaOT'); btn.disabled=true; btn.textContent='Creando…';
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody({
       accion:'ot', nroOT:nro, fallaId:'', equipo, planta, tipo, prioridad:prio,
       tecnico:tecnicos, descripcion:desc,
       horasEstimadas:g('nOtHoras')||'', fechaProgramada:g('nOtFecha'), observaciones:g('nOtObs').trim()
-    })});
+    }))});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
     showToast('OT '+nro+' creada');
     ['nOtDesc','nOtObs','nOtHoras'].forEach(id=>document.getElementById(id).value='');
@@ -1423,7 +1422,7 @@ async function submitProgramar(){
       horasEstimadas: horas,
     };
     if(otProgramarEsReprogramar) body.estado = 'Abierta';
-    const r = await fetch(API, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
+    const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody(body))});
     const d = await r.json();
     if(d.ok){
       showToast(otProgramarEsReprogramar ? 'OT reprogramada y vuelta a Abierta' : 'OT programada', 'ok');

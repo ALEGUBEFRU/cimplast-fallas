@@ -6,7 +6,8 @@
 
 window.CIMPLAST_DATA = (function() {
 
-  const API = 'https://script.google.com/macros/s/AKfycbx3v7Un3AqisgF9nyeHXKZFTHuAwcSQVee8D1iLniodlf-NWUqpMjqUI_4vrC5yQw3z0w/exec';
+  const API = 'https://script.google.com/macros/s/AKfycbxK_nzjmidIy5GG2-2Al74xh5yzldRD9_thJuX9OsdymZegS11n1PRnxxSqkIECDbHW/exec';
+  const TOKEN = 'BQJv4A6aO3Bu9C9oLMnVdymL1czkA6U4yv3vHqe5';
 
   const PLANTAS = ["Planta 3", "Planta 4", "Planta 5", "Titese", "Matricería", "Otros"];
 
@@ -506,7 +507,17 @@ window.CIMPLAST_DATA = (function() {
 
   return {
     api: API,
+    token: TOKEN,
     tecnicos: TECNICOS,
+
+    apiGet(params) {
+      const qs = params ? '&' + params : '';
+      return API + '?token=' + encodeURIComponent(TOKEN) + qs;
+    },
+
+    apiPostBody(bodyObj) {
+      return JSON.stringify(Object.assign({}, bodyObj, { token: TOKEN }));
+    },
 
     listaPlantas() {
       return PLANTAS;

@@ -436,7 +436,7 @@ async function flushOutbox(manual){
   try{ items=await DB.all('outbox'); }catch(e){ flushing=false; return; }
   for(const it of items){
     try{
-      const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(it.body)});
+      const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody(it.body))});
       if(!r.ok) throw new Error('HTTP '+r.status);
       const d=await r.json().catch(()=>({ok:true}));
       if(d.ok===false) throw new Error(d.error||'API');
@@ -647,7 +647,7 @@ async function renderHistorial(){
   const ids=fallas.filter(f=>f.estado!=='cola'&&f.estado!=='Concluido').map(f=>f.id);
   if(ids.length&&navigator.onLine){
     try{
-      const rp=await fetch(API+'?accion=estados&ids='+encodeURIComponent(ids.join(',')));
+      const rp=await fetch(window.CIMPLAST_DATA.apiGet('accion=estados&ids='+encodeURIComponent(ids.join(','))));
       const d=await rp.json(); const est=d.estados||{};
       let ch=false;
       fallas.forEach(f=>{ if(est[f.id]&&est[f.id]!==f.estado){f.estado=est[f.id];ch=true;} });

@@ -229,7 +229,7 @@ async function flush(){
   const rest=[]; let ok=0;
   for(let i=0;i<q.length;i++){
     try{
-      const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(q[i])});
+      const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody(q[i]))});
       const d=await r.json(); if(d.ok===false) throw new Error(d.error);
       ok++;
     }catch(e){ rest.push(...q.slice(i)); break; }
@@ -273,7 +273,7 @@ function cargarCache(){
 async function recargar(){
   if(!yo) return;
   try{
-    const r=await fetch(API+'?accion=ots');
+    const r=await fetch(window.CIMPLAST_DATA.apiGet('accion=ots'));
     const d=await r.json();
     ots=(d.ots||[]).filter(o=>D.tieneTecnico(o.Tecnico,yo));
     try{localStorage.setItem('cimplast_tec_cache',JSON.stringify(ots))}catch(e){}
@@ -334,7 +334,7 @@ async function empezar(nro){
   const body={accion:'estadoOT',nroOT:nro,id:nro,estado:'En curso'};
   if(!navigator.onLine){ Q.add(body); showToast('Guardado — se envía al volver la red'); return; }
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody(body))});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
     showToast('OT '+nro+' en curso');
   }catch(e){ Q.add(body); showToast('Sin conexión — queda en cola'); }
@@ -365,7 +365,7 @@ async function confirmarCierre(){
   otActual.Estado='Cerrada'; otActual.HorasReales=horas; otActual.Costo=body.costo;
   try{
     if(!navigator.onLine) throw new Error('offline');
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody(body))});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
     showToast('OT '+body.otNro+' cerrada');
   }catch(e){ Q.add(body); showToast('Sin conexión — el cierre se envía al volver la red'); }
