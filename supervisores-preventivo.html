@@ -224,7 +224,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .agenda-dia-count{font-size:11px;color:var(--muted);background:var(--surface3);border-radius:4px;padding:2px 8px}
 .agenda-dia-body{display:flex;flex-direction:column;gap:0}
 .agenda-ot-row{display:grid;grid-template-columns:120px 1fr 140px 120px 90px 80px;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px}
-.agenda-ot-row.con-atraso{grid-template-columns:120px 1fr 140px 120px 90px 80px 90px}
+.agenda-ot-row.con-atraso{grid-template-columns:120px 1fr 140px 120px 90px 80px 90px 100px}
 .agenda-ot-row:last-child{border-bottom:none}
 .agenda-ot-row:hover{background:var(--surface2)}
 .agenda-nro{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700}
@@ -1889,7 +1889,12 @@ function renderListaAtrasos(){
       const f = new Date(o.FechaProgramada.slice(0,10)+'T00:00:00');
       atraso = Math.floor((hoy - f) / (1000*60*60*24));
     }
-    return {...o, _atraso: atraso};
+    let diasAbierta = null;
+    if(o.FechaCreacion){
+      const fc = new Date(o.FechaCreacion.slice(0,10)+'T00:00:00');
+      diasAbierta = Math.floor((hoy - fc) / (1000*60*60*24));
+    }
+    return {...o, _atraso: atraso, _diasAbierta: diasAbierta};
   }).sort((a,b) => (b._atraso ?? -9999) - (a._atraso ?? -9999));
 
   const body = document.getElementById('agendaBody');
@@ -1906,6 +1911,12 @@ function renderListaAtrasos(){
     else { atrasoTxt='En '+Math.abs(o._atraso)+' día'+(Math.abs(o._atraso)===1?'':'s'); atrasoColor='var(--ok)'; }
     const prioColor = o.Prioridad==='Alta'?'var(--danger)':o.Prioridad==='Media'?'var(--warn)':'var(--muted)';
     const estadoColor = o.Estado==='En curso'?'var(--info)':'var(--accent)';
+    let diasAbiertaTxt, diasAbiertaColor;
+    if(o._diasAbierta===null){ diasAbiertaTxt='—'; diasAbiertaColor='var(--muted)'; }
+    else{
+      diasAbiertaTxt=o._diasAbierta+' día'+(o._diasAbierta===1?'':'s');
+      diasAbiertaColor = o._diasAbierta>=15?'var(--danger)':o._diasAbierta>=7?'var(--warn)':'var(--muted)';
+    }
     return `<div class="agenda-ot-row con-atraso" onclick="abrirDetalleOT('${o.NroOT}')" style="cursor:pointer">
       <span class="agenda-nro">${o.NroOT||'—'}</span>
       <span class="agenda-equipo" title="${o.Equipo||''}">${o.Equipo||'—'}</span>
@@ -1914,6 +1925,7 @@ function renderListaAtrasos(){
       <span style="color:${prioColor};font-weight:700;font-size:11px">${o.Prioridad||'—'}</span>
       <span style="color:${estadoColor};font-weight:700;font-size:11px">${o.Estado||'—'}</span>
       <span style="color:${atrasoColor};font-weight:800;font-size:11px;min-width:80px;text-align:right">${atrasoTxt}</span>
+      <span style="color:${diasAbiertaColor};font-weight:700;font-size:11px;min-width:90px;text-align:right">${diasAbiertaTxt}</span>
     </div>`;
   }).join('');
 
@@ -1923,7 +1935,7 @@ function renderListaAtrasos(){
       <span class="agenda-dia-count">${conAtraso.length} OT</span>
     </div>
     <div class="agenda-ot-row con-atraso" style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:var(--surface2)">
-      <span>N° OT</span><span>Equipo</span><span>Técnico</span><span>Planta</span><span>Prioridad</span><span>Estado</span><span style="text-align:right">Atraso</span>
+      <span>N° OT</span><span>Equipo</span><span>Técnico</span><span>Planta</span><span>Prioridad</span><span>Estado</span><span style="text-align:right">Atraso</span><span style="text-align:right">Días abierta</span>
     </div>
     <div class="agenda-dia-body">${filas}</div>
   </div>`;
