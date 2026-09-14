@@ -159,6 +159,10 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .t-alta{background:rgba(163,53,43,.16);color:var(--danger)}
 .t-media{background:var(--warn-soft);color:var(--warn)}
 .t-baja{background:rgba(47,107,52,.14);color:var(--ok)}
+.chip-subestado{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:3px;white-space:nowrap;margin:2px 0 6px;letter-spacing:.01em}
+.sub-repuestos{background:rgba(163,53,43,.14);color:var(--danger)}
+.sub-fecha{background:var(--warn-soft);color:var(--warn)}
+.sub-tecnico{background:rgba(90,90,90,.14);color:var(--muted)}
 .t-stop{background:rgba(163,53,43,.2);color:var(--danger)}
 .t-run{background:rgba(141,129,117,.16);color:var(--muted)}
 .card-eq{font-size:13px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
@@ -224,7 +228,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .agenda-dia-count{font-size:11px;color:var(--muted);background:var(--surface3);border-radius:4px;padding:2px 8px}
 .agenda-dia-body{display:flex;flex-direction:column;gap:0}
 .agenda-ot-row{display:grid;grid-template-columns:120px 1fr 140px 120px 90px 80px;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px}
-.agenda-ot-row.con-atraso{grid-template-columns:120px 1fr 140px 120px 90px 80px 90px 100px}
+.agenda-ot-row.con-atraso{grid-template-columns:120px 1fr 140px 120px 90px 80px 90px 100px 150px}
 .agenda-ot-row:last-child{border-bottom:none}
 .agenda-ot-row:hover{background:var(--surface2)}
 .agenda-nro{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700}
@@ -817,6 +821,15 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
       <div class="field"><label>Horas estimadas</label><div id="dOtHoras" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
     </div>
     <div class="field"><label>Estado</label><div id="dOtEstado" style="font-size:13px;font-weight:700;padding:6px 0">—</div></div>
+    <div class="field" id="dOtSubEstadoWrap" style="display:none">
+      <label>Motivo de espera</label>
+      <select id="dOtSubEstado" style="width:100%;font-size:13px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
+        <option value="">— Ninguno —</option>
+        <option value="Aguardando repuestos">Aguardando repuestos</option>
+        <option value="Aguardando fecha de intervención">Aguardando fecha de intervención</option>
+        <option value="Sin técnico disponible">Sin técnico disponible</option>
+      </select>
+    </div>
     <div id="dOtCierreWrap" style="display:none">
       <div style="height:1px;background:var(--border);margin:4px 0"></div>
       <div class="row-2">
@@ -1211,6 +1224,16 @@ function cardFalla(f){
     +(f.FotoURL?'<button class="card-foto-btn" onclick="verFoto(event,\''+esc(f.FotoURL)+'\',\''+esc(f.Equipo||'Falla')+'\')" >📷 Ver foto</button>':'')
     +'</div>';
 }
+const SUBESTADO_LABELS={
+  'Aguardando repuestos':{txt:'⏳ Aguardando repuestos',cls:'sub-repuestos'},
+  'Aguardando fecha de intervención':{txt:'📅 Aguardando fecha',cls:'sub-fecha'},
+  'Sin técnico disponible':{txt:'👤 Sin técnico',cls:'sub-tecnico'}
+};
+function chipSubEstado(subEstado){
+  const info=SUBESTADO_LABELS[subEstado];
+  if(!info) return '';
+  return '<span class="chip-subestado '+info.cls+'">'+info.txt+'</span>';
+}
 function cardOT(o){
   const p=o.Prioridad||'Media';
   const cls=p==='Alta'?'t-alta':p==='Baja'?'t-baja':'t-media';
@@ -1221,6 +1244,7 @@ function cardOT(o){
   return '<div class="card'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'" onclick="abrirDetalleOT(\''+esc(o.NroOT)+'\')" style="cursor:pointer">'
     +'<div class="card-top"><span class="card-num">'+esc(o.NroOT||'—')+'</span><span class="tag '+cls+'">'+esc(p)+'</span></div>'
     +'<div class="card-eq">'+esc(o.Equipo||'—')+'</div>'
+    +(!cerrada&&o.SubEstado?chipSubEstado(o.SubEstado):'')
     +'<div class="card-desc">'+esc((o.Descripcion||'').slice(0,90))+((o.Descripcion||'').length>90?'…':'')+'</div>'
     +'<div class="card-meta"><span>'+esc(o.Planta||'—')+'</span><span>'+esc(o.Tecnico||'sin asignar')+'</span>'
     +(o.FechaProgramada?'<span>'+esc(D.fmtFecha(o.FechaProgramada))+'</span>':'')
@@ -1288,6 +1312,24 @@ async function cambiarEstado(kind,id,estado){
     showToast((kind==='falla'?'Falla':'OT')+' '+id+' → '+estado);
   }catch(err){
     if(item) item.Estado=prev; aplicarFiltros();
+    showToast('No se pudo actualizar: '+err.message,'err');
+  }
+}
+
+async function guardarSubEstadoOT(nroOT, subEstado){
+  const item=otsTodas.find(o=>o.NroOT===nroOT);
+  const prev=item?item.SubEstado:null;
+  if(item) item.SubEstado=subEstado;   // optimista: chip del Kanban se ve al instante
+  aplicarFiltros();
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody({
+      accion:'actualizarOT', nroOT, subEstado
+    }))});
+    const d=await r.json();
+    if(d.ok===false) throw new Error(d.error||'API');
+    showToast(subEstado ? 'OT '+nroOT+' → '+subEstado : 'Motivo de espera quitado');
+  }catch(err){
+    if(item) item.SubEstado=prev; aplicarFiltros();
     showToast('No se pudo actualizar: '+err.message,'err');
   }
 }
@@ -1888,6 +1930,7 @@ function renderListaAtrasos(){
       <span style="color:${estadoColor};font-weight:700;font-size:11px">${o.Estado||'—'}</span>
       <span style="color:${atrasoColor};font-weight:800;font-size:11px;min-width:80px;text-align:right">${atrasoTxt}</span>
       <span style="color:${diasAbiertaColor};font-weight:700;font-size:11px;min-width:90px;text-align:right">${diasAbiertaTxt}</span>
+      <span>${o.SubEstado?chipSubEstado(o.SubEstado):'—'}</span>
     </div>`;
   }).join('');
 
@@ -1897,7 +1940,7 @@ function renderListaAtrasos(){
       <span class="agenda-dia-count">${conAtraso.length} OT</span>
     </div>
     <div class="agenda-ot-row con-atraso" style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:var(--surface2)">
-      <span>N° OT</span><span>Equipo</span><span>Técnico</span><span>Planta</span><span>Prioridad</span><span>Estado</span><span style="text-align:right">Atraso</span><span style="text-align:right">Días abierta</span>
+      <span>N° OT</span><span>Equipo</span><span>Técnico</span><span>Planta</span><span>Prioridad</span><span>Estado</span><span style="text-align:right">Atraso</span><span style="text-align:right">Días abierta</span><span>Motivo espera</span>
     </div>
     <div class="agenda-dia-body">${filas}</div>
   </div>`;
@@ -2111,6 +2154,11 @@ function abrirDetalleOT(nroOT){
   dEst.textContent = o.Estado || '—';
   dEst.style.color = estado;
   const cerrada = o.Estado === 'Cerrada';
+  const subWrap = document.getElementById('dOtSubEstadoWrap');
+  const subSel  = document.getElementById('dOtSubEstado');
+  subWrap.style.display = cerrada ? 'none' : 'block';
+  subSel.value = o.SubEstado || '';
+  subSel.onchange = () => guardarSubEstadoOT(o.NroOT, subSel.value);
   document.getElementById('dOtCierreWrap').style.display = cerrada ? 'block' : 'none';
   if(cerrada){
     document.getElementById('dOtHorasReales').textContent = o.HorasReales ? o.HorasReales + ' h' : '—';
