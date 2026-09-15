@@ -763,7 +763,7 @@ function renderKPIs(fallas,ots,desde,hasta){
   const disp=(mtbf+mttr)>0?mtbf/(mtbf+mttr)*100:100;
   const cumpl=ots.length?cerradas.length/ots.length*100:0;
   const backlog=ots.filter(o=>o.Estado!=='Cerrada').length;
-  const detenidas=fallas.filter(f=>(f.Detenido||'').includes('parado')&&f.Estado!=='Concluido');
+  const detenidas=fallas.filter(f=>f.Detenido==='Total'&&f.Estado!=='Concluido');
   const parados=detenidas.length;
   const equiposParados=new Set(detenidas.map(f=>f.Equipo).filter(Boolean)).size;
   const costo=cerradas.reduce((a,o)=>a+num(o.Costo),0);
@@ -964,7 +964,7 @@ const set=(id,v)=>document.getElementById(id).textContent=v;
 function fill(id,html,vacio){ document.getElementById(id).innerHTML=html.length?html.join(''):'<div class="col-empty">'+vacio+'</div>'; }
 
 function cardFallaLista(f){
-  const parado=(f.Detenido||'').includes('parado');
+  const parado=f.Detenido==='Total';
   return '<div class="falla-lista-row'+(parado?' stopped':'')+'" data-kind="falla" data-id="'+esc(f.ID)+'" data-estado="'+esc(f.Estado)+'">'
     +'<span class="falla-lista-id">'+esc((f.ID||'').slice(-6)||'—')+'</span>'
     +'<span class="falla-lista-eq">'+esc(f.Equipo||'—')+'</span>'
@@ -974,7 +974,7 @@ function cardFallaLista(f){
 }
 
 function cardFalla(f){
-  const parado=(f.Detenido||'').includes('parado');
+  const parado=f.Detenido==='Total';
   return '<div class="card'+(parado?' stopped':'')+'" data-kind="falla" data-id="'+esc(f.ID)+'" data-estado="'+esc(f.Estado)+'">'
     +'<div class="card-top"><span class="card-num">'+esc((f.ID||'').slice(-8)||'—')+'</span>'
     +'<span class="tag '+(parado?'t-stop':'t-run')+'">'+(parado?'Parado':'En operación')+'</span></div>'
@@ -1071,7 +1071,7 @@ function abrirModalOT(id){
   document.getElementById('mOtNro').value=nuevoNro();
   document.getElementById('mOtHoras').value='';
   document.getElementById('mOtObs').value=fallaActual.Sintoma||'';
-  const prio=(fallaActual.Detenido||'').includes('parado')?'Alta':(fallaActual.Detenido||'').includes('Parcial')?'Media':'Baja';
+  const prio=fallaActual.Detenido==='Total'?'Alta':fallaActual.Detenido==='Parcial'?'Media':'Baja';
   document.querySelectorAll('#mOtPrioGroup .chip').forEach(c=>c.classList.toggle('selected',c.dataset.val===prio));
   document.querySelectorAll('#mOtTipoGroup .chip').forEach(c=>c.classList.toggle('selected',c.dataset.val==='Correctivo'));
   openModal('modalGenOT');
