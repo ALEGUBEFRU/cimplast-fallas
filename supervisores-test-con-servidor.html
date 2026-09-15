@@ -622,11 +622,19 @@ let fallasTodas=[], otsTodas=[], fallaActual=null, otActual=null, ultimaCarga=nu
 
 /* Traduce una falla del backend nuevo (equipo_nombre, planta_nombre...) al formato
    viejo que espera el resto de este archivo (Equipo, Planta, ID...) */
+/* Traduce el estado real del backend ('Abierta'/'En curso'/'Cerrada') al
+   vocabulario viejo que usa el resto de este archivo para fallas
+   ('Pendiente'/'En curso'/'Concluido') */
+function estadoFallaViejo(estado){
+  if(estado==='Abierta') return 'Pendiente';
+  if(estado==='Cerrada') return 'Concluido';
+  return estado; // 'En curso' ya coincide en ambos vocabularios
+}
 function mapFalla(f){
   return {
     ID: f.falla_id, Equipo: f.equipo_nombre, Planta: f.planta_nombre,
     Operador: f.operador, Turno: f.turno, Sintoma: f.sintoma,
-    Detenido: f.detenido, FechaHora: f.fecha_hora, Estado: f.estado,
+    Detenido: f.detenido, FechaHora: f.fecha_hora, Estado: estadoFallaViejo(f.estado),
     FotoURL: f.foto_url
   };
 }
@@ -1045,6 +1053,13 @@ function initDrop(){
     });
   });
 }
+/* Traduce el vocabulario viejo de fallas ('Pendiente'/'Concluido') de vuelta
+   al que exige el backend ('Abierta'/'Cerrada') al guardar */
+function estadoFallaNuevo(estado){
+  if(estado==='Pendiente') return 'Abierta';
+  if(estado==='Concluido') return 'Cerrada';
+  return estado; // 'En curso' ya coincide en ambos vocabularios
+}
 async function cambiarEstado(kind,id,estado){
   const arr=kind==='falla'?fallasTodas:otsTodas;
   const item=arr.find(x=>(kind==='falla'?x.ID:x.NroOT)===id);
@@ -1053,7 +1068,8 @@ async function cambiarEstado(kind,id,estado){
   aplicarFiltros();
   try{
     const url=kind==='falla'?(API_BASE+'/fallas/'+encodeURIComponent(id)):(API_BASE+'/ordenes-trabajo/'+encodeURIComponent(id));
-    const r=await fetch(url,{method:'PUT',headers:API_HEADERS_JSON,body:JSON.stringify({estado})});
+    const estadoParaBackend=kind==='falla'?estadoFallaNuevo(estado):estado;
+    const r=await fetch(url,{method:'PUT',headers:API_HEADERS_JSON,body:JSON.stringify({estado:estadoParaBackend})});
     const d=await r.json();
     if(d.error) throw new Error(d.error);
     showToast((kind==='falla'?'Falla':'OT')+' '+id+' → '+estado);
