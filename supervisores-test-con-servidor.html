@@ -662,7 +662,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const num=n=>Number(n)||0;
 
 /* ══ INIT ══ */
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',async()=>{
   const hoy=today(), hace30=isoShift(-30);
   ['fHasta','mOtFecha','nOtFecha','mCerrarFecha'].forEach(id=>document.getElementById(id).value=hoy);
   document.getElementById('fDesde').value=hace30;
@@ -671,12 +671,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     ['fPlanta','nOtPlanta'].forEach(id=>{const o=document.createElement('option');o.value=p;o.textContent=p;document.getElementById(id).appendChild(o)});
   });
   TECNICOS.forEach(t=>{const o=document.createElement('option');o.value=t.nombre;o.textContent=t.nombre;document.getElementById('fTecnico').appendChild(o)});
-  cargarTecnicosSelects();
   initDrop();
   netUI();
   cargarCache();
-  cargarEquiposBackend();
-  cargarTecnicosBackend();
+  await cargarEquiposBackend();
+  await cargarTecnicosBackend();
+  cargarTecnicosSelects();
   recargar();
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 });
@@ -1215,7 +1215,7 @@ function cargarTecnicosSelects(){
   ['mOtTecnico','nOtTecnico'].forEach(id=>{
     const s=document.getElementById(id);
     s.innerHTML='<option value="">Seleccionar técnico</option>';
-    TECNICOS.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.dataset.nombre=t.nombre;o.textContent=t.nombre+' · '+t.esp;s.appendChild(o)});
+    TECNICOS_BACKEND.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.dataset.nombre=t.nombre;o.textContent=t.nombre+(t.especialidad?' · '+t.especialidad:'');s.appendChild(o)});
   });
 }
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
