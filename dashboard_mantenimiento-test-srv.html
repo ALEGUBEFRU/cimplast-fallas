@@ -1,0 +1,521 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mantenimiento — Cimplast</title>
+<style>
+:root{color-scheme:light}
+:root {
+  --bg:#0D1B2A;--surface:#112236;--surface2:#162942;--border:#1E3A5F;--border2:#1a3050;
+  --text:#E2EAF4;--text2:#A8BBCF;--text3:#5B7A99;
+  --accent:#F59E0B;--crit:#EF4444;--warn:#F97316;--med:#EAB308;--ok:#22C55E;--info:#3B82F6;
+  --p3:#6366F1;--titese:#10B981;--p5:#F97316;
+  --font-head:'Barlow Condensed',sans-serif;--font-body:'DM Sans',sans-serif;--font-mono:'JetBrains Mono',monospace;
+  --r1:6px;--r2:10px;
+}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#F0F4F8;--surface:#fff;--surface2:#E8EDF3;--border:#CBD5E1;--border2:#DDE3EC;
+  --text:#0F2037;--text2:#334155;--text3:#64748B;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;}
+a{color:var(--accent);}
+.topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;flex-wrap:wrap;gap:8px;}
+.topbar-brand{font-family:var(--font-head);font-size:20px;font-weight:800;letter-spacing:.04em;color:var(--accent);}
+.topbar-date{font-family:var(--font-mono);font-size:11px;color:var(--text3);}
+.topbar-filters{display:flex;gap:8px;align-items:center;padding:8px 24px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.topbar-filters input,.topbar-filters select{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  border-radius:6px;padding:5px 8px;font-family:var(--font-mono);font-size:11px;}
+.topbar-filters button{background:var(--accent);border:none;color:#141413;font-weight:700;border-radius:6px;
+  padding:6px 12px;font-family:var(--font-head);font-size:12px;cursor:pointer;letter-spacing:.03em;}
+.kpi-strip{display:flex;gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.kpi-tile{flex:1;background:var(--surface2);padding:12px 16px;min-width:120px;}
+.kpi-value{font-family:var(--font-head);font-size:28px;font-weight:900;color:var(--accent);line-height:1;}
+.kpi-unit{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin:2px 0;}
+.kpi-label{font-size:11px;color:var(--text2);}
+.tab-nav{background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;gap:0;padding:0 24px;}
+.tab-btn{background:none;border:none;color:var(--text3);font-family:var(--font-head);font-size:15px;
+  font-weight:700;letter-spacing:.03em;padding:12px 20px;cursor:pointer;border-bottom:3px solid transparent;
+  transition:.15s;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.main{padding:24px;max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:20px;}
+.section-panel{display:none;flex-direction:column;gap:20px;}
+.section-panel.active{display:flex;}
+.section-head{padding:16px 0 4px;}
+.role-tag{font-family:var(--font-mono);font-size:10px;background:var(--surface2);color:var(--accent);
+  padding:3px 8px;border-radius:4px;letter-spacing:.06em;margin-right:10px;}
+.section-head-title{font-family:var(--font-head);font-size:22px;font-weight:800;}
+.section-head-sub{display:block;font-size:12px;color:var(--text3);margin-top:4px;}
+.data-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.data-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px;}
+.data-card-title{font-family:var(--font-head);font-size:14px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+.alert-item{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--crit);
+  border-radius:var(--r2);padding:14px 16px;}
+.alert-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.alert-badge{font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;}
+.alert-body{font-size:12.5px;color:var(--text2);}
+.bar-row{display:flex;align-items:center;gap:8px;}
+.bar-label{font-size:11.5px;color:var(--text2);width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;background:var(--crit);transition:width .3s;}
+.bar-val{font-family:var(--font-mono);font-size:12px;font-weight:700;width:24px;text-align:right;color:var(--text);}
+.tech-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.tech-table th{font-family:var(--font-mono);font-size:9px;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--text3);padding:6px 8px;border-bottom:1px solid var(--border);text-align:left;}
+.tech-table th:not(:first-child){text-align:center;}
+.tech-table td{padding:6px 8px;border-bottom:1px solid var(--border2);}
+.tech-table td:not(:first-child){text-align:center;font-family:var(--font-mono);font-size:11px;}
+.tech-table tr:last-child td{border-bottom:none;}
+.tech-table td.name{font-weight:500;}
+.pct-num{font-family:var(--font-mono);font-size:11px;font-weight:700;}
+.pct-num.ok{color:var(--ok);} .pct-num.warn{color:var(--warn);} .pct-num.crit{color:var(--crit);}
+.cmp-row{display:grid;grid-template-columns:200px 1fr 1fr;border-bottom:1px solid var(--border2);}
+.cmp-row:hover{background:rgba(255,255,255,.02);}
+.cmp-label{padding:8px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;}
+.cmp-val{padding:8px 14px;border-left:1px solid var(--border2);display:flex;align-items:center;gap:6px;}
+.cmp-num{font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text);}
+.cmp-num.ok{color:var(--ok);} .cmp-num.warn{color:var(--warn);} .cmp-num.crit{color:var(--crit);}
+.cmp-sub{font-family:var(--font-mono);font-size:10px;color:var(--text3);}
+.empty-note{font-size:12px;color:var(--text3);padding:8px 0;}
+@media(max-width:768px){
+  .kpi-strip{flex-wrap:wrap;}
+  .kpi-tile{min-width:50%;}
+  .data-grid-2{grid-template-columns:1fr;}
+  .cmp-row{grid-template-columns:140px 1fr 1fr;}
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<div class="topbar">
+  <div class="topbar-brand">CIMPLAST · Mantenimiento</div>
+  <div class="topbar-date" id="topbar-date">Cargando…</div>
+</div>
+
+<div class="topbar-filters">
+  <label style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">Desde</label>
+  <input type="date" id="fDesde">
+  <label style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">Hasta</label>
+  <input type="date" id="fHasta">
+  <button onclick="cargarTodo()">Actualizar</button>
+  <span id="statusLabel" style="font-family:var(--font-mono);font-size:10px;color:var(--text3);"></span>
+</div>
+
+<div class="kpi-strip" id="kpiStrip"></div>
+
+<div class="tab-nav">
+  <button class="tab-btn" onclick="switchTab('analista',this)">Rol Analista</button>
+  <button class="tab-btn" onclick="switchTab('gerente',this)">Rol Gerente</button>
+  <button class="tab-btn" onclick="switchTab('pilares',this)">Comparativo Pilares</button>
+</div>
+
+<div class="main">
+
+<!-- ═══ ANALISTA ═══ -->
+<div id="panel-analista" class="section-panel">
+  <div class="section-head">
+    <span class="role-tag">Analista</span>
+    <span class="section-head-title">Desvíos de Gestión</span>
+    <span class="section-head-sub">Evidencia de uso incorrecto del sistema, procesos rotos y gaps de calidad de dato</span>
+  </div>
+  <div class="data-grid-2" id="desviosGrid"></div>
+  <div class="data-card">
+    <div class="data-card-title">Top Equipos por Frecuencia de Fallas</div>
+    <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--text2);">
+      <strong style="color:var(--info);">Filtro activo:</strong> se excluyen fallas cuyo síntoma contiene "lubric" (avisos de PM de producción, no fallas reales).
+    </div>
+    <div id="topEquiposBars"></div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-title">Carga de Trabajo por Técnico</div>
+    <table class="tech-table">
+      <thead><tr><th>Técnico</th><th>OTs</th><th>% Cierre</th><th>HHOO real</th></tr></thead>
+      <tbody id="tablaTecnicosGlobal"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ GERENTE ═══ -->
+<div id="panel-gerente" class="section-panel">
+  <div class="section-head">
+    <span class="role-tag">Gerente</span>
+    <span class="section-head-title">Indicadores de Mantenimiento</span>
+    <span class="section-head-sub">MTTR · Correctivo/Preventivo · Distribución por sistema y turno</span>
+  </div>
+  <div class="data-grid-2">
+    <div class="data-card">
+      <div class="data-card-title">Distribución por Tipo</div>
+      <div id="distTipoBars"></div>
+    </div>
+    <div class="data-card">
+      <div class="data-card-title">Distribución por Sistema</div>
+      <div id="distSistemaBars"></div>
+    </div>
+    <div class="data-card">
+      <div class="data-card-title">Fallas por Turno</div>
+      <div id="distTurnoBars"></div>
+    </div>
+    <div class="data-card">
+      <div class="data-card-title">OTs por Planta</div>
+      <div id="distPlantaBars"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PILARES ═══ -->
+<div id="panel-pilares" class="section-panel">
+  <div class="section-head">
+    <span class="role-tag">Analista · Comparativo</span>
+    <span class="section-head-title">Pilar 1 vs Pilar 2</span>
+    <span class="section-head-sub">Evaluación independiente de desempeño — mismo período, distintos patrones de gestión (Pilar 1 = Planta 3/4/5 · Pilar 2 = Titese)</span>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">
+    <div style="display:grid;grid-template-columns:200px 1fr 1fr;background:var(--surface2);border-bottom:2px solid var(--border);">
+      <div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);">Métrica</div>
+      <div style="padding:10px 14px;border-left:1px solid var(--border);">
+        <span style="font-family:var(--font-head);font-size:18px;font-weight:800;color:var(--p3);">Pilar 1</span>
+        <span style="display:block;font-family:var(--font-mono);font-size:10px;color:var(--text3);">P3 · P4 · P5</span>
+      </div>
+      <div style="padding:10px 14px;border-left:1px solid var(--border);">
+        <span style="font-family:var(--font-head);font-size:18px;font-weight:800;color:var(--titese);">Pilar 2</span>
+        <span style="display:block;font-family:var(--font-mono);font-size:10px;color:var(--text3);">Titese</span>
+      </div>
+    </div>
+    <div id="pilaresComparativo"></div>
+  </div>
+  <div class="data-grid-2">
+    <div class="data-card">
+      <div class="data-card-title" style="color:var(--p3)">Pilar 1 — Equipo Técnico</div>
+      <table class="tech-table">
+        <thead><tr><th>Técnico</th><th>OTs</th><th>% Cierre</th><th>HHOO</th></tr></thead>
+        <tbody id="tablaTecnicosPilar1"></tbody>
+      </table>
+    </div>
+    <div class="data-card">
+      <div class="data-card-title" style="color:var(--titese)">Pilar 2 — Equipo Técnico</div>
+      <table class="tech-table">
+        <thead><tr><th>Técnico</th><th>OTs</th><th>% Cierre</th><th>HHOO</th></tr></thead>
+        <tbody id="tablaTecnicosPilar2"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// Conexión al backend — mismo patrón validado en supervisores-test
+// y reporte-ejecutivo-test
+// ══════════════════════════════════════════════════════════════
+const API_BASE = 'https://alexis-home-srv.duckdns.org/api';
+const API_KEY  = 'FAkrnR1ZP3lC-DJEFmWY9XUt5wsvrLpxw1_vBbept-o';
+const API_HEADERS = { 'x-api-key': API_KEY };
+
+let fallasTodas = [];
+let otsTodas = [];
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function fmtFecha(d){
+  if(!d) return '—';
+  return String(d).slice(0,10);
+}
+function enRango(fechaStr, desde, hasta){
+  if(!fechaStr) return false;
+  const f = String(fechaStr).slice(0,10);
+  return f >= desde && f <= hasta;
+}
+function pctClass(p){
+  if(p >= 90) return 'ok';
+  if(p >= 75) return 'warn';
+  return 'crit';
+}
+function esLubricacion(sintoma){
+  return (sintoma||'').toLowerCase().includes('lubric');
+}
+
+// ══════════════════════════════════════════════════════════════
+// Carga de datos
+// ══════════════════════════════════════════════════════════════
+async function cargarTodo(){
+  document.getElementById('statusLabel').textContent = 'Actualizando…';
+  try{
+    const [rf, ro] = await Promise.all([
+      fetch(API_BASE+'/fallas',{headers:API_HEADERS}).then(r=>r.json()),
+      fetch(API_BASE+'/ordenes-trabajo',{headers:API_HEADERS}).then(r=>r.json())
+    ]);
+    fallasTodas = rf;
+    otsTodas = ro;
+    document.getElementById('statusLabel').textContent = `${fallasTodas.length} fallas · ${otsTodas.length} OT`;
+    renderTodo();
+  }catch(e){
+    document.getElementById('statusLabel').textContent = 'Sin conexión';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// Render principal — recalcula todo según el rango de fechas activo
+// ══════════════════════════════════════════════════════════════
+function renderTodo(){
+  const desde = document.getElementById('fDesde').value;
+  const hasta = document.getElementById('fHasta').value;
+
+  const fallas = fallasTodas.filter(f => enRango(f.fecha_hora, desde, hasta));
+  const ots = otsTodas.filter(o => enRango(o.fecha_creacion, desde, hasta));
+
+  renderKPIs(fallas, ots);
+  renderDesvios(fallas, ots);
+  renderTopEquipos(fallas);
+  renderTablaTecnicos(ots, 'tablaTecnicosGlobal');
+  renderDistribuciones(fallas, ots);
+  renderPilares(fallas, ots);
+}
+
+// ── KPI strip ──
+function renderKPIs(fallas, ots){
+  const fallasValidas = fallas.filter(f => !esLubricacion(f.sintoma));
+  const correctivas = ots.filter(o => o.tipo === 'Correctivo');
+  const pctCorrectivo = ots.length ? (correctivas.length/ots.length*100) : 0;
+
+  const conHoras = ots.filter(o => o.ultimas_horas_reales != null && Number(o.ultimas_horas_reales) > 0);
+  const mttr = conHoras.length ? conHoras.reduce((a,o)=>a+Number(o.ultimas_horas_reales),0)/conHoras.length : null;
+
+  const cerradasConFecha = ots.filter(o => o.fecha_cierre && o.fecha_creacion);
+  const leadTimes = cerradasConFecha.map(o => (new Date(o.fecha_cierre) - new Date(o.fecha_creacion)) / 3600000);
+  const leadTime = leadTimes.length ? leadTimes.reduce((a,b)=>a+b,0)/leadTimes.length : null;
+
+  const paros = fallasValidas.filter(f => f.detenido === 'Total');
+  const pctParos = fallasValidas.length ? (paros.length/fallasValidas.length*100) : 0;
+
+  const tiles = [
+    { val: ots.length, unit: 'órdenes', label: 'OTs Totales', color: 'var(--accent)' },
+    { val: fallasValidas.length, unit: 'fallas reportadas', label: 'CFs Totales', color: 'var(--accent)' },
+    { val: pctCorrectivo.toFixed(0)+'%', unit: 'del total', label: '% Correctivo', color: 'var(--warn)' },
+    { val: mttr!=null ? mttr.toFixed(1)+'h' : 'N/D', unit: 'tiempo medio reparación', label: 'MTTR Global', color: 'var(--accent)' },
+    { val: leadTime!=null ? leadTime.toFixed(0)+'h' : 'N/D', unit: 'creación → cierre', label: 'Lead Time', color: 'var(--accent)' },
+    { val: pctParos.toFixed(0)+'%', unit: 'de fallas detienen', label: 'Paros Producción', color: 'var(--crit)' },
+  ];
+  document.getElementById('kpiStrip').innerHTML = tiles.map(t => `
+    <div class="kpi-tile">
+      <div class="kpi-value" style="color:${t.color};">${t.val}</div>
+      <div class="kpi-unit">${t.unit}</div>
+      <div class="kpi-label">${t.label}</div>
+    </div>`).join('');
+}
+
+// ── Desvíos de gestión ──
+function renderDesvios(fallas, ots){
+  const fallasValidas = fallas.filter(f => !esLubricacion(f.sintoma));
+  const otsCerradas = ots.filter(o => o.estado === 'Cerrada');
+  const sinHoras = otsCerradas.filter(o => o.ultimas_horas_reales == null || Number(o.ultimas_horas_reales) === 0);
+  const pctSinHoras = otsCerradas.length ? (sinHoras.length/otsCerradas.length*100) : 0;
+
+  const fallaIdsConOT = new Set(ots.map(o => o.falla_id).filter(Boolean));
+  const fallasSinOT = fallasValidas.filter(f => f.estado !== 'Cerrada' && !fallaIdsConOT.has(f.falla_id));
+
+  const correctivas = ots.filter(o => o.tipo === 'Correctivo');
+  const pctCorrectivo = ots.length ? (correctivas.length/ots.length*100) : 0;
+
+  const pendientes = fallasValidas.filter(f => f.estado === 'Abierta');
+
+  const desvios = [
+    { n:1, badge: pctSinHoras.toFixed(0)+'%', color:'warn', titulo:'OTs cerradas sin horas reales',
+      texto:'El sistema permite cerrar OTs sin validar el campo Horas Reales — gap de configuración. Impide calcular MTTR real y costos por equipo.',
+      accion:'Configurar campo "Horas Reales" como obligatorio para cierre de OT.' },
+    { n:2, badge: fallasSinOT.length, color:'crit', titulo:'CFs activas sin OT generada',
+      texto:'Fallas reportadas por operadores que no tienen orden de trabajo asignada. Quedan sin cobertura formal.' },
+    { n:3, badge: pctCorrectivo.toFixed(0)+'%', color:'warn', titulo:'% Correctivo muy alto',
+      texto:'<strong>Contexto:</strong> el plan de mantenimiento preventivo aún no fue terminado de cargar en el sistema. Esto sobreestima el % correctivo — cuando el plan PM esté activo, las OTs preventivas se generarán automáticamente.',
+      accion:'Completar la carga del plan PM.' },
+    { n:4, badge: pendientes.length, color:'crit', titulo:'CFs Pendientes (estado Abierta)',
+      texto:'Fallas reportadas que aún no tienen ninguna orden de trabajo ni cambio de estado. Riesgo de equipos parados sin respuesta.' },
+  ];
+  document.getElementById('desviosGrid').innerHTML = desvios.map(d => `
+    <div class="alert-item" style="border-left-color:var(--${d.color});border-radius:var(--r2);">
+      <div class="alert-header">
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">DESVÍO #${d.n}</span>
+        <span class="alert-badge" style="color:var(--${d.color});">${d.badge}</span>
+      </div>
+      <div style="font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--text);margin:4px 0;">${d.titulo}</div>
+      <div style="font-size:12.5px;color:var(--text2);">${d.texto}</div>
+      ${d.accion ? `<div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border2);font-family:var(--font-mono);font-size:10px;color:var(--${d.color});">Acción: ${d.accion}</div>` : ''}
+    </div>`).join('');
+}
+
+// ── Top equipos por frecuencia de fallas ──
+function renderTopEquipos(fallas){
+  const fallasValidas = fallas.filter(f => !esLubricacion(f.sintoma));
+  const conteo = {};
+  for(const f of fallasValidas) conteo[f.equipo_nombre] = (conteo[f.equipo_nombre]||0)+1;
+  const top = Object.entries(conteo).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const max = top.length ? top[0][1] : 1;
+  document.getElementById('topEquiposBars').innerHTML = top.length ? top.map(([eq,n]) => {
+    const pct = (n/max*100);
+    const color = pct>=80 ? 'var(--crit)' : pct>=50 ? 'var(--warn)' : 'var(--info)';
+    return `<div class="bar-row" style="margin-bottom:8px;"><span class="bar-label">${eq}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};"></div></div><span class="bar-val">${n}</span></div>`;
+  }).join('') : '<div class="empty-note">Sin fallas en el período</div>';
+}
+
+// ── Tabla de técnicos (OTs, % cierre, horas) ──
+function calcularTecnicos(ots){
+  // Usa el técnico del último evento de cada OT (mismo criterio que el
+  // backend resuelve en tecnico_nombre vía LATERAL JOIN)
+  const porTecnico = {};
+  for(const o of ots){
+    const t = o.tecnico_nombre;
+    if(!t) continue;
+    if(!porTecnico[t]) porTecnico[t] = { total:0, cerradas:0, horas:0 };
+    porTecnico[t].total++;
+    if(o.estado === 'Cerrada') porTecnico[t].cerradas++;
+    if(o.ultimas_horas_reales) porTecnico[t].horas += Number(o.ultimas_horas_reales);
+  }
+  return Object.entries(porTecnico)
+    .map(([nombre,d]) => ({ nombre, ots:d.total, pct: d.total?(d.cerradas/d.total*100):0, horas:d.horas }))
+    .sort((a,b)=>b.ots-a.ots);
+}
+function renderTablaTecnicos(ots, elementId){
+  const tecnicos = calcularTecnicos(ots);
+  document.getElementById(elementId).innerHTML = tecnicos.length ? tecnicos.map(t => `
+    <tr><td class="name">${t.nombre}</td><td>${t.ots}</td>
+    <td><span class="pct-num ${pctClass(t.pct)}">${t.pct.toFixed(0)}%</span></td>
+    <td>${t.horas>0 ? t.horas.toFixed(0)+'h' : '—'}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="empty-note">Sin datos en el período</td></tr>';
+}
+
+// ── Distribuciones (tipo, sistema, turno, planta) ──
+function renderBarsGeneric(elementId, conteo, colorFn){
+  const entradas = Object.entries(conteo).sort((a,b)=>b[1]-a[1]);
+  const max = entradas.length ? entradas[0][1] : 1;
+  document.getElementById(elementId).innerHTML = entradas.length ? entradas.map(([k,n]) => {
+    const pct = (n/max*100);
+    return `<div class="bar-row" style="margin-bottom:8px;"><span class="bar-label">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colorFn(k,n)};"></div></div><span class="bar-val">${n}</span></div>`;
+  }).join('') : '<div class="empty-note">Sin datos en el período</div>';
+}
+function renderDistribuciones(fallas, ots){
+  const fallasValidas = fallas.filter(f => !esLubricacion(f.sintoma));
+
+  const porTipo = {};
+  for(const o of ots) porTipo[o.tipo] = (porTipo[o.tipo]||0)+1;
+  renderBarsGeneric('distTipoBars', porTipo, (k)=> k==='Correctivo'?'var(--crit)':k==='Preventivo'?'var(--ok)':'var(--info)');
+
+  const porSistema = {};
+  for(const f of fallasValidas) porSistema[f.sistema||'Sin dato'] = (porSistema[f.sistema||'Sin dato']||0)+1;
+  renderBarsGeneric('distSistemaBars', porSistema, ()=>'var(--info)');
+
+  const porTurno = {};
+  for(const f of fallasValidas) porTurno[f.turno||'Sin dato'] = (porTurno[f.turno||'Sin dato']||0)+1;
+  renderBarsGeneric('distTurnoBars', porTurno, ()=>'var(--p3)');
+
+  const porPlanta = {};
+  for(const o of ots) porPlanta[o.planta_nombre] = (porPlanta[o.planta_nombre]||0)+1;
+  renderBarsGeneric('distPlantaBars', porPlanta, ()=>'var(--titese)');
+}
+
+// ── Comparativo de Pilares ──
+const PLANTAS_PILAR1 = ['Planta 3','Planta 4','Planta 5'];
+const PLANTAS_PILAR2 = ['Titese'];
+
+function calcularMetricasPilar(fallas, ots, plantas){
+  const fallasP = fallas.filter(f => plantas.includes(f.planta_nombre) && !esLubricacion(f.sintoma));
+  const otsP = ots.filter(o => plantas.includes(o.planta_nombre));
+  const correctivas = otsP.filter(o => o.tipo === 'Correctivo');
+  const otsCerradas = otsP.filter(o => o.estado === 'Cerrada');
+  const sinHoras = otsCerradas.filter(o => o.ultimas_horas_reales == null || Number(o.ultimas_horas_reales) === 0);
+  const fallaIdsConOT = new Set(otsP.map(o=>o.falla_id).filter(Boolean));
+  const fallasSinOT = fallasP.filter(f => f.estado !== 'Cerrada' && !fallaIdsConOT.has(f.falla_id));
+  const pendientes = fallasP.filter(f => f.estado === 'Abierta');
+  const nocturnas = fallasP.filter(f => f.turno === 'Noche');
+  const parosProduccion = fallasP.filter(f => f.detenido === 'Total');
+  const tecnicos = calcularTecnicos(otsP);
+  const horasDisponibles = tecnicos.length * 48; // aproximación: 48h/semana por técnico activo
+
+  return {
+    otsTotal: otsP.length,
+    cfsTotal: fallasP.length,
+    pctCorrectivo: otsP.length ? (correctivas.length/otsP.length*100) : 0,
+    pctSinHoras: otsCerradas.length ? (sinHoras.length/otsCerradas.length*100) : 0,
+    cfsSinOT: fallasSinOT.length,
+    cfsPendientes: pendientes,
+    horasDisponibles,
+    nTecnicos: tecnicos.length,
+    pctNoche: fallasP.length ? (nocturnas.length/fallasP.length*100) : 0,
+    pctParos: fallasP.length ? (parosProduccion.length/fallasP.length*100) : 0,
+    tecnicos,
+  };
+}
+
+function filaComparativa(label, v1, v2, fmt, cls){
+  return `<div class="cmp-row"><div class="cmp-label">${label}</div>
+    <div class="cmp-val"><span class="cmp-num ${cls?cls(v1):''}">${fmt(v1)}</span></div>
+    <div class="cmp-val"><span class="cmp-num ${cls?cls(v2):''}">${fmt(v2)}</span></div></div>`;
+}
+
+function renderPilares(fallas, ots){
+  const m1 = calcularMetricasPilar(fallas, ots, PLANTAS_PILAR1);
+  const m2 = calcularMetricasPilar(fallas, ots, PLANTAS_PILAR2);
+  const totalOts = m1.otsTotal + m2.otsTotal;
+
+  let html = '';
+  html += `<div class="cmp-row"><div class="cmp-label">OTs totales</div>
+    <div class="cmp-val"><span class="cmp-num">${m1.otsTotal} (${totalOts?(m1.otsTotal/totalOts*100).toFixed(0):0}%)</span></div>
+    <div class="cmp-val"><span class="cmp-num">${m2.otsTotal} (${totalOts?(m2.otsTotal/totalOts*100).toFixed(0):0}%)</span></div></div>`;
+  html += filaComparativa('CFs reportadas', m1.cfsTotal, m2.cfsTotal, v=>v);
+  html += filaComparativa('% Correctivo', m1.pctCorrectivo, m2.pctCorrectivo, v=>v.toFixed(0)+'%', ()=>'warn');
+  html += filaComparativa('Sin HHOO reales', m1.pctSinHoras, m2.pctSinHoras, v=>v.toFixed(0)+'%', v=>v>15?'crit':'ok');
+  html += filaComparativa('CFs sin OT', m1.cfsSinOT, m2.cfsSinOT, v=>v, v=>v>3?'crit':'ok');
+  html += `<div class="cmp-row"><div class="cmp-label">CFs Pendientes</div>
+    <div class="cmp-val"><span class="cmp-num ${m1.cfsPendientes.length>0?'crit':'ok'}">${m1.cfsPendientes.length}</span></div>
+    <div class="cmp-val"><span class="cmp-num ${m2.cfsPendientes.length>0?'crit':'ok'}">${m2.cfsPendientes.length}</span>
+      ${m2.cfsPendientes.length ? `<span class="cmp-sub">${m2.cfsPendientes.slice(0,2).map(f=>f.equipo_nombre).join(' · ')}</span>` : ''}</div></div>`;
+  html += `<div class="cmp-row"><div class="cmp-label">Horas disponibles/sem</div>
+    <div class="cmp-val"><span class="cmp-num">${m1.horasDisponibles}h</span><span class="cmp-sub">${m1.nTecnicos} técnicos × 48h</span></div>
+    <div class="cmp-val"><span class="cmp-num">${m2.horasDisponibles}h</span><span class="cmp-sub">${m2.nTecnicos} técnicos × 48h</span></div></div>`;
+  html += filaComparativa('% Noche', m1.pctNoche, m2.pctNoche, v=>v.toFixed(0)+'%', v=>v<10?'crit':'ok');
+  html += `<div class="cmp-row" style="border-bottom:none"><div class="cmp-label">% Paros producción</div>
+    <div class="cmp-val"><span class="cmp-num crit">${m1.pctParos.toFixed(0)}%</span></div>
+    <div class="cmp-val"><span class="cmp-num crit">${m2.pctParos.toFixed(0)}%</span></div></div>`;
+  document.getElementById('pilaresComparativo').innerHTML = html;
+
+  const tabla1 = m1.tecnicos.length ? m1.tecnicos.map(t=>`
+    <tr><td class="name">${t.nombre}</td><td>${t.ots}</td>
+    <td><span class="pct-num ${pctClass(t.pct)}">${t.pct.toFixed(0)}%</span></td>
+    <td>${t.horas>0?t.horas.toFixed(0)+'h':'—'}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="empty-note">Sin datos</td></tr>';
+  document.getElementById('tablaTecnicosPilar1').innerHTML = tabla1;
+
+  const tabla2 = m2.tecnicos.length ? m2.tecnicos.map(t=>`
+    <tr><td class="name">${t.nombre}</td><td>${t.ots}</td>
+    <td><span class="pct-num ${pctClass(t.pct)}">${t.pct.toFixed(0)}%</span></td>
+    <td>${t.horas>0?t.horas.toFixed(0)+'h':'—'}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="empty-note">Sin datos</td></tr>';
+  document.getElementById('tablaTecnicosPilar2').innerHTML = tabla2;
+}
+
+// ══════════════════════════════════════════════════════════════
+// Inicio
+// ══════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  const hoy = new Date();
+  const dd = String(hoy.getDate()).padStart(2,'0');
+  const mm = String(hoy.getMonth()+1).padStart(2,'0');
+  const yyyy = hoy.getFullYear();
+  document.getElementById('topbar-date').textContent = 'Actualizado: ' + dd + '/' + mm + '/' + yyyy;
+  document.title = 'Mantenimiento — ' + dd + '/' + mm + '/' + yyyy;
+
+  // Rango por defecto: últimos 30 días
+  const hace30 = new Date(hoy.getTime() - 30*86400000);
+  document.getElementById('fDesde').value = hace30.toISOString().slice(0,10);
+  document.getElementById('fHasta').value = hoy.toISOString().slice(0,10);
+
+  document.querySelectorAll('.tab-btn')[0].click();
+  cargarTodo();
+});
+</script>
+</body></html>
