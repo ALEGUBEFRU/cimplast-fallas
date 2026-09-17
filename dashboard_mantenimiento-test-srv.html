@@ -288,7 +288,16 @@ function renderKPIs(fallas, ots){
   const mttr = conHoras.length ? conHoras.reduce((a,o)=>a+Number(o.ultimas_horas_reales),0)/conHoras.length : null;
 
   const cerradasConFecha = ots.filter(o => o.fecha_cierre && o.fecha_creacion);
-  const leadTimes = cerradasConFecha.map(o => (new Date(o.fecha_cierre) - new Date(o.fecha_creacion)) / 3600000);
+  // Lead Time: fecha_cierre viene de Sheets solo con FECHA (sin hora real de
+  // cierre), así que se guarda como medianoche del día. Si la OT se cierra
+  // el mismo día que se crea, la resta puede dar negativa (creación a las
+  // 11:48, cierre registrado a las 00:00 del mismo día). En ese caso, se usa
+  // un valor mínimo de 1h en vez de un número negativo sin sentido.
+  const leadTimes = cerradasConFecha.map(o => {
+    const diff = (new Date(o.fecha_cierre) - new Date(o.fecha_creacion)) / 3600000;
+    const mismoDia = fmtFecha(o.fecha_cierre) === fmtFecha(o.fecha_creacion);
+    return (diff < 0 && mismoDia) ? 1 : Math.max(diff, 0);
+  });
   const leadTime = leadTimes.length ? leadTimes.reduce((a,b)=>a+b,0)/leadTimes.length : null;
 
   const paros = fallasValidas.filter(f => f.detenido === 'Total');
