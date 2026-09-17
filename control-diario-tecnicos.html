@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#e9f0f5">
+<title>Cimplast · Control Diario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#e9f0f5; --surface:#ffffff; --surface2:#f1f5f8; --surface3:#e3eaf0;
+  --border:#ccd8e0;
+  --accent:#416180;
+  --danger:#a3352b; --danger-soft:rgba(163,53,43,.10);
+  --warn:#8a5c0a; --warn-soft:rgba(138,92,10,.12);
+  --ok:#2f6b34; --ok-soft:rgba(47,107,52,.10);
+  --text:#1c1d1f; --muted:#63646a;
+  --font:'Barlow',system-ui,-apple-system,sans-serif;
+  --font-head:'Barlow Condensed',system-ui,-apple-system,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --r:8px;
+  --shadow:0 2px 10px rgba(43,43,45,.10);
+  --shadow-md:0 6px 20px rgba(43,43,45,.14);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased}
+h1,h2,.v,.card-lbl,.sec-title{font-family:var(--font-head);font-weight:700}
+
+#pantalla-clave{position:fixed;inset:0;z-index:999999;background:#f2f2f3;display:flex;align-items:center;justify-content:center;font-family:'Barlow',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+#pantalla-clave .box{background:#ffffff;border:1px solid #d7d7da;border-radius:6px;padding:32px 28px;width:90%;max-width:340px;text-align:center;box-shadow:0 16px 40px rgba(43,43,45,.18);}
+#pantalla-clave .logo{width:48px;height:48px;border-radius:4px;background:#416180;color:#fff;font-weight:700;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:'Barlow Condensed',sans-serif;}
+#pantalla-clave h2{color:#1c1d1f;font-size:18px;margin:0 0 6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+#pantalla-clave p{color:#63646a;font-size:13px;margin:0 0 20px;}
+#input-clave{width:100%;box-sizing:border-box;background:#f5f5f7;border:1.5px solid #d7d7da;border-radius:4px;color:#1c1d1f;font-size:20px;text-align:center;letter-spacing:4px;padding:12px;margin-bottom:10px;}
+#mensaje-error{color:#a3352b;font-size:13px;min-height:18px;margin:0 0 12px;}
+#btn-entrar{width:100%;background:#416180;color:#fff;font-weight:700;font-size:15px;border:none;border-radius:4px;padding:12px;cursor:pointer;}
+
+.wrap{max-width:1080px;margin:0 auto;padding:28px 24px 60px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.top h1{font-size:26px;margin:0}
+.top .sub{color:var(--muted);font-size:13px;margin-top:3px}
+.estado{font-size:12px;color:var(--muted)}
+.btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:8px 16px;font-weight:600;font-size:13px;cursor:pointer;color:var(--text)}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.banner{border-radius:var(--r);padding:18px 22px;margin-bottom:22px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow)}
+.banner.ok{background:var(--ok-soft);border:1px solid var(--ok)}
+.banner.warn{background:var(--warn-soft);border:1px solid var(--warn)}
+.banner.danger{background:var(--danger-soft);border:1px solid var(--danger)}
+.banner .ico{font-size:34px;flex-shrink:0}
+.banner b{display:block;font-size:17px}
+.banner.ok b{color:var(--ok)} .banner.warn b{color:var(--warn)} .banner.danger b{color:var(--danger)}
+.banner span.sub{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:8px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);cursor:pointer;transition:box-shadow .15s,border-color .15s}
+.kpi:hover{box-shadow:var(--shadow-md);border-color:var(--accent)}
+.kpi.active{border-color:var(--accent);box-shadow:var(--shadow-md)}
+.kpi-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.kpi-ico{font-size:26px}
+.kpi-lbl{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
+.kpi-v{font-size:44px;line-height:1}
+.kpi-v.danger{color:var(--danger)} .kpi-v.warn{color:var(--warn)} .kpi-v.ok{color:var(--ok)}
+.kpi-note{font-size:12px;color:var(--muted);margin-top:6px}
+.kpi-hint{font-size:11px;color:var(--accent);margin-top:10px;font-weight:600}
+
+.sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);margin-top:16px;overflow:hidden;display:none}
+.sec.open{display:block}
+.sec-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.sec-title{font-size:16px}
+.sec-note{font-size:12px;color:var(--muted);margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--surface2);text-align:left;padding:10px 20px;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);border-bottom:1px solid var(--border)}
+tbody td{padding:10px 20px;border-bottom:1px solid var(--border)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+.badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.badge-danger{background:var(--danger-soft);color:var(--danger)}
+.badge-warn{background:var(--warn-soft);color:var(--warn)}
+.badge-muted{background:var(--surface3);color:var(--muted)}
+.badge-ok{background:var(--ok-soft);color:var(--ok)}
+.num{font-family:var(--mono);font-weight:700}
+.empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+.muted{color:var(--muted)}
+
+.foot{text-align:center;font-size:12px;color:var(--muted);margin-top:26px}
+</style>
+</head>
+<body>
+
+<div id="pantalla-clave">
+  <div class="box">
+    <div class="logo">C</div>
+    <h2>Cimplast · Control Diario</h2>
+    <p>Ingresa la clave de acceso</p>
+    <input id="input-clave" type="password" inputmode="text" maxlength="12" autocomplete="off" placeholder="********" />
+    <p id="mensaje-error"></p>
+    <button id="btn-entrar">Entrar</button>
+  </div>
+</div>
+<script>
+(function () {
+  var CLAVE_CORRECTA = "rcm2026x";
+  var LLAVE_GUARDADA = "cimplast_control_diario_autorizado";
+  if (localStorage.getItem(LLAVE_GUARDADA) === "si") {
+    var pantalla = document.getElementById("pantalla-clave");
+    if (pantalla) pantalla.remove();
+  } else {
+    var input = document.getElementById("input-clave");
+    var boton = document.getElementById("btn-entrar");
+    var error = document.getElementById("mensaje-error");
+    function intentarEntrar() {
+      var valor = (input.value || "").trim().toLowerCase();
+      if (valor === CLAVE_CORRECTA) {
+        localStorage.setItem(LLAVE_GUARDADA, "si");
+        document.getElementById("pantalla-clave").remove();
+      } else {
+        error.textContent = "Contrasena incorrecta, proba de nuevo.";
+        input.value = "";
+        input.focus();
+      }
+    }
+    boton.addEventListener("click", intentarEntrar);
+    input.addEventListener("keyup", function (e) { if (e.key === "Enter") intentarEntrar(); });
+    input.focus();
+  }
+})();
+</script>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Control Diario</h1>
+      <div class="sub">Mirar ~09:00 (arranque) y ~16:00 (cierre del día) · clic en cualquier KPI para el detalle</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="estado" id="estadoCarga">Cargando…</span>
+      <button class="btn" onclick="cargarTodo()">↻ Actualizar</button>
+    </div>
+  </div>
+
+  <div id="banner" class="banner ok"><span class="ico">🟢</span><div><b>Cargando…</b></div></div>
+
+  <div class="kpis">
+    <div class="kpi" id="kpiSinOT" onclick="toggle('secSinOT','kpiSinOT')">
+      <div class="kpi-top"><span class="kpi-ico">👷</span><span class="kpi-lbl">Técnicos sin OT ahora</span></div>
+      <div class="kpi-v" id="vSinOT">—</div>
+      <div class="kpi-hint">Ver quiénes ▾</div>
+    </div>
+    <div class="kpi" id="kpiColgadas" onclick="toggle('secColgadas','kpiColgadas')">
+      <div class="kpi-top"><span class="kpi-ico">⏳</span><span class="kpi-lbl">OT colgadas sin justificativo</span></div>
+      <div class="kpi-v" id="vColgadas">—</div>
+      <div class="kpi-note">&gt;2 días correctivo · &gt;7 días preventivo</div>
+      <div class="kpi-hint">Ver cuáles ▾</div>
+    </div>
+    <div class="kpi" id="kpiHoras" onclick="toggle('secHoras','kpiHoras')">
+      <div class="kpi-top"><span class="kpi-ico">⏱️</span><span class="kpi-lbl">Horas reportadas hoy</span></div>
+      <div class="kpi-v" id="vHoras">—</div>
+      <div class="kpi-note" id="notaHoras"></div>
+      <div class="kpi-hint">Ver por técnico ▾</div>
+    </div>
+  </div>
+
+  <div class="sec" id="secSinOT">
+    <div class="sec-head"><div><div class="sec-title">Técnicos sin OT activa</div><div class="sec-note">Sin ninguna OT en Abierta/En curso asignada ahora mismo</div></div></div>
+    <table><thead><tr><th>Técnico</th><th>Especialidad</th></tr></thead><tbody id="tbodySinOT"></tbody></table>
+  </div>
+
+  <div class="sec" id="secColgadas">
+    <div class="sec-head"><div><div class="sec-title">OT colgadas</div><div class="sec-note">Sin SubEstado que justifique la espera, por encima del umbral de días</div></div></div>
+    <table><thead><tr><th>NroOT</th><th>Equipo</th><th>Planta</th><th>Técnico</th><th>Tipo</th><th>Estado</th><th>Creada</th><th>Días</th></tr></thead><tbody id="tbodyColgadas"></tbody></table>
+  </div>
+
+  <div class="sec" id="secHoras">
+    <div class="sec-head"><div><div class="sec-title">Horas reportadas hoy, por técnico</div><div class="sec-note">Ordenado: menos horas primero</div></div></div>
+    <table><thead><tr><th>Técnico</th><th>Horas hoy</th></tr></thead><tbody id="tbodyHoras"></tbody></table>
+  </div>
+
+  <div class="foot">Fuente: mismo backend (Apps Script) que las apps de Supervisores/Técnico. Vista de solo lectura.</div>
+</div>
+
+<script src="datos.js"></script>
+<script>
+const UMBRAL_DIAS_CORRECTIVO = 2;
+const UMBRAL_DIAS_PREVENTIVO = 7;
+const ESPECIALIDADES_EXCLUIR = ['Producción','Externo'];
+const CAP_DIARIA = { 0:0, 1:9, 2:9, 3:9, 4:9, 5:9, 6:3 };
+const HORA_CORTE_TARDE = 15; // desde esta hora se evalúa "cómo cerró el día"
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+
+let otsTodas = [];
+let cargando = false;
+
+function toggle(secId, kpiId){
+  const sec = document.getElementById(secId);
+  const kpi = document.getElementById(kpiId);
+  const yaAbierta = sec.classList.contains('open');
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('open'));
+  document.querySelectorAll('.kpi').forEach(k => k.classList.remove('active'));
+  if(!yaAbierta){ sec.classList.add('open'); kpi.classList.add('active'); }
+}
+function umbralDe(tipo){ return (tipo === 'Preventivo') ? UMBRAL_DIAS_PREVENTIVO : UMBRAL_DIAS_CORRECTIVO; }
+function esActiva(o){ return o.Estado === 'Abierta' || o.Estado === 'En curso'; }
+function diasDesde(fechaIso, hoy){
+  if(!fechaIso) return null;
+  const f = new Date(String(fechaIso).slice(0,10)+'T00:00:00');
+  return Math.floor((hoy - f) / (1000*60*60*24));
+}
+
+async function cargarTodo(){
+  if(cargando) return;
+  cargando = true;
+  document.getElementById('estadoCarga').textContent = 'Actualizando…';
+  try{
+    const r = await fetch(window.CIMPLAST_DATA.apiGet('accion=ots'));
+    const data = await r.json();
+    otsTodas = Array.isArray(data) ? data : (data.ots || data.data || []);
+    renderTodo();
+    document.getElementById('estadoCarga').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('estadoCarga').textContent = 'Error al cargar — reintentar';
+    console.error(e);
+  }
+  cargando = false;
+}
+
+function renderTodo(){
+  const ahora = new Date();
+  const hoy = new Date(ahora); hoy.setHours(0,0,0,0);
+  const horaActual = ahora.getHours();
+
+  const tecnicosMaestro = (window.CIMPLAST_DATA.tecnicos || []).filter(t => !ESPECIALIDADES_EXCLUIR.includes(t.esp));
+  const N = tecnicosMaestro.length;
+
+  const activas = otsTodas.filter(esActiva).map(o => ({...o, _dias: diasDesde(o.FechaCreacion, hoy)}));
+  const cerradasHoy = otsTodas.filter(o => o.Estado === 'Cerrada' && o.FechaCierre && String(o.FechaCierre).slice(0,10) === hoy.toISOString().slice(0,10));
+
+  // ---- técnicos sin OT ----
+  const porTecnico = {};
+  tecnicosMaestro.forEach(t => porTecnico[t.nombre] = []);
+  activas.forEach(o => {
+    window.CIMPLAST_DATA.tecnicosDe(o.Tecnico || '').forEach(n => { if(porTecnico[n]) porTecnico[n].push(o); });
+  });
+  const sinAsignar = tecnicosMaestro.filter(t => porTecnico[t.nombre].length === 0);
+
+  // ---- OT colgadas ----
+  const colgadas = activas
+    .filter(o => o._dias!=null && o._dias >= umbralDe(o.Tipo) && !o.SubEstado)
+    .sort((a,b) => b._dias - a._dias);
+
+  // ---- horas hoy (reparto parejo si hay varios técnicos en la OT) ----
+  const horasHoyPorTecnico = {}; tecnicosMaestro.forEach(t => horasHoyPorTecnico[t.nombre]=0);
+  let horasHoyTotal = 0;
+  cerradasHoy.forEach(o => {
+    const h = num(o.HorasReales); horasHoyTotal += h;
+    const nombres = window.CIMPLAST_DATA.tecnicosDe(o.Tecnico||'').filter(n => horasHoyPorTecnico.hasOwnProperty(n));
+    if(nombres.length===0) return;
+    const parte = h/nombres.length;
+    nombres.forEach(n => horasHoyPorTecnico[n]+=parte);
+  });
+  const capacidadHoy = CAP_DIARIA[hoy.getDay()] * N;
+  const pctHoy = capacidadHoy>0 ? Math.round(horasHoyTotal/capacidadHoy*100) : 0;
+  const esTarde = horaActual >= HORA_CORTE_TARDE;
+
+  // ================= RENDER =================
+  const banner = document.getElementById('banner');
+  if(sinAsignar.length>0 || colgadas.length>0){
+    banner.className = 'banner danger';
+    banner.innerHTML = `<span class="ico">🔴</span><div><b>Hay carga sin controlar</b><span class="sub">${sinAsignar.length} técnico(s) sin OT · ${colgadas.length} OT colgada(s)</span></div>`;
+  } else if(esTarde && pctHoy < 60){
+    banner.className = 'banner warn';
+    banner.innerHTML = `<span class="ico">🟡</span><div><b>El día está cerrando con poca carga reportada</b><span class="sub">${pctHoy}% de las horas esperadas de hoy</span></div>`;
+  } else {
+    banner.className = 'banner ok';
+    banner.innerHTML = `<span class="ico">🟢</span><div><b>Todo en orden</b><span class="sub">Sin técnicos sin asignar ni OT colgadas</span></div>`;
+  }
+
+  // KPI 1
+  const vSinOT = document.getElementById('vSinOT');
+  vSinOT.textContent = sinAsignar.length; vSinOT.className = 'kpi-v ' + (sinAsignar.length>0?'danger':'ok');
+  document.getElementById('tbodySinOT').innerHTML = sinAsignar.length===0
+    ? `<tr><td colspan="2" class="empty">Todos los técnicos tienen al menos una OT activa 👍</td></tr>`
+    : sinAsignar.map(t => `<tr><td>${esc(t.nombre)}</td><td class="muted">${esc(t.esp||'—')}</td></tr>`).join('');
+
+  // KPI 2
+  const vColgadas = document.getElementById('vColgadas');
+  vColgadas.textContent = colgadas.length; vColgadas.className = 'kpi-v ' + (colgadas.length>0?'danger':'ok');
+  document.getElementById('tbodyColgadas').innerHTML = colgadas.length===0
+    ? `<tr><td colspan="8" class="empty">Sin OT colgadas por encima del umbral 👍</td></tr>`
+    : colgadas.map(o => `<tr>
+        <td class="num">${esc(o.NroOT||'—')}</td><td>${esc(o.Equipo||'—')}</td><td>${esc(o.Planta||'—')}</td>
+        <td>${esc(o.Tecnico||'Sin asignar')}</td><td>${esc(o.Tipo||'Correctivo')}</td><td>${esc(o.Estado||'—')}</td>
+        <td>${window.CIMPLAST_DATA.fmtFecha(o.FechaCreacion)}</td>
+        <td><span class="badge ${o._dias>=umbralDe(o.Tipo)*3?'badge-danger':'badge-warn'}">${o._dias} días</span></td>
+      </tr>`).join('');
+
+  // KPI 3
+  const vHoras = document.getElementById('vHoras');
+  vHoras.textContent = (Math.round(horasHoyTotal*10)/10) + 'h';
+  vHoras.className = 'kpi-v ' + (esTarde ? (pctHoy<60?'danger':pctHoy<85?'warn':'ok') : 'ok');
+  document.getElementById('notaHoras').textContent = esTarde
+    ? `${pctHoy}% de lo esperado hoy (${capacidadHoy}h del equipo)`
+    : `Aún temprano — capacidad esperada hoy: ${capacidadHoy}h`;
+  const filasHoras = tecnicosMaestro
+    .map(t => ({ nombre:t.nombre, h: Math.round((horasHoyPorTecnico[t.nombre]||0)*10)/10 }))
+    .sort((a,b)=> a.h - b.h);
+  document.getElementById('tbodyHoras').innerHTML = filasHoras.map(f => `<tr>
+      <td>${esc(f.nombre)}</td>
+      <td><span class="badge ${f.h===0 && esTarde ?'badge-warn':'badge-muted'}">${f.h}h</span></td>
+    </tr>`).join('');
+}
+
+cargarTodo();
+</script>
+</body>
+</html>
