@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f2f2f3">
+<title>Cimplast · Control de Carga de Técnicos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#e9f0f5; --surface:#ffffff; --surface2:#f1f5f8; --surface3:#e3eaf0;
+  --border:#ccd8e0; --border-hi:#a6b8c4;
+  --accent:#416180; --accent-soft:rgba(65,97,128,.12);
+  --danger:#a3352b; --danger-soft:rgba(163,53,43,.10);
+  --warn:#8a5c0a; --warn-soft:rgba(138,92,10,.12);
+  --ok:#2f6b34; --ok-soft:rgba(47,107,52,.10);
+  --info:#1f5f68;
+  --text:#1c1d1f; --label:#45464a; --muted:#63646a;
+  --font:'Barlow',system-ui,-apple-system,sans-serif;
+  --font-head:'Barlow Condensed',system-ui,-apple-system,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --r:4px; --r-lg:6px;
+  --shadow-sm:0 1px 2px rgba(43,43,45,.14);
+  --shadow-md:0 4px 14px rgba(43,43,45,.16);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased}
+h1,h2,h3,.kpi .v,.sec-title{font-family:var(--font-head);font-weight:700;letter-spacing:-.01em}
+a{color:var(--accent)}
+
+/* ---- pantalla de clave (mismo patrón que el resto del sistema) ---- */
+#pantalla-clave{position:fixed;inset:0;z-index:999999;background:#f2f2f3;display:flex;align-items:center;justify-content:center;font-family:'Barlow',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+#pantalla-clave .box{background:#ffffff;border:1px solid #d7d7da;border-radius:6px;padding:32px 28px;width:90%;max-width:340px;text-align:center;box-shadow:0 16px 40px rgba(43,43,45,.18);}
+#pantalla-clave .logo{width:48px;height:48px;border-radius:4px;background:#416180;color:#fff;font-weight:700;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:'Barlow Condensed',sans-serif;}
+#pantalla-clave h2{color:#1c1d1f;font-size:18px;margin:0 0 6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+#pantalla-clave p{color:#63646a;font-size:13px;margin:0 0 20px;}
+#input-clave{width:100%;box-sizing:border-box;background:#f5f5f7;border:1.5px solid #d7d7da;border-radius:4px;color:#1c1d1f;font-size:20px;text-align:center;letter-spacing:4px;padding:12px;margin-bottom:10px;}
+#mensaje-error{color:#a3352b;font-size:13px;min-height:18px;margin:0 0 12px;}
+#btn-entrar{width:100%;background:#416180;color:#fff;font-weight:700;font-size:15px;border:none;border-radius:4px;padding:12px;cursor:pointer;}
+
+/* ---- layout general ---- */
+.wrap{max-width:1280px;margin:0 auto;padding:20px 20px 60px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.top h1{font-size:24px;margin:0}
+.top .sub{color:var(--muted);font-size:13px;margin-top:2px}
+.btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:8px 14px;font-weight:600;font-size:13px;cursor:pointer;color:var(--text)}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.estado-carga{font-size:12px;color:var(--muted)}
+
+.filtros{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.filtros select,.filtros input{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text)}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow-sm)}
+.kpi .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;margin-bottom:6px}
+.kpi .v{font-size:30px;line-height:1}
+.kpi.danger .v{color:var(--danger)}
+.kpi.warn .v{color:var(--warn)}
+.kpi.ok .v{color:var(--ok)}
+
+.sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);margin-bottom:24px;overflow:hidden}
+.sec-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.sec-title{font-size:16px}
+.sec-note{color:var(--muted);font-size:12px;max-width:520px}
+.sec-body{overflow-x:auto}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{position:sticky;top:0;background:var(--surface2);text-align:left;padding:9px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:hover{background:var(--surface2)}
+tbody tr.row-danger{background:var(--danger-soft)}
+tbody tr.row-warn{background:var(--warn-soft)}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.pill-danger{background:var(--danger-soft);color:var(--danger)}
+.pill-warn{background:var(--warn-soft);color:var(--warn)}
+.pill-ok{background:var(--ok-soft);color:var(--ok)}
+.pill-muted{background:var(--surface3);color:var(--muted)}
+.num{font-family:var(--mono);font-weight:700}
+.empty{padding:30px;text-align:center;color:var(--muted);font-size:13px}
+.muted{color:var(--muted)}
+.techname{font-weight:600}
+</style>
+</head>
+<body>
+
+<div id="pantalla-clave">
+  <div class="box">
+    <div class="logo">C</div>
+    <h2>Cimplast · Control Técnicos</h2>
+    <p>Ingresa la clave de acceso</p>
+    <input id="input-clave" type="password" inputmode="text" maxlength="12" autocomplete="off" placeholder="********" />
+    <p id="mensaje-error"></p>
+    <button id="btn-entrar">Entrar</button>
+  </div>
+</div>
+<script>
+(function () {
+  var CLAVE_CORRECTA = "rcm2026x";
+  var LLAVE_GUARDADA = "cimplast_control_tecnicos_autorizado";
+  if (localStorage.getItem(LLAVE_GUARDADA) === "si") {
+    var pantalla = document.getElementById("pantalla-clave");
+    if (pantalla) pantalla.remove();
+  } else {
+    var input = document.getElementById("input-clave");
+    var boton = document.getElementById("btn-entrar");
+    var error = document.getElementById("mensaje-error");
+    function intentarEntrar() {
+      var valor = (input.value || "").trim().toLowerCase();
+      if (valor === CLAVE_CORRECTA) {
+        localStorage.setItem(LLAVE_GUARDADA, "si");
+        document.getElementById("pantalla-clave").remove();
+      } else {
+        error.textContent = "Contrasena incorrecta, proba de nuevo.";
+        input.value = "";
+        input.focus();
+      }
+    }
+    boton.addEventListener("click", intentarEntrar);
+    input.addEventListener("keyup", function (e) { if (e.key === "Enter") intentarEntrar(); });
+    input.focus();
+  }
+})();
+</script>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Control de Carga de Técnicos</h1>
+      <div class="sub">Asignaciones activas, OT colgadas y técnicos sin asignación — vista de control diario</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="estado-carga" id="estadoCarga">Cargando…</span>
+      <button class="btn primary" onclick="cargarTodo()">↻ Actualizar</button>
+    </div>
+  </div>
+
+  <div class="filtros">
+    <select id="fPlanta"><option value="">Todas las plantas</option></select>
+    <input id="fTecnico" type="text" placeholder="Buscar técnico…" oninput="renderTodo()">
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">Resumen por técnico</div>
+        <div class="sec-note">🔴 = tiene al menos una OT colgada, o ≥2 OT "En curso" simultáneas sin motivo de espera. Ordenado por nivel de alerta.</div>
+      </div>
+    </div>
+    <div class="sec-body"><table>
+      <thead><tr>
+        <th>Técnico</th><th>Especialidad</th><th>OT activas</th><th>En curso sin motivo</th><th>Más antigua</th><th>Estado</th>
+      </tr></thead>
+      <tbody id="tbodyResumen"></tbody>
+    </table></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">OT colgadas — posible abandono</div>
+        <div class="sec-note">OT abierta/en curso, sin motivo de espera (SubEstado), con más días sin actividad que el umbral: 2 días para Correctivo/Mejora, 7 días para Preventivo.</div>
+      </div>
+    </div>
+    <div class="sec-body"><table>
+      <thead><tr>
+        <th>NroOT</th><th>Equipo</th><th>Planta</th><th>Técnico</th><th>Tipo</th><th>Estado</th><th>Creada</th><th>Días sin cerrar</th>
+      </tr></thead>
+      <tbody id="tbodyColgadas"></tbody>
+    </table></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">Técnicos sin OT activa hoy</div>
+        <div class="sec-note">No tienen ninguna OT en Abierta/En curso asignada — revisar si están trabajando algo que no quedó reportado en el sistema. Se excluye personal externo/producción.</div>
+      </div>
+    </div>
+    <div class="sec-body"><table>
+      <thead><tr><th>Técnico</th><th>Especialidad</th></tr></thead>
+      <tbody id="tbodySinAsignar"></tbody>
+    </table></div>
+  </div>
+
+  <p class="muted" style="font-size:12px">Fuente: mismo backend (Apps Script) que las apps de Supervisores/Técnico. Esta vista es de solo lectura — no modifica OT.</p>
+</div>
+
+<script src="datos.js"></script>
+<script>
+const UMBRAL_DIAS_CORRECTIVO = 2;   // Correctivo / Mejora
+const UMBRAL_DIAS_PREVENTIVO = 7;   // Preventivo
+const ESPECIALIDADES_EXCLUIR_SIN_ASIGNAR = ['Producción','Externo']; // no son técnicos de piso
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let otsTodas = [];
+let cargando = false;
+
+function umbralDe(tipo){
+  return (tipo === 'Preventivo') ? UMBRAL_DIAS_PREVENTIVO : UMBRAL_DIAS_CORRECTIVO;
+}
+
+async function cargarTodo(){
+  if(cargando) return;
+  cargando = true;
+  document.getElementById('estadoCarga').textContent = 'Actualizando…';
+  try{
+    const r = await fetch(window.CIMPLAST_DATA.apiGet('accion=ots'));
+    const data = await r.json();
+    otsTodas = Array.isArray(data) ? data : (data.ots || data.data || []);
+    poblarFiltroPlanta();
+    renderTodo();
+    document.getElementById('estadoCarga').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('estadoCarga').textContent = 'Error al cargar — reintentar';
+    console.error(e);
+  }
+  cargando = false;
+}
+
+function poblarFiltroPlanta(){
+  const sel = document.getElementById('fPlanta');
+  if(sel.options.length > 1) return;
+  const plantas = window.CIMPLAST_DATA.listaPlantas ? window.CIMPLAST_DATA.listaPlantas() : [];
+  plantas.forEach(p => {
+    const o = document.createElement('option'); o.value = p; o.textContent = p; sel.appendChild(o);
+  });
+  sel.addEventListener('change', renderTodo);
+}
+
+function diasDesde(fechaIso){
+  if(!fechaIso) return null;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const f = new Date(String(fechaIso).slice(0,10)+'T00:00:00');
+  return Math.floor((hoy - f) / (1000*60*60*24));
+}
+
+function esActiva(o){
+  return o.Estado === 'Abierta' || o.Estado === 'En curso';
+}
+
+function renderTodo(){
+  const filtroPlanta = document.getElementById('fPlanta').value;
+  const filtroTec = (document.getElementById('fTecnico').value || '').trim().toLowerCase();
+
+  let ots = otsTodas.slice();
+  if(filtroPlanta) ots = ots.filter(o => o.Planta === filtroPlanta);
+
+  const activas = ots.filter(esActiva).map(o => ({...o, _dias: diasDesde(o.FechaCreacion)}));
+
+  // ---- por técnico ----
+  const tecnicosMaestro = (window.CIMPLAST_DATA.tecnicos || []);
+  const porTecnico = {};
+  tecnicosMaestro.forEach(t => { porTecnico[t.nombre] = { tecnico:t, ots:[] }; });
+
+  activas.forEach(o => {
+    const nombres = window.CIMPLAST_DATA.tecnicosDe(o.Tecnico || '');
+    nombres.forEach(n => {
+      if(!porTecnico[n]) porTecnico[n] = { tecnico:{nombre:n, esp:'—'}, ots:[] };
+      porTecnico[n].ots.push(o);
+    });
+  });
+
+  let filasResumen = Object.values(porTecnico)
+    .filter(row => !filtroTec || row.tecnico.nombre.toLowerCase().includes(filtroTec))
+    .map(row => {
+      const enCursoSinMotivo = row.ots.filter(o => o.Estado==='En curso' && !o.SubEstado).length;
+      const colgadas = row.ots.filter(o => o._dias!=null && o._dias >= umbralDe(o.Tipo) && !o.SubEstado);
+      const masAntigua = row.ots.reduce((max,o)=> (o._dias!=null && o._dias>max) ? o._dias : max, -1);
+      const alerta = colgadas.length > 0 || enCursoSinMotivo >= 2;
+      return { ...row, enCursoSinMotivo, colgadasCount: colgadas.length, masAntigua, alerta };
+    })
+    .sort((a,b) => (b.alerta - a.alerta) || (b.masAntigua - a.masAntigua));
+
+  const tbodyResumen = document.getElementById('tbodyResumen');
+  if(filasResumen.length === 0){
+    tbodyResumen.innerHTML = `<tr><td colspan="6" class="empty">Sin técnicos que coincidan con el filtro</td></tr>`;
+  } else {
+    tbodyResumen.innerHTML = filasResumen.map(row => {
+      const cls = row.alerta ? 'row-danger' : '';
+      const estadoPill = row.alerta
+        ? `<span class="pill pill-danger">🔴 Revisar</span>`
+        : (row.ots.length === 0 ? `<span class="pill pill-muted">Sin OT hoy</span>` : `<span class="pill pill-ok">OK</span>`);
+      return `<tr class="${cls}">
+        <td class="techname">${esc(row.tecnico.nombre)}</td>
+        <td class="muted">${esc(row.tecnico.esp||'—')}</td>
+        <td class="num">${row.ots.length}</td>
+        <td class="num">${row.enCursoSinMotivo}</td>
+        <td>${row.masAntigua>=0 ? row.masAntigua+' días' : '—'}</td>
+        <td>${estadoPill}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ---- OT colgadas ----
+  let colgadas = activas
+    .filter(o => o._dias!=null && o._dias >= umbralDe(o.Tipo) && !o.SubEstado)
+    .filter(o => !filtroTec || (o.Tecnico||'').toLowerCase().includes(filtroTec))
+    .sort((a,b) => b._dias - a._dias);
+
+  const tbodyColgadas = document.getElementById('tbodyColgadas');
+  if(colgadas.length === 0){
+    tbodyColgadas.innerHTML = `<tr><td colspan="8" class="empty">No hay OT colgadas por encima del umbral 🎉</td></tr>`;
+  } else {
+    tbodyColgadas.innerHTML = colgadas.map(o => {
+      const rowCls = o._dias >= umbralDe(o.Tipo)*3 ? 'row-danger' : 'row-warn';
+      return `<tr class="${rowCls}">
+        <td class="num">${esc(o.NroOT||'—')}</td>
+        <td>${esc(o.Equipo||'—')}</td>
+        <td>${esc(o.Planta||'—')}</td>
+        <td>${esc(o.Tecnico||'Sin asignar')}</td>
+        <td>${esc(o.Tipo||'Correctivo')}</td>
+        <td>${esc(o.Estado||'—')}</td>
+        <td>${window.CIMPLAST_DATA.fmtFecha(o.FechaCreacion)}</td>
+        <td class="num">${o._dias} días</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ---- técnicos sin asignación ----
+  const sinAsignar = tecnicosMaestro.filter(t =>
+    !ESPECIALIDADES_EXCLUIR_SIN_ASIGNAR.includes(t.esp) &&
+    (!porTecnico[t.nombre] || porTecnico[t.nombre].ots.length === 0)
+  );
+  const tbodySin = document.getElementById('tbodySinAsignar');
+  if(sinAsignar.length === 0){
+    tbodySin.innerHTML = `<tr><td colspan="2" class="empty">Todos los técnicos tienen al menos una OT activa</td></tr>`;
+  } else {
+    tbodySin.innerHTML = sinAsignar.map(t => `<tr>
+      <td class="techname">${esc(t.nombre)}</td>
+      <td class="muted">${esc(t.esp||'—')}</td>
+    </tr>`).join('');
+  }
+
+  // ---- KPIs ----
+  const tecnicosEnAlerta = filasResumen.filter(r => r.alerta).length;
+  const colgadasCorrectivo = colgadas.filter(o => (o.Tipo||'Correctivo') !== 'Preventivo').length;
+  const colgadasPreventivo = colgadas.filter(o => o.Tipo === 'Preventivo').length;
+
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi ${tecnicosEnAlerta>0?'danger':'ok'}"><div class="lbl">Técnicos en alerta</div><div class="v">${tecnicosEnAlerta}</div></div>
+    <div class="kpi ${colgadasCorrectivo>0?'danger':'ok'}"><div class="lbl">OT colgadas · Correctivo/Mejora</div><div class="v">${colgadasCorrectivo}</div></div>
+    <div class="kpi ${colgadasPreventivo>0?'warn':'ok'}"><div class="lbl">OT colgadas · Preventivo</div><div class="v">${colgadasPreventivo}</div></div>
+    <div class="kpi ${sinAsignar.length>0?'warn':'ok'}"><div class="lbl">Técnicos sin OT activa hoy</div><div class="v">${sinAsignar.length}</div></div>
+  `;
+}
+
+cargarTodo();
+</script>
+</body>
+</html>
