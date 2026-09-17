@@ -512,7 +512,11 @@ window.CIMPLAST_DATA = (function() {
 
     apiGet(params) {
       const qs = params ? '&' + params : '';
-      return API + '?token=' + encodeURIComponent(TOKEN) + qs;
+      // Cache-buster: evita que el navegador reutilice una respuesta vieja
+      // (el redirect interno de Apps Script puede quedar cacheado por heurística
+      // del navegador aunque el contenido final diga no-cache).
+      const cacheBuster = '&_t=' + Date.now();
+      return API + '?token=' + encodeURIComponent(TOKEN) + qs + cacheBuster;
     },
 
     apiPostBody(bodyObj) {
