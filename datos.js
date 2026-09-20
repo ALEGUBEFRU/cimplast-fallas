@@ -138,11 +138,11 @@ window.CIMPLAST_DATA = (function() {
       "nombre": "Compresor Atlas Copco GA 45"
     },
     {
-      "cod": "SOP30",
+      "cod": "SOP 31",
       "nombre": "Ekou 5"
     },
     {
-      "cod": "INY11",
+      "cod": "INS 09",
       "nombre": "Inyecto Sopladora AOKI"
     },
     {
@@ -226,11 +226,11 @@ window.CIMPLAST_DATA = (function() {
       "nombre": "MAG PLASTIC 3"
     },
     {
-      "cod": "SOP 26",
+      "cod": "SOP 14",
       "nombre": "Pavan 6"
     },
     {
-      "cod": "SOP",
+      "cod": "SOP 35",
       "nombre": "Ekou 4"
     },
     {
@@ -250,11 +250,11 @@ window.CIMPLAST_DATA = (function() {
       "nombre": "Trafo de potencia de 1.000KVA"
     },
     {
-      "cod": "SOP31",
+      "cod": "SOP 32",
       "nombre": "Ekou 6"
     },
     {
-      "cod": "SOP32",
+      "cod": "SOP 33",
       "nombre": "Ekou 7"
     },
     {
