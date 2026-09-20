@@ -1437,18 +1437,28 @@ async function submitCerrar(){
     const motivo=document.getElementById('mCerrarMotivo').value.trim();
     if(!motivo){ showToast('Cargá el motivo de anulación','err'); return; }
     body={accion:'cerrarOT', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
-      horasReales:0, repuestos:'', costo:0,
+      anulando:true, horasReales:0, repuestos:'', costo:0,
       observaciones:'ANULADA: '+motivo, fechaCierre:new Date().toISOString().slice(0,10)};
     btn.disabled=true; btn.textContent='Anulando…';
   } else {
     const horas=document.getElementById('mCerrarHoras').value, obs=document.getElementById('mCerrarObs').value.trim();
     if(!horas){ showToast('Cargá las horas reales — sin eso no hay MTTR','err'); return; }
     if(!obs){ showToast('Cargá la causa raíz y el trabajo realizado','err'); return; }
+    const resultadosChecklist = recolectarResultadosChecklist();
+    const itemsChecklist = document.querySelectorAll('#mCerrarChecklistItems [data-item-idx]');
+    if(itemsChecklist.length > 0){
+      // Mismo criterio que valida el servidor en cerrarOT — se repite acá
+      // para avisar al instante en vez de esperar el rechazo de la API.
+      const incompleto = resultadosChecklist.find(r =>
+        (r.tipo==='check' && r.cumplido!==true) ||
+        (r.tipo==='lectura' && (r.valor===''||r.valor===undefined||r.valor===null)));
+      if(incompleto){ showToast('Completá el checklist — falta "'+(incompleto.nombre||'un ítem')+'"','err'); return; }
+    }
     body={accion:'cerrarOT', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
-      horasReales:parseFloat(horas), repuestos:document.getElementById('mCerrarRepuestos').value.trim(),
+      anulando:false, horasReales:parseFloat(horas), repuestos:document.getElementById('mCerrarRepuestos').value.trim(),
       costo:parseFloat(document.getElementById('mCerrarCosto').value)||0,
       observaciones:obs, fechaCierre:document.getElementById('mCerrarFecha').value,
-      resultadosChecklist: recolectarResultadosChecklist()};
+      resultadosChecklist};
     btn.disabled=true; btn.textContent='Cerrando…';
   }
   try{
