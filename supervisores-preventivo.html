@@ -343,6 +343,18 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .pbtn-run{background:rgba(138,92,10,.13);border-color:var(--warn);color:var(--warn)}
 .pbtn-del{background:rgba(163,53,43,.13);border-color:var(--danger);color:var(--danger)}
 .equipos-picker{max-height:220px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:10px}
+
+/* ── Vista "Por Planta" (agrupación Planta > Máquina > Planes) ── */
+.prev-planta{display:flex;flex-direction:column;gap:18px}
+.planta-grupo{display:flex;flex-direction:column;gap:10px}
+.planta-h{font-size:15px;font-weight:800;color:var(--text);padding:8px 0;border-bottom:2px solid var(--accent)}
+.maquina-grupo{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px;display:flex;flex-direction:column;gap:10px}
+.maquina-h{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--label)}
+.maquina-tag{font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:2px 7px}
+.maquina-planes{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.maquina-auxiliares-nota{font-size:11px;color:var(--muted);font-style:italic;padding:4px 2px}
+.plan-card-compacta{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm)}
+.plan-card-compacta.pausado{opacity:.55}
 .equipos-picker label{display:flex;align-items:center;gap:8px;padding:6px 4px;font-size:12.5px;color:var(--label);cursor:pointer}
 .equipos-picker input{accent-color:var(--accent)}
 .tarea-row{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12.5px}
@@ -632,6 +644,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
         <div class="prev-toggle">
           <button class="chip active" id="btnPrevVistaTarjetas" onclick="setVistaPreventivo('tarjetas')">🗂 Tarjetas</button>
           <button class="chip" id="btnPrevVistaLista" onclick="setVistaPreventivo('lista')">📋 Lista</button>
+          <button class="chip" id="btnPrevVistaPlanta" onclick="setVistaPreventivo('planta')">🏭 Por Planta</button>
         </div>
         <button class="btn-secondary" onclick="ejecutarPlanesAhora()" id="btnEjecutarAhora">▶ Ejecutar ahora</button>
         <button class="btn-primary" onclick="abrirModalPlan()">+ Nuevo plan</button>
@@ -639,6 +652,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
     </div>
     <div class="prev-grid" id="planesGrid"></div>
     <div class="prev-lista" id="planesLista" style="display:none"></div>
+    <div class="prev-planta" id="planesPorPlanta" style="display:none"></div>
   </div>
 </div>
 
@@ -1547,6 +1561,7 @@ function showToast(msg,type='ok'){
 }
 /* ══ PREVENTIVO ══ */
 let planesTodos = [];
+let equiposTodos = [];
 let planEditando = null;
 let tareasPlanActual = [];
 
@@ -1561,9 +1576,14 @@ function preventivoIniciar(){
 async function cargarPlanes(){
   document.getElementById('planesGrid').innerHTML = '<div class="col-empty">Cargando planes…</div>';
   try{
-    const r = await fetch(window.CIMPLAST_DATA.apiGet('accion=planes'));
-    const d = await r.json();
-    planesTodos = d.planes || [];
+    const [rPlanes, rEquipos] = await Promise.all([
+      fetch(window.CIMPLAST_DATA.apiGet('accion=planes')),
+      fetch(window.CIMPLAST_DATA.apiGet('accion=equipos'))
+    ]);
+    const dPlanes = await rPlanes.json();
+    const dEquipos = await rEquipos.json();
+    planesTodos = dPlanes.planes || [];
+    equiposTodos = dEquipos.equipos || [];
     renderPlanes();
   }catch(e){
     document.getElementById('planesGrid').innerHTML = '<div class="col-empty">No se pudieron cargar los planes</div>';
@@ -1614,8 +1634,11 @@ function setVistaPreventivo(v){
   vistaPreventivo = v;
   document.getElementById('btnPrevVistaTarjetas').classList.toggle('active', v==='tarjetas');
   document.getElementById('btnPrevVistaLista').classList.toggle('active', v==='lista');
+  document.getElementById('btnPrevVistaPlanta').classList.toggle('active', v==='planta');
   document.getElementById('planesGrid').style.display = v==='tarjetas' ? 'grid' : 'none';
   document.getElementById('planesLista').style.display = v==='lista' ? 'flex' : 'none';
+  document.getElementById('planesPorPlanta').style.display = v==='planta' ? 'block' : 'none';
+  if(v==='planta') renderPlanesPorPlanta();
 }
 
 function renderPlanes(){
@@ -1679,6 +1702,107 @@ function renderPlanes(){
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Tarjeta compacta de un plan, reutilizada dentro de la vista Por Planta ──
+function _tarjetaPlanCompacta(p){
+  const activo = String(p.Activo).toLowerCase() === 'si';
+  const unidadTxt = {dias:'día(s)', semanas:'semana(s)', meses:'mes(es)'}[p.Periodicidad] || p.Periodicidad;
+  const ultimaGen = p.UltimaGeneracion ? D.fmtFecha(p.UltimaGeneracion) : 'Nunca generó';
+  return `<div class="plan-card-compacta${activo?'':' pausado'}">
+    <div class="plan-card-h">
+      <b>${esc(p.Nombre||'—')}</b>
+      <span class="plan-badge ${activo?'pb-activo':'pb-pausado'}">${activo?'Activo':'Pausado'}</span>
+    </div>
+    <div class="plan-meta">
+      <span>🔁 Cada ${esc(p.IntervaloNum)} ${unidadTxt}</span>
+      <span>⚑ ${esc(p.Prioridad||'Media')}</span>
+    </div>
+    <div class="checklist-view">${(p.Tareas||[]).slice(0,3).map(t=>`<div class="checklist-item"><span class="box"></span><span>${esc(t.nombre||t)}${t.unidad?' ('+esc(t.unidad)+')':''}</span></div>`).join('')}
+      ${(p.Tareas||[]).length>3?`<div style="font-size:11px;color:var(--muted)">+${p.Tareas.length-3} tareas más</div>`:''}
+      ${(p.Tareas||[]).length===0?'<div style="font-size:11px;color:var(--muted)">Sin tareas definidas</div>':''}
+    </div>
+    <div class="plan-meta"><span>Última generación: ${ultimaGen}</span></div>
+    <div class="plan-acts">
+      <button class="plan-btn pbtn-edit" onclick="abrirModalPlan('${esc(p.PlanID)}')">✏ Editar</button>
+      <button class="plan-btn ${activo?'pbtn-pause':'pbtn-play'}" onclick="togglePlan('${esc(p.PlanID)}',${activo})">${activo?'⏸ Pausar':'▶ Activar'}</button>
+      <button class="plan-btn pbtn-run" onclick="ejecutarPlanAhoraIndividual('${esc(p.PlanID)}','${esc(p.Nombre)}')">▶ Ejecutar ahora</button>
+    </div>
+  </div>`;
+}
+
+// ── Vista "Por Planta": Planta > Máquina > planes vinculados (repetidos
+// si un plan vincula varias máquinas) > auxiliares (solo listados, sin
+// plan propio todavía). Equipos sin EquipoID en la hoja Equipos (ej.
+// plantas fuera de Planta 3) caen en la sección "Sin datos de equipos".
+function renderPlanesPorPlanta(){
+  const cont = document.getElementById('planesPorPlanta');
+  if(!planesTodos.length){
+    cont.innerHTML = '<div class="col-empty">Todavía no hay planes de preventivo.</div>';
+    return;
+  }
+
+  // Índice de equipos: Nombre -> {Tipo, EquipoPadre, Planta}, y Nombre de
+  // máquina -> lista de sus auxiliares (Tipo==='auxiliar' con ese padre)
+  const equipoPorNombre = {};
+  const auxiliaresPorMaquina = {};
+  equiposTodos.forEach(e => {
+    equipoPorNombre[e.Nombre] = e;
+    if(e.Tipo === 'auxiliar' && e.EquipoPadre){
+      (auxiliaresPorMaquina[e.EquipoPadre] = auxiliaresPorMaquina[e.EquipoPadre] || []).push(e);
+    }
+  });
+
+  // planesPorMaquina: Nombre de máquina -> lista de planes que la vinculan
+  const planesPorMaquina = {};
+  const planesSinDatosEquipo = []; // planes cuyo equipo no está en la hoja Equipos
+  planesTodos.forEach(p => {
+    (p.Equipos||[]).forEach(nombreEquipo => {
+      if(equipoPorNombre[nombreEquipo]){
+        (planesPorMaquina[nombreEquipo] = planesPorMaquina[nombreEquipo] || []).push(p);
+      } else {
+        planesSinDatosEquipo.push({plan: p, equipo: nombreEquipo});
+      }
+    });
+  });
+
+  // Agrupar máquinas y servicios por Planta (solo los que tienen algún plan vinculado)
+  const maquinasPorPlanta = {};
+  equiposTodos.filter(e => e.Tipo === 'maquina' || e.Tipo === 'servicio').forEach(e => {
+    if(planesPorMaquina[e.Nombre]){
+      (maquinasPorPlanta[e.Planta] = maquinasPorPlanta[e.Planta] || []).push(e);
+    }
+  });
+
+  let html = '';
+  Object.keys(maquinasPorPlanta).sort().forEach(planta => {
+    html += `<div class="planta-grupo">
+      <div class="planta-h">🏭 ${esc(planta)}</div>`;
+    maquinasPorPlanta[planta].forEach(maq => {
+      const planesDeMaquina = planesPorMaquina[maq.Nombre] || [];
+      const auxiliares = auxiliaresPorMaquina[maq.Nombre] || [];
+      html += `<div class="maquina-grupo">
+        <div class="maquina-h"><span>⚙ ${esc(maq.Nombre)}</span><span class="maquina-tag">${esc(maq.TAG||'')}</span></div>
+        <div class="maquina-planes">${planesDeMaquina.map(p => _tarjetaPlanCompacta(p)).join('')}</div>
+        ${auxiliares.length ? `<div class="maquina-auxiliares-nota">🔧 ${auxiliares.length} auxiliar(es) vinculados — sin plan de mantenimiento propio todavía</div>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  if(planesSinDatosEquipo.length){
+    const nombresUnicos = [...new Set(planesSinDatosEquipo.map(x => x.equipo))];
+    const planesUnicos = [...new Map(planesSinDatosEquipo.map(x => [x.plan.PlanID, x.plan])).values()];
+    html += `<div class="planta-grupo">
+      <div class="planta-h">📦 Sin datos de equipos (planta sin jerarquía cargada aún)</div>
+      <div class="maquina-grupo">
+        <div class="maquina-h"><span>Equipos: ${nombresUnicos.map(n=>esc(n)).join(', ')}</span></div>
+        <div class="maquina-planes">${planesUnicos.map(p => _tarjetaPlanCompacta(p)).join('')}</div>
+      </div>
+    </div>`;
+  }
+
+  cont.innerHTML = html || '<div class="col-empty">No hay planes vinculados a equipos con jerarquía cargada.</div>';
 }
 
 function abrirModalPlan(planId){
