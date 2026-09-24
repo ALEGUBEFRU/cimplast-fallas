@@ -1188,8 +1188,9 @@ let agendaModo = 'semana'; // 'semana' o 'mes'
 
 function setAgendaModo(modo){
   agendaModo = modo;
-  ['semana','mes','calendario','lista'].forEach(m => {
-    const btn = document.getElementById('btnModo'+m.charAt(0).toUpperCase()+m.slice(1));
+  const idsPorModo = { semana:'btnModoSemana', mes:'btnModoMes', calendario:'btnModoCal', lista:'btnModoLista' };
+  Object.keys(idsPorModo).forEach(m => {
+    const btn = document.getElementById(idsPorModo[m]);
     if(btn){ btn.style.borderColor = modo===m ? 'var(--accent)' : ''; btn.style.color = modo===m ? 'var(--accent)' : ''; }
   });
   document.querySelector('.agenda-nav').style.display = modo==='lista' ? 'none' : 'flex';

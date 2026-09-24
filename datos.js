@@ -587,6 +587,23 @@ window.CIMPLAST_DATA = (function() {
       return tecStr.split(',').map(t => t.trim()).filter(Boolean);
     },
 
+    // ── estadoVisible: Estado + SubEstado combinados en un solo texto ──
+    // Usada en supervisores.html y supervisores-preventivo.html (Kanban,
+    // modal de detalle y vista Lista/Atrasos). Faltaba en este archivo —
+    // causaba "D.estadoVisible is not a function" y cortaba el render
+    // de la ventana de planificación antes de pintar la tabla.
+    estadoVisible(o) {
+      const SUBESTADO_TXT = {
+        'Aguardando repuestos': 'Aguardando repuestos',
+        'Aguardando fecha de intervención': 'Aguardando fecha',
+        'Sin técnico disponible': 'Sin técnico'
+      };
+      const estado = o.Estado || '—';
+      if (estado === 'Cerrada' || estado === 'Anulada' || !o.SubEstado) return estado;
+      const sub = SUBESTADO_TXT[o.SubEstado] || o.SubEstado;
+      return estado + ' — ' + sub;
+    },
+
     fmtFecha(iso) {
       if (!iso) return '—';
       const s = String(iso).slice(0, 10);
