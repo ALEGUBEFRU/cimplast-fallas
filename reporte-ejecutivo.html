@@ -459,7 +459,7 @@ function renderReporte(){
               <td>${esc(o.Tecnico||'—')}</td>
               <td style="color:var(--danger);font-weight:600">${D.fmtFecha(o.FechaProgramada)}</td>
               <td><span class="badge badge-${esc((o.Prioridad||'').toLowerCase())}">${esc(o.Prioridad||'—')}</span></td>
-              <td><span class="badge badge-${esc((o.Estado||'').toLowerCase().replace(' ',''))||'abierta'}">${esc(o.Estado||'—')}</span></td>
+              <td><span class="badge badge-${esc((o.Estado||'').toLowerCase().replace(' ',''))||'abierta'}">${esc(D.estadoVisible(o))}</span></td>
             </tr>`).join('')}
           </tbody>
         </table>`}

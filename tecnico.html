@@ -319,7 +319,7 @@ function render(){
     const p=o.Prioridad||'Media', cerrada=o.Estado==='Cerrada';
     const cls=cerrada?'t-done':p==='Alta'?'t-alta':p==='Baja'?'t-baja':'t-media';
     return '<div class="ot'+(p==='Alta'&&!cerrada?' alta':'')+'">'
-      +'<div class="ot-top"><span class="ot-num">'+esc(o.NroOT)+'</span><span class="tag '+cls+'">'+(cerrada?'Cerrada':esc(p))+'</span></div>'
+      +'<div class="ot-top"><span class="ot-num">'+esc(o.NroOT)+'</span><span class="tag '+cls+'">'+(cerrada?(D.esAnulada(o)?'Anulada':'Cerrada'):esc(p))+'</span></div>'
       +'<div class="ot-eq">'+esc(o.Equipo||'—')+'</div>'
       +'<div class="ot-desc">'+esc(o.Descripcion||'Sin descripción')+'</div>'
       +'<div class="ot-meta"><span>'+esc(o.Planta||'')+'</span><span>'+esc(o.Tipo||'')+'</span>'

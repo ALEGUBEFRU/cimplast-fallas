@@ -857,7 +857,7 @@ function cardOTLista(o){
     +'<span class="ot-lista-eq">'+esc(o.Equipo||'—')+'</span>'
     +'<span class="ot-lista-tec">'+esc(o.Tecnico||'sin asignar')+'</span>'
     +(o.FechaProgramada?'<span class="ot-lista-fecha">'+esc(D.fmtFecha(o.FechaProgramada))+'</span>':'')
-    +'<span class="tag ot-lista-prio '+prioCls+'">'+esc(p)+'</span>'
+    +'<span class="tag ot-lista-prio '+prioCls+'">'+(cerrada&&D.esAnulada(o)?'Anulada':esc(p))+'</span>'
     +'</div>';
 }
 
@@ -940,7 +940,7 @@ function cardOT(o){
   const fallaAsoc=o.FallaID?fallasTodas.find(f=>f.ID===o.FallaID):null;
   const fotoUrl=fallaAsoc&&fallaAsoc.FotoURL?fallaAsoc.FotoURL:'';
   return '<div class="card'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'" onclick="abrirDetalleOT('+D.jsa(o.NroOT)+')" style="cursor:pointer">'
-    +'<div class="card-top"><span class="card-num">'+esc(o.NroOT||'—')+'</span><span class="tag '+cls+'">'+esc(p)+'</span></div>'
+    +'<div class="card-top"><span class="card-num">'+esc(o.NroOT||'—')+'</span><span class="tag '+cls+'">'+(cerrada&&D.esAnulada(o)?'Anulada':esc(p))+'</span></div>'
     +'<div class="card-eq">'+esc(o.Equipo||'—')+'</div>'
     +'<div class="card-desc">'+esc((o.Descripcion||'').slice(0,90))+((o.Descripcion||'').length>90?'…':'')+'</div>'
     +'<div class="card-meta"><span>'+esc(o.Planta||'—')+'</span><span>'+esc(o.Tecnico||'sin asignar')+'</span>'
@@ -1244,7 +1244,7 @@ function renderListaAtrasos(){
       <span class="agenda-tecnico" title="${esc(o.Tecnico||'')}">${esc(o.Tecnico||'Sin asignar')}</span>
       <span class="agenda-planta">${esc(o.Planta||'—')}</span>
       <span style="color:${prioColor};font-weight:700;font-size:11px">${esc(o.Prioridad||'—')}</span>
-      <span style="color:${estadoColor};font-weight:700;font-size:11px">${esc(o.Estado||'—')}</span>
+      <span style="color:${estadoColor};font-weight:700;font-size:11px">${esc(D.estadoVisible(o))}</span>
       <span style="color:${atrasoColor};font-weight:800;font-size:11px;min-width:80px;text-align:right">${atrasoTxt}</span>
     </div>`;
   }).join('');
@@ -1381,7 +1381,7 @@ function agendaOtRow(o){
     <span class="agenda-tecnico" title="${esc(o.Tecnico||'')}">${esc(o.Tecnico||'Sin asignar')}</span>
     <span class="agenda-planta">${esc(o.Planta||'—')}</span>
     <span style="color:${prio};font-weight:700;font-size:11px">${esc(o.Prioridad||'—')}</span>
-    <span style="color:${estado};font-weight:700;font-size:11px">${esc(o.Estado||'—')}</span>
+    <span style="color:${estado};font-weight:700;font-size:11px">${esc(D.estadoVisible(o))}</span>
   </div>`;
 }
 
@@ -1466,8 +1466,8 @@ function abrirDetalleOT(nroOT){
   document.getElementById('dOtHoras').textContent = o.HorasEstimada ? o.HorasEstimada + ' h' : '—';
   const estado = o.Estado==='Cerrada' ? 'var(--ok)' : o.Estado==='En curso' ? 'var(--info)' : 'var(--accent)';
   const dEst = document.getElementById('dOtEstado');
-  dEst.textContent = o.Estado || '—';
-  dEst.style.color = estado;
+  dEst.textContent = D.estadoVisible(o);
+  dEst.style.color = D.esAnulada(o)&&o.Estado==='Cerrada' ? 'var(--muted)' : estado;
   const cerrada = o.Estado === 'Cerrada';
   document.getElementById('dOtCierreWrap').style.display = cerrada ? 'block' : 'none';
   if(cerrada){
@@ -1514,7 +1514,7 @@ function abrirEventosDia(dStr){
           <div style="font-size:10.5px;color:var(--muted);font-family:var(--mono)">${esc(o.NroOT||'—')} · ${esc(o.Tecnico||'sin asignar')}</div>
         </div>
         <span style="font-size:9.5px;font-weight:700;color:${prioColor}">${p}</span>
-        <span style="font-size:9.5px;font-weight:700;color:${estadoColor}">${esc(o.Estado||'—')}</span>
+        <span style="font-size:9.5px;font-weight:700;color:${estadoColor}">${esc(D.estadoVisible(o))}</span>
       </div>`;
     }).join('');
   }
