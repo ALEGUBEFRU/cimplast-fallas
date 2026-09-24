@@ -434,7 +434,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 (function () {
   var CLAVE_CORRECTA = "plan653z";
   var LLAVE_GUARDADA = "cimplast_preventivo_autorizado";
-  if (localStorage.getItem(LLAVE_GUARDADA) === "si") {
+  if (localStorage.getItem(LLAVE_GUARDADA) === CLAVE_CORRECTA) {
     var pantalla = document.getElementById("pantalla-clave");
     if (pantalla) pantalla.remove();
   } else {
@@ -444,7 +444,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
     function intentarEntrar() {
       var valor = (input.value || "").trim().toLowerCase();
       if (valor === CLAVE_CORRECTA) {
-        localStorage.setItem(LLAVE_GUARDADA, "si");
+        localStorage.setItem(LLAVE_GUARDADA, CLAVE_CORRECTA);
         document.getElementById("pantalla-clave").remove();
       } else {
         error.textContent = "Contrasena incorrecta, proba de nuevo.";
@@ -1009,26 +1009,21 @@ function limpiarFiltros(){
 function renderKPIs(fallas,ots,desde,hasta){
   const dias=Math.max(1,Math.round((new Date(hasta||today())-new Date(desde||isoShift(-30)))/86400000)+1);
   const horasPeriodo=dias*24;
-  const cerradas=ots.filter(o=>o.Estado==='Cerrada');
-  const conHoras=cerradas.filter(o=>num(o.HorasReales)>0);
-  const mttr=conHoras.length?conHoras.reduce((a,o)=>a+num(o.HorasReales),0)/conHoras.length:0;
-  const nFallas=fallas.length;
-  const equiposConFalla=new Set(fallas.map(f=>f.Equipo).filter(Boolean)).size||1;
-  const mtbf=nFallas?(horasPeriodo*equiposConFalla)/nFallas:0;
-  const disp=(mtbf+mttr)>0?mtbf/(mtbf+mttr)*100:100;
-  const cumpl=ots.length?cerradas.length/ots.length*100:0;
-  const backlog=ots.filter(o=>o.Estado!=='Cerrada').length;
+  // Fórmula única compartida con el Reporte Ejecutivo (datos.js → D.kpis)
+  const k=D.kpis(fallas,ots,dias);
+  const cerradas=k.cerradas, conHoras=k.conHoras, mttr=k.mttr, nFallas=k.nFallas,
+        equiposConFalla=k.equiposConFalla, mtbf=k.mtbf, disp=k.disp, cumpl=k.cumpl, backlog=k.backlog;
   const detenidas=fallas.filter(f=>(f.Detenido||'').includes('parado')&&f.Estado!=='Concluido');
   const parados=detenidas.length;
   const equiposParados=new Set(detenidas.map(f=>f.Equipo).filter(Boolean)).size;
-  const costo=cerradas.reduce((a,o)=>a+num(o.Costo),0);
+  const costo=k.costo;
 
   const tone=(v,g,y)=>v>=g?'var(--ok)':v>=y?'var(--warn)':'var(--danger)';
   const K=[
     {k:'Disponibilidad',v:disp.toFixed(1),u:'%',n:'MTBF / (MTBF + MTTR)',t:tone(disp,95,88)},
     {k:'MTBF',v:mtbf<1000?mtbf.toFixed(0):(mtbf/1000).toFixed(1)+'k',u:'h',n:nFallas+' fallas · '+equiposConFalla+' equipos · '+dias+' días',t:'var(--info)'},
     {k:'MTTR',v:mttr.toFixed(1),u:'h',n:conHoras.length+' OT con horas cargadas',t:mttr?tone(8-mttr,4,1):'var(--border-hi)'},
-    {k:'Cumplimiento',v:cumpl.toFixed(0),u:'%',n:cerradas.length+' de '+ots.length+' OT cerradas',t:tone(cumpl,85,65)},
+    {k:'Cumplimiento',v:cumpl.toFixed(0),u:'%',n:cerradas.length+' de '+k.validas.length+' OT cerradas'+(k.anuladas.length?' · '+k.anuladas.length+' anuladas excluidas':''),t:tone(cumpl,85,65)},
     {k:'Backlog',v:backlog,u:'',n:'OT abiertas o en curso',t:backlog>10?'var(--danger)':backlog>4?'var(--warn)':'var(--ok)'},
     {k:'Fallas con línea parada',v:parados,u:'',n:equiposParados+' equipo(s) distintos sin concluir',t:parados?'var(--danger)':'var(--ok)'},
     {k:'Costo del período',v:costo>=1e6?(costo/1e6).toFixed(1)+'M':(costo/1000).toFixed(0)+'k',u:'Gs',n:'repuestos y servicios en OT cerradas',t:'var(--accent)'}
@@ -1159,7 +1154,7 @@ function cardOTLista(o){
   const p=o.Prioridad||'Media';
   const prioCls=p==='Alta'?'t-alta':p==='Baja'?'t-baja':'t-media';
   const cerrada=o.Estado==='Cerrada';
-  return '<div class="ot-lista-row'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'" onclick="abrirDetalleOT(\''+esc(o.NroOT)+'\')">'
+  return '<div class="ot-lista-row'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'" onclick="abrirDetalleOT('+D.jsa(o.NroOT)+')">'
     +'<span class="ot-lista-nro">'+esc(o.NroOT||'—')+'</span>'
     +'<span class="ot-lista-eq">'+esc(o.Equipo||'—')+'</span>'
     +'<span class="ot-lista-tec">'+esc(o.Tecnico||'sin asignar')+'</span>'
@@ -1224,7 +1219,7 @@ function cardFallaLista(f){
     +'<span class="falla-lista-id">'+esc((f.ID||'').slice(-6)||'—')+'</span>'
     +'<span class="falla-lista-eq">'+esc(f.Equipo||'—')+'</span>'
     +(f.Estado==='Pendiente'?'<button class="falla-lista-btn" data-act="genot" data-id="'+esc(f.ID)+'">OT</button>':'')
-    +(f.FotoURL?'<button class="falla-lista-foto" onclick="verFoto(event,\''+esc(f.FotoURL)+'\',\''+esc(f.Equipo||'Falla')+'\')">📷</button>':'')
+    +(f.FotoURL?'<button class="falla-lista-foto" onclick="verFoto(event,'+D.jsa(f.FotoURL)+','+D.jsa(f.Equipo||'Falla')+')">📷</button>':'')
     +'</div>';
 }
 
@@ -1237,7 +1232,7 @@ function cardFalla(f){
     +'<div class="card-desc">'+esc((f.Sintoma||'').slice(0,100))+((f.Sintoma||'').length>100?'…':'')+'</div>'
     +'<div class="card-meta"><span>'+esc(f.Planta||'—')+'</span><span>'+esc(f.Sistema||'')+'</span><span>'+esc(f.Operador||'')+'</span><span>'+esc(D.fmtFechaHora(f.Fecha,f.Hora))+'</span></div>'
     +(f.Estado==='Pendiente'?'<div class="card-acts"><button class="card-btn b-ot" data-act="genot" data-id="'+esc(f.ID)+'">Generar OT</button></div>':'')
-    +(f.FotoURL?'<button class="card-foto-btn" onclick="verFoto(event,\''+esc(f.FotoURL)+'\',\''+esc(f.Equipo||'Falla')+'\')" >📷 Ver foto</button>':'')
+    +(f.FotoURL?'<button class="card-foto-btn" onclick="verFoto(event,'+D.jsa(f.FotoURL)+','+D.jsa(f.Equipo||'Falla')+')" >📷 Ver foto</button>':'')
     +'</div>';
 }
 const SUBESTADO_LABELS={
@@ -1257,7 +1252,7 @@ function cardOT(o){
   const fallaAsoc=o.FallaID?fallasTodas.find(f=>f.ID===o.FallaID):null;
   const fotoUrl=fallaAsoc&&fallaAsoc.FotoURL?fallaAsoc.FotoURL:'';
   const tieneChecklist=!!(o.Checklist&&o.Checklist!=='[]'&&o.Checklist!=='');
-  return '<div class="card'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'" onclick="abrirDetalleOT(\''+esc(o.NroOT)+'\')" style="cursor:pointer">'
+  return '<div class="card'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'" onclick="abrirDetalleOT('+D.jsa(o.NroOT)+')" style="cursor:pointer">'
     +'<div class="card-top"><span class="card-num">'+esc(o.NroOT||'—')+'</span><span class="tag '+cls+'">'+esc(p)+'</span></div>'
     +'<div class="card-eq">'+esc(o.Equipo||'—')+'</div>'
     +(!cerrada&&o.SubEstado?chipSubEstado(o.SubEstado):'')
@@ -1273,9 +1268,9 @@ function cardOT(o){
     +(!cerrada?'<button class="card-btn b-close" data-act="cerrar" data-id="'+esc(o.NroOT)+'">Cerrar</button>':'')
     +'<button class="card-btn b-copy" data-act="wa" data-id="'+esc(o.NroOT)+'">WhatsApp</button></div>'
     +(tieneChecklist?'<div class="card-acts" style="margin-top:6px">'
-      +'<button class="card-btn" onclick="event.stopPropagation();imprimirChecklist(\''+esc(o.NroOT)+'\')">📄 PDF checklist</button>'
-      +'<button class="card-btn b-copy" onclick="event.stopPropagation();compartirChecklistWA(\''+esc(o.NroOT)+'\')">📲 Checklist WA</button></div>':'')
-    +(fotoUrl?'<button class="card-foto-btn" onclick="verFoto(event,\''+esc(fotoUrl)+'\',\''+esc(o.Equipo||'OT')+'\')">📷 Ver foto</button>':'')
+      +'<button class="card-btn" onclick="event.stopPropagation();imprimirChecklist('+D.jsa(o.NroOT)+')">📄 PDF checklist</button>'
+      +'<button class="card-btn b-copy" onclick="event.stopPropagation();compartirChecklistWA('+D.jsa(o.NroOT)+')">📲 Checklist WA</button></div>':'')
+    +(fotoUrl?'<button class="card-foto-btn" onclick="verFoto(event,'+D.jsa(fotoUrl)+','+D.jsa(o.Equipo||'OT')+')">📷 Ver foto</button>':'')
     +'</div>';
 }
 function bindCards(){
@@ -1373,7 +1368,7 @@ async function submitModalOT(){
   const btn=document.getElementById('btnModalOT'); btn.disabled=true; btn.textContent='Creando…';
   try{
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody({
-      accion:'ot', nroOT:nro, fallaId:fallaActual?.ID||'',
+      accion:'ot', reqId:(window._reqOT=window._reqOT||D.nuevoReqId()), fallaId:fallaActual?.ID||'',
       equipo:fallaActual?.Equipo||'', planta:fallaActual?.Planta||'',
       tipo, prioridad:prio, tecnico:tecnicos,
       descripcion:document.getElementById('mOtObs').value.trim(),
@@ -1381,7 +1376,7 @@ async function submitModalOT(){
       fechaProgramada:document.getElementById('mOtFecha').value, observaciones:''
     }))});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
-    showToast('OT '+nro+' creada'); closeModal('modalGenOT');
+    window._reqOT=null; showToast('OT '+(d.nroOT||'')+' creada'); closeModal('modalGenOT');
     setTimeout(recargar, 1500);
   }catch(e){ showToast('Error: '+e.message,'err'); }
   btn.disabled=false; btn.textContent='Crear OT';
@@ -1452,9 +1447,9 @@ async function submitCerrar(){
   if(anulando){
     const motivo=document.getElementById('mCerrarMotivo').value.trim();
     if(!motivo){ showToast('Cargá el motivo de anulación','err'); return; }
-    body={accion:'cerrarOT', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
+    body={accion:'cerrarOT', cerradoPor:'Supervisor', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
       anulando:true, horasReales:0, repuestos:'', costo:0,
-      observaciones:'ANULADA: '+motivo, fechaCierre:new Date().toISOString().slice(0,10)};
+      observaciones:'ANULADA: '+motivo, fechaCierre:today()};
     btn.disabled=true; btn.textContent='Anulando…';
   } else {
     const horas=document.getElementById('mCerrarHoras').value, obs=document.getElementById('mCerrarObs').value.trim();
@@ -1470,7 +1465,7 @@ async function submitCerrar(){
         (r.tipo==='lectura' && (r.valor===''||r.valor===undefined||r.valor===null)));
       if(incompleto){ showToast('Completá el checklist — falta "'+(incompleto.nombre||'un ítem')+'"','err'); return; }
     }
-    body={accion:'cerrarOT', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
+    body={accion:'cerrarOT', cerradoPor:'Supervisor', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
       anulando:false, horasReales:parseFloat(horas), repuestos:document.getElementById('mCerrarRepuestos').value.trim(),
       costo:parseFloat(document.getElementById('mCerrarCosto').value)||0,
       observaciones:obs, fechaCierre:document.getElementById('mCerrarFecha').value,
@@ -1522,12 +1517,12 @@ async function crearOTDirecta(){
   const btn=document.getElementById('btnNuevaOT'); btn.disabled=true; btn.textContent='Creando…';
   try{
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody({
-      accion:'ot', nroOT:nro, fallaId:'', equipo, planta, tipo, prioridad:prio,
+      accion:'ot', reqId:(window._reqOT=window._reqOT||D.nuevoReqId()), fallaId:'', equipo, planta, tipo, prioridad:prio,
       tecnico:tecnicos, descripcion:desc,
       horasEstimadas:g('nOtHoras')||'', fechaProgramada:g('nOtFecha'), observaciones:g('nOtObs').trim()
     }))});
     const d=await r.json(); if(d.ok===false) throw new Error(d.error);
-    showToast('OT '+nro+' creada');
+    window._reqOT=null; showToast('OT '+(d.nroOT||'')+' creada');
     ['nOtDesc','nOtObs','nOtHoras'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('nOtNro').value=nuevoNro();
     document.querySelectorAll('#viewNuevaOt .chip').forEach(c=>c.classList.remove('selected'));
@@ -1552,7 +1547,7 @@ function cargarTecnicosSelects(){
 }
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const isoShift=n=>new Date(Date.now()+n*86400000).toISOString().slice(0,10);
-const nuevoNro=()=>'OT-'+new Date().getFullYear()+'-'+Date.now().toString().slice(-4);
+const nuevoNro=()=>'(se asigna al guardar)'; // el servidor asigna el correlativo real
 let toastTimer;
 function showToast(msg,type='ok'){
   const t=document.getElementById('toast');
@@ -1673,10 +1668,10 @@ function renderPlanes(){
       </div>
       <div class="plan-meta"><span>Última generación: ${ultimaGen}</span></div>
       <div class="plan-acts">
-        <button class="plan-btn pbtn-edit" onclick="abrirModalPlan('${esc(p.PlanID)}')">✏ Editar</button>
-        <button class="plan-btn ${activo?'pbtn-pause':'pbtn-play'}" onclick="togglePlan('${esc(p.PlanID)}',${activo})">${activo?'⏸ Pausar':'▶ Activar'}</button>
-        <button class="plan-btn pbtn-run" onclick="ejecutarPlanAhoraIndividual('${esc(p.PlanID)}','${esc(p.Nombre)}')" id="btnRun-${esc(p.PlanID)}">▶ Ejecutar ahora</button>
-        <button class="plan-btn pbtn-del" onclick="confirmarEliminarPlan('${esc(p.PlanID)}','${esc(p.Nombre)}')">🗑</button>
+        <button class="plan-btn pbtn-edit" onclick="abrirModalPlan(${D.jsa(p.PlanID)})">✏ Editar</button>
+        <button class="plan-btn ${activo?'pbtn-pause':'pbtn-play'}" onclick="togglePlan(${D.jsa(p.PlanID)},${activo})">${activo?'⏸ Pausar':'▶ Activar'}</button>
+        <button class="plan-btn pbtn-run" onclick="ejecutarPlanAhoraIndividual(${D.jsa(p.PlanID)},${D.jsa(p.Nombre)})" id="btnRun-${esc(p.PlanID)}">▶ Ejecutar ahora</button>
+        <button class="plan-btn pbtn-del" onclick="confirmarEliminarPlan(${D.jsa(p.PlanID)},${D.jsa(p.Nombre)})">🗑</button>
       </div>
     </div>`;
   }).join('');
@@ -1695,10 +1690,10 @@ function renderPlanes(){
       <span class="pr-meta">${esc(p.Planta||'—')}</span>
       <span class="pr-meta">${ultimaGen}</span>
       <div class="pr-acts">
-        <button class="plan-btn pbtn-edit" onclick="abrirModalPlan('${esc(p.PlanID)}')">✏</button>
-        <button class="plan-btn ${activo?'pbtn-pause':'pbtn-play'}" onclick="togglePlan('${esc(p.PlanID)}',${activo})">${activo?'⏸':'▶'}</button>
-        <button class="plan-btn pbtn-run" onclick="ejecutarPlanAhoraIndividual('${esc(p.PlanID)}','${esc(p.Nombre)}')" title="Ejecutar ahora">▶⚡</button>
-        <button class="plan-btn pbtn-del" onclick="confirmarEliminarPlan('${esc(p.PlanID)}','${esc(p.Nombre)}')">🗑</button>
+        <button class="plan-btn pbtn-edit" onclick="abrirModalPlan(${D.jsa(p.PlanID)})">✏</button>
+        <button class="plan-btn ${activo?'pbtn-pause':'pbtn-play'}" onclick="togglePlan(${D.jsa(p.PlanID)},${activo})">${activo?'⏸':'▶'}</button>
+        <button class="plan-btn pbtn-run" onclick="ejecutarPlanAhoraIndividual(${D.jsa(p.PlanID)},${D.jsa(p.Nombre)})" title="Ejecutar ahora">▶⚡</button>
+        <button class="plan-btn pbtn-del" onclick="confirmarEliminarPlan(${D.jsa(p.PlanID)},${D.jsa(p.Nombre)})">🗑</button>
       </div>
     </div>`;
   }).join('');
@@ -1724,9 +1719,9 @@ function _tarjetaPlanCompacta(p){
     </div>
     <div class="plan-meta"><span>Última generación: ${ultimaGen}</span></div>
     <div class="plan-acts">
-      <button class="plan-btn pbtn-edit" onclick="abrirModalPlan('${esc(p.PlanID)}')">✏ Editar</button>
-      <button class="plan-btn ${activo?'pbtn-pause':'pbtn-play'}" onclick="togglePlan('${esc(p.PlanID)}',${activo})">${activo?'⏸ Pausar':'▶ Activar'}</button>
-      <button class="plan-btn pbtn-run" onclick="ejecutarPlanAhoraIndividual('${esc(p.PlanID)}','${esc(p.Nombre)}')">▶ Ejecutar ahora</button>
+      <button class="plan-btn pbtn-edit" onclick="abrirModalPlan(${D.jsa(p.PlanID)})">✏ Editar</button>
+      <button class="plan-btn ${activo?'pbtn-pause':'pbtn-play'}" onclick="togglePlan(${D.jsa(p.PlanID)},${activo})">${activo?'⏸ Pausar':'▶ Activar'}</button>
+      <button class="plan-btn pbtn-run" onclick="ejecutarPlanAhoraIndividual(${D.jsa(p.PlanID)},${D.jsa(p.Nombre)})">▶ Ejecutar ahora</button>
     </div>
   </div>`;
 }
@@ -2082,13 +2077,13 @@ function renderListaAtrasos(){
       diasAbiertaTxt=o._diasAbierta+' día'+(o._diasAbierta===1?'':'s');
       diasAbiertaColor = o._diasAbierta>=15?'var(--danger)':o._diasAbierta>=7?'var(--warn)':'var(--muted)';
     }
-    return `<div class="agenda-ot-row con-atraso" onclick="abrirDetalleOT('${o.NroOT}')" style="cursor:pointer">
-      <span class="agenda-nro">${o.NroOT||'—'}</span>
-      <span class="agenda-equipo" title="${o.Equipo||''}">${o.Equipo||'—'}</span>
-      <span class="agenda-tecnico" title="${o.Tecnico||''}">${o.Tecnico||'Sin asignar'}</span>
-      <span class="agenda-planta">${o.Planta||'—'}</span>
-      <span style="color:${prioColor};font-weight:700;font-size:11px">${o.Prioridad||'—'}</span>
-      <span style="color:${estadoColor};font-weight:700;font-size:11px">${o.Estado||'—'}</span>
+    return `<div class="agenda-ot-row con-atraso" onclick="abrirDetalleOT(${D.jsa(o.NroOT)})" style="cursor:pointer">
+      <span class="agenda-nro">${esc(o.NroOT||'—')}</span>
+      <span class="agenda-equipo" title="${esc(o.Equipo||'')}">${esc(o.Equipo||'—')}</span>
+      <span class="agenda-tecnico" title="${esc(o.Tecnico||'')}">${esc(o.Tecnico||'Sin asignar')}</span>
+      <span class="agenda-planta">${esc(o.Planta||'—')}</span>
+      <span style="color:${prioColor};font-weight:700;font-size:11px">${esc(o.Prioridad||'—')}</span>
+      <span style="color:${estadoColor};font-weight:700;font-size:11px">${esc(o.Estado||'—')}</span>
       <span style="color:${atrasoColor};font-weight:800;font-size:11px;min-width:80px;text-align:right">${atrasoTxt}</span>
       <span style="color:${diasAbiertaColor};font-weight:700;font-size:11px;min-width:90px;text-align:right">${diasAbiertaTxt}</span>
       <span>${o.SubEstado?chipSubEstado(o.SubEstado):'—'}</span>
@@ -2222,12 +2217,12 @@ function agendaOtRow(o){
   const prio = o.Prioridad==='Alta' ? 'var(--danger)' : o.Prioridad==='Media' ? 'var(--warn)' : 'var(--muted)';
   const estado = o.Estado === 'Cerrada' ? 'var(--ok)' : o.Estado === 'En curso' ? 'var(--info)' : 'var(--accent)';
   return `<div class="agenda-ot-row">
-    <span class="agenda-nro">${o.NroOT||'—'}</span>
-    <span class="agenda-equipo" title="${o.Equipo||''}">${o.Equipo||'—'}</span>
-    <span class="agenda-tecnico" title="${o.Tecnico||''}">${o.Tecnico||'Sin asignar'}</span>
-    <span class="agenda-planta">${o.Planta||'—'}</span>
-    <span style="color:${prio};font-weight:700;font-size:11px">${o.Prioridad||'—'}</span>
-    <span style="color:${estado};font-weight:700;font-size:11px">${o.Estado||'—'}</span>
+    <span class="agenda-nro">${esc(o.NroOT||'—')}</span>
+    <span class="agenda-equipo" title="${esc(o.Equipo||'')}">${esc(o.Equipo||'—')}</span>
+    <span class="agenda-tecnico" title="${esc(o.Tecnico||'')}">${esc(o.Tecnico||'Sin asignar')}</span>
+    <span class="agenda-planta">${esc(o.Planta||'—')}</span>
+    <span style="color:${prio};font-weight:700;font-size:11px">${esc(o.Prioridad||'—')}</span>
+    <span style="color:${estado};font-weight:700;font-size:11px">${esc(o.Estado||'—')}</span>
   </div>`;
 }
 
@@ -2371,14 +2366,14 @@ function abrirEventosDia(dStr){
       const p = o.Prioridad||'Media';
       const prioColor = p==='Alta'?'var(--danger)':p==='Media'?'var(--warn)':'var(--muted)';
       const estadoColor = o.Estado==='Cerrada'?'var(--ok)':o.Estado==='En curso'?'var(--info)':'var(--accent)';
-      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer" onclick="closeModal('modalEventosDia');abrirDetalleOT('${o.NroOT}')">
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer" onclick="closeModal('modalEventosDia');abrirDetalleOT(${D.jsa(o.NroOT)})">
         <input type="checkbox" ${o.Estado==='Cerrada'?'checked':''} disabled style="accent-color:var(--accent);flex-shrink:0">
         <div style="flex:1;min-width:0">
-          <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.Equipo||'—'}</div>
-          <div style="font-size:10.5px;color:var(--muted);font-family:var(--mono)">${o.NroOT||'—'} · ${o.Tecnico||'sin asignar'}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(o.Equipo||'—')}</div>
+          <div style="font-size:10.5px;color:var(--muted);font-family:var(--mono)">${esc(o.NroOT||'—')} · ${esc(o.Tecnico||'sin asignar')}</div>
         </div>
         <span style="font-size:9.5px;font-weight:700;color:${prioColor}">${p}</span>
-        <span style="font-size:9.5px;font-weight:700;color:${estadoColor}">${o.Estado||'—'}</span>
+        <span style="font-size:9.5px;font-weight:700;color:${estadoColor}">${esc(o.Estado||'—')}</span>
       </div>`;
     }).join('');
   }
@@ -2438,7 +2433,7 @@ function renderCalendario(){
     const chips = otsDelDia.slice(0,MAX).map(o => {
       const cls = o.Prioridad==='Alta'?'alta':o.Prioridad==='Media'?'media':'baja';
       const cerrada = o.Estado==='Cerrada'?' cerrada':'';
-      return `<span class="cal-chip ${cls}${cerrada}" title="${o.NroOT} · ${o.Equipo||''} · ${o.Tecnico||''}" onclick="abrirDetalleOT('${o.NroOT}')">${o.Equipo||o.NroOT}</span>`;
+      return `<span class="cal-chip ${cls}${cerrada}" title="${esc(o.NroOT)} · ${esc(o.Equipo||'')} · ${esc(o.Tecnico||'')}" onclick="abrirDetalleOT(${D.jsa(o.NroOT)})">${esc(o.Equipo||o.NroOT)}</span>`;
     }).join('');
     const mas = otsDelDia.length > MAX ? `<span class="cal-mas">+${otsDelDia.length-MAX} más</span>` : '';
     const otsDelDiaTodas = porDia[dStr]||[];

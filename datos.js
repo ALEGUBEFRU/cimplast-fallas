@@ -527,6 +527,52 @@ window.CIMPLAST_DATA = (function() {
       return PLANTAS;
     },
 
+    // Escape para insertar texto en HTML
+    esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    },
+
+    // Escape para pasar texto como argumento JS dentro de un atributo onclick="...".
+    // esc() solo NO alcanza ahí: el navegador decodifica &#39; antes de ejecutar.
+    jsa(s) {
+      return this.esc(JSON.stringify(String(s ?? '')));
+    },
+
+    // Identificador único de cada envío — permite al servidor ignorar reintentos
+    nuevoReqId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'r-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+    },
+
+    esAnulada(o) {
+      return String(o.ObservacionesCierre || '').trim().toUpperCase().indexOf('ANULADA') === 0;
+    },
+
+    // ÚNICA fórmula de KPIs para todas las apps (antes Supervisores y Reporte
+    // Ejecutivo calculaban MTBF distinto: 285 h vs 9 h para el mismo mes).
+    // MTBF por equipo = horas del período × equipos con falla / fallas.
+    // Las OT anuladas no cuentan ni como cerradas ni en el total.
+    kpis(fallas, ots, dias) {
+      const n = v => Number(v) || 0;
+      const anuladas  = ots.filter(o => o.Estado === 'Cerrada' && this.esAnulada(o));
+      const validas   = ots.filter(o => !(o.Estado === 'Cerrada' && this.esAnulada(o)));
+      const cerradas  = validas.filter(o => o.Estado === 'Cerrada');
+      const conHoras  = cerradas.filter(o => n(o.HorasReales) > 0);
+      const mttr      = conHoras.length ? conHoras.reduce((a, o) => a + n(o.HorasReales), 0) / conHoras.length : 0;
+      const nFallas   = fallas.length;
+      const equiposConFalla = new Set(fallas.map(f => f.Equipo).filter(Boolean)).size || 1;
+      const horasPeriodo = Math.max(1, dias) * 24;
+      const mtbf      = nFallas ? (horasPeriodo * equiposConFalla) / nFallas : 0;
+      const disp      = (mtbf + mttr) > 0 ? mtbf / (mtbf + mttr) * 100 : 100;
+      const cumpl     = validas.length ? cerradas.length / validas.length * 100 : 0;
+      return {
+        mttr, mtbf, disp, cumpl, nFallas, equiposConFalla, dias: Math.max(1, dias),
+        cerradas, conHoras, anuladas, validas,
+        backlog: validas.filter(o => o.Estado !== 'Cerrada').length,
+        costo: cerradas.reduce((a, o) => a + n(o.Costo), 0)
+      };
+    },
+
     equiposDe(planta) {
       return EQUIPOS[planta] || [];
     },

@@ -191,7 +191,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 (function () {
   var CLAVE_CORRECTA = "cimp";
   var LLAVE_GUARDADA = "cimplast_operadores_autorizado";
-  if (localStorage.getItem(LLAVE_GUARDADA) === "si") {
+  if (localStorage.getItem(LLAVE_GUARDADA) === CLAVE_CORRECTA) {
     var pantalla = document.getElementById("pantalla-clave");
     if (pantalla) pantalla.remove();
   } else {
@@ -201,7 +201,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     function intentarEntrar() {
       var valor = (input.value || "").trim().toLowerCase();
       if (valor === CLAVE_CORRECTA) {
-        localStorage.setItem(LLAVE_GUARDADA, "si");
+        localStorage.setItem(LLAVE_GUARDADA, CLAVE_CORRECTA);
         document.getElementById("pantalla-clave").remove();
       } else {
         error.textContent = "Contrasena incorrecta, proba de nuevo.";
@@ -434,21 +434,41 @@ async function flushOutbox(manual){
   flushing=true;
   let ok=0,items=[];
   try{ items=await DB.all('outbox'); }catch(e){ flushing=false; return; }
+  let rechazados=0, ultimoError='';
   for(const it of items){
+    let d;
     try{
       const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody(it.body))});
       if(!r.ok) throw new Error('HTTP '+r.status);
-      const d=await r.json().catch(()=>({ok:true}));
-      if(d.ok===false) throw new Error(d.error||'API');
-      await DB.del('outbox',it.key);
-      if(it.meta&&it.meta.fallaId) marcarEnviado(it.meta.fallaId);
-      ok++;
-    }catch(e){ break; }  // se corta al primer fallo; reintenta después
+      d=await r.json().catch(()=>({ok:true}));
+    }catch(e){ break; }  // error de red: se corta y se reintenta después
+    if(d.ok===false){
+      // Rechazo del servidor: NO bloquear la cola. Token inválido = problema de
+      // configuración, se reintenta; el resto se descarta tras 5 intentos.
+      if(/autorizado/i.test(d.error||'')) break;
+      it.intentos=(it.intentos||0)+1; ultimoError=d.error||'error del servidor';
+      if(d.permanente||it.intentos>=5){ await DB.del('outbox',it.key); guardarRechazado(it,ultimoError); rechazados++; }
+      else { try{ await DB.add('outbox',it); }catch(e){} }
+      continue;
+    }
+    await DB.del('outbox',it.key);
+    if(it.meta&&it.meta.fallaId) marcarEnviado(it.meta.fallaId);
+    ok++;
   }
   flushing=false;
   updateQueueUI();
   if(ok){ showToast(ok===1?'Reporte sincronizado':ok+' registros sincronizados'); if(isActive('historial')) renderHistorial(); }
-  else if(manual&&items.length) showToast('No se pudo sincronizar todavía','err');
+  if(rechazados){ showToast(rechazados+' registro(s) rechazado(s) por el sistema: '+ultimoError+' — avisá a mantenimiento','err'); }
+  else if(!ok&&manual&&items.length) showToast('No se pudo sincronizar todavía','err');
+}
+function guardarRechazado(it,error){
+  // Se guarda sin fotos (peso) para poder recuperarlo a mano si hace falta
+  try{
+    const a=JSON.parse(localStorage.getItem('cimplast_rechazados')||'[]');
+    const b=Object.assign({},it.body); delete b.fotos;
+    a.unshift({body:b,error,fecha:new Date().toISOString()});
+    localStorage.setItem('cimplast_rechazados',JSON.stringify(a.slice(0,50)));
+  }catch(e){}
 }
 async function updateQueueUI(){
   const n=await outboxCount();
@@ -681,7 +701,7 @@ function abrirGenOT(id){
   document.getElementById('otOrigenDesc').textContent=(f.sintoma||'').slice(0,140);
   document.getElementById('otDescripcion').value=f.sintoma||'';
   document.getElementById('otFecha').value=today();
-  document.getElementById('otNro').value='OT-'+new Date().getFullYear()+'-'+Date.now().toString().slice(-4);
+  document.getElementById('otNro').value='(se asigna al guardar)';
   cargarTecnicos();
   document.querySelectorAll('#otTipoGroup .chip, #otPrioGroup .chip').forEach(c=>c.classList.remove('selected'));
   document.querySelector('#otTipoGroup .chip[data-val="Correctivo"]')?.classList.add('selected');
@@ -706,7 +726,7 @@ async function submitOT(){
   const btn=document.getElementById('btnOTSubmit');
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Creando…';
   await enqueue({
-    accion:'ot', nroOT:nro, fallaId:otFalla?.id||'',
+    accion:'ot', reqId:window.CIMPLAST_DATA.nuevoReqId(), fallaId:otFalla?.id||'',
     equipo:otFalla?.equipo||'', planta:otFalla?.planta||'',
     tipo, prioridad:prio, tecnico:ts.selectedOptions[0]?.dataset.nombre||'',
     descripcion:document.getElementById('otDescripcion').value.trim()||otFalla?.sintoma||'',
@@ -714,9 +734,9 @@ async function submitOT(){
     fechaProgramada:document.getElementById('otFecha').value,
     observaciones:document.getElementById('otObs').value.trim()
   });
-  if(otFalla){ otFalla.estado='En curso'; otFalla.otNro=nro; updateLocal(otFalla); }
+  if(otFalla){ otFalla.estado='En curso'; updateLocal(otFalla); }
   btn.disabled=false; btn.textContent='Crear orden de trabajo';
-  showToast(navigator.onLine?('OT '+nro+' creada'):('OT '+nro+' en cola — se envía al volver la red'));
+  showToast(navigator.onLine?'OT creada — el número lo asigna el sistema':'OT en cola — se envía al volver la red');
   showView('historial');
   flushOutbox();
 }
