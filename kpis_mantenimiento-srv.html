@@ -1,0 +1,408 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>Cimplast — Dashboard Mantenimiento</title>
+<style>
+:root{color-scheme:light}
+:root {
+  --bg:#F0F4F8;--surface:#fff;--surface2:#E8EDF3;--border:#CBD5E1;--border2:#DDE3EC;
+  --text:#0F2037;--text2:#334155;--text3:#64748B;
+  --accent:#F59E0B;--crit:#EF4444;--warn:#F97316;--ok:#22C55E;--info:#3B82F6;--purple:#8B5CF6;
+  --font-head:'Barlow Condensed',sans-serif;--font-body:'DM Sans',sans-serif;--font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;flex-wrap:wrap;gap:8px;}
+.topbar-brand{font-family:var(--font-head);font-size:20px;font-weight:800;letter-spacing:.04em;color:var(--accent);}
+.topbar-date{font-family:var(--font-mono);font-size:11px;color:var(--text3);}
+.filters{display:flex;gap:8px;align-items:center;padding:10px 24px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.filters label{font-family:var(--font-mono);font-size:10px;color:var(--text3);}
+.filters input,.filters select{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  border-radius:6px;padding:5px 8px;font-family:var(--font-mono);font-size:11px;}
+.filters button{background:var(--accent);border:none;color:#141413;font-weight:700;border-radius:6px;
+  padding:6px 12px;font-family:var(--font-head);font-size:12px;cursor:pointer;letter-spacing:.03em;}
+.filters button.secondary{background:var(--surface2);color:var(--text2);}
+.status{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-left:auto;}
+.kpi-strip{display:flex;gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.kpi-tile{flex:1;background:var(--surface2);padding:12px 16px;min-width:140px;}
+.kpi-value{font-family:var(--font-head);font-size:26px;font-weight:900;color:var(--accent);line-height:1;}
+.kpi-unit{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin:2px 0;}
+.kpi-label{font-size:11px;color:var(--text2);}
+.main{padding:24px;max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:20px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.card-title{font-family:var(--font-head);font-size:14px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;}
+.card-sub{font-size:11px;color:var(--text3);margin-bottom:12px;}
+.week-nav{display:flex;align-items:center;gap:8px;}
+.week-nav button{background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  width:26px;height:26px;cursor:pointer;font-family:var(--font-mono);color:var(--text2);}
+.week-nav span{font-family:var(--font-mono);font-size:11px;color:var(--text2);white-space:nowrap;}
+canvas{max-width:100%;}
+.chart-wrap{position:relative;}
+.empty-note{font-size:12px;color:var(--text3);padding:24px 0;text-align:center;}
+@media(max-width:820px){.grid-2{grid-template-columns:1fr;}.kpi-tile{min-width:50%;}}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head><body>
+
+<div class="topbar">
+  <div class="topbar-brand">CIMPLAST · KPIs Mantenimiento</div>
+  <div class="topbar-date" id="topbarDate">Cargando…</div>
+</div>
+
+<div class="filters">
+  <label>Desde</label><input type="date" id="fDesde">
+  <label>Hasta</label><input type="date" id="fHasta">
+  <label>Planta</label><select id="fPlanta"><option value="">Todas</option></select>
+  <label>Máquina</label><select id="fEquipo"><option value="">Todas</option></select>
+  <button onclick="cargarTodo()">Actualizar</button>
+  <button class="secondary" onclick="limpiarFiltros()">Limpiar</button>
+  <span class="status" id="statusLabel"></span>
+</div>
+
+<div class="kpi-strip" id="kpiStrip"></div>
+
+<div class="main">
+
+  <div class="card">
+    <div class="card-title">
+      <span>Horas Semanales por Técnico (48h esperadas/semana)</span>
+      <div class="week-nav">
+        <button onclick="cambiarSemana(-1)">‹</button>
+        <span id="semanaLabel">—</span>
+        <button onclick="cambiarSemana(1)">›</button>
+      </div>
+    </div>
+    <div class="card-sub">Horas reales reportadas por técnico en la semana seleccionada, vs. 48h esperadas</div>
+    <div class="chart-wrap" style="height:320px;"><canvas id="chartHorasTecnico"></canvas></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Horas de Intervención por Máquina</div>
+      <div class="card-sub">Total de horas reales acumuladas (por fecha de creación de la OT)</div>
+      <div class="chart-wrap" style="height:340px;"><canvas id="chartHorasMaquina"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Reportes de Falla por Máquina</div>
+      <div class="card-sub">Cantidad de fallas reportadas por equipo</div>
+      <div class="chart-wrap" style="height:340px;"><canvas id="chartFallasMaquina"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Fallas Sin Orden de Trabajo</div>
+      <div class="card-sub">Fallas Abiertas o En curso sin ninguna OT asociada</div>
+      <div class="chart-wrap" style="height:280px;"><canvas id="chartSinOT"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Reportes de Falla por Planta</div>
+      <div class="card-sub">Distribución de fallas reportadas por planta</div>
+      <div class="chart-wrap" style="height:280px;"><canvas id="chartPorPlanta"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Estado de Órdenes de Trabajo</div>
+      <div class="card-sub">Distribución de OTs por estado (Abierta / En curso / Cerrada)</div>
+      <div class="chart-wrap" style="height:280px;"><canvas id="chartEstadoOT"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API_BASE = 'https://cmms.reliaworks.com/api';
+const API_KEY  = 'FAkrnR1ZP3lC-DJEFmWY9XUt5wsvrLpxw1_vBbept-o';
+const API_HEADERS = { 'x-api-key': API_KEY };
+
+let fallasTodas = [];
+let otsTodas = [];
+let semanaOffset = 0; // 0 = semana actual (o la última semana con datos en el rango filtrado)
+const charts = {};
+
+// ── Utilidades de fecha ──
+function fmtDia(d){ return String(d).slice(0,10); }
+function enRango(fechaStr, desde, hasta){
+  if(!fechaStr) return false;
+  const f = fmtDia(fechaStr);
+  return f >= desde && f <= hasta;
+}
+function inicioSemana(date){
+  // Lunes como inicio de semana calendario
+  const d = new Date(date);
+  const day = d.getUTCDay();
+  const diff = (day === 0 ? -6 : 1) - day;
+  d.setUTCDate(d.getUTCDate() + diff);
+  d.setUTCHours(0,0,0,0);
+  return d;
+}
+function fmtFechaCorta(d){
+  const dd = String(d.getUTCDate()).padStart(2,'0');
+  const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+  return `${dd}/${mm}`;
+}
+
+function destruirChart(id){
+  if(charts[id]){ charts[id].destroy(); delete charts[id]; }
+}
+
+// ── Carga de datos ──
+async function cargarTodo(){
+  document.getElementById('statusLabel').textContent = 'Actualizando…';
+  try{
+    const [rf, ro] = await Promise.all([
+      fetch(API_BASE+'/fallas',{headers:API_HEADERS}).then(r=>r.json()),
+      fetch(API_BASE+'/ordenes-trabajo',{headers:API_HEADERS}).then(r=>r.json())
+    ]);
+    fallasTodas = rf;
+    otsTodas = ro;
+    poblarFiltros();
+    document.getElementById('statusLabel').textContent = `${fallasTodas.length} fallas · ${otsTodas.length} OT`;
+    renderTodo();
+  }catch(e){
+    document.getElementById('statusLabel').textContent = 'Sin conexión';
+  }
+}
+
+function poblarFiltros(){
+  const selPlanta = document.getElementById('fPlanta');
+  const selEquipo = document.getElementById('fEquipo');
+  if(selPlanta.options.length <= 1){
+    const plantas = [...new Set(otsTodas.map(o=>o.planta_nombre).filter(Boolean))].sort();
+    for(const p of plantas){ const o=document.createElement('option'); o.value=p; o.textContent=p; selPlanta.appendChild(o); }
+  }
+  if(selEquipo.options.length <= 1){
+    const equipos = [...new Set(otsTodas.map(o=>o.equipo_nombre).filter(Boolean))].sort();
+    for(const e of equipos){ const o=document.createElement('option'); o.value=e; o.textContent=e; selEquipo.appendChild(o); }
+  }
+}
+
+function limpiarFiltros(){
+  document.getElementById('fPlanta').value='';
+  document.getElementById('fEquipo').value='';
+  const hoy = new Date();
+  const hace30 = new Date(hoy.getTime() - 30*86400000);
+  document.getElementById('fDesde').value = hace30.toISOString().slice(0,10);
+  document.getElementById('fHasta').value = hoy.toISOString().slice(0,10);
+  semanaOffset = 0;
+  cargarTodo();
+}
+
+// ── Render principal ──
+function renderTodo(){
+  const desde = document.getElementById('fDesde').value;
+  const hasta = document.getElementById('fHasta').value;
+  const planta = document.getElementById('fPlanta').value;
+  const equipo = document.getElementById('fEquipo').value;
+
+  let fallas = fallasTodas.filter(f => enRango(f.fecha_hora, desde, hasta));
+  let ots = otsTodas.filter(o => enRango(o.fecha_creacion, desde, hasta));
+  if(planta){ fallas = fallas.filter(f=>f.planta_nombre===planta); ots = ots.filter(o=>o.planta_nombre===planta); }
+  if(equipo){ fallas = fallas.filter(f=>f.equipo_nombre===equipo); ots = ots.filter(o=>o.equipo_nombre===equipo); }
+
+  renderKPIs(fallas, ots, desde, hasta);
+  renderHorasTecnico(otsTodas, planta, equipo); // usa TODAS las OTs — el filtro de semana es independiente del rango de fecha global
+  renderHorasMaquina(ots);
+  renderFallasMaquina(fallas);
+  renderSinOT(fallas, ots);
+  renderPorPlanta(fallas);
+  renderEstadoOT(ots);
+}
+
+// ── KPIs (incluye MTTR y MTBF) ──
+function renderKPIs(fallas, ots, desde, hasta){
+  const conHoras = ots.filter(o => o.ultimas_horas_reales != null && Number(o.ultimas_horas_reales) > 0);
+  const mttr = conHoras.length ? conHoras.reduce((a,o)=>a+Number(o.ultimas_horas_reales),0)/conHoras.length : null;
+
+  // MTBF aproximado: tiempo calendario entre fallas consecutivas del mismo equipo
+  const porEquipo = {};
+  for(const f of fallas){
+    if(!f.equipo_nombre) continue;
+    (porEquipo[f.equipo_nombre] = porEquipo[f.equipo_nombre]||[]).push(new Date(f.fecha_hora));
+  }
+  let sumaIntervalos = 0, nIntervalos = 0;
+  for(const eq in porEquipo){
+    const fechas = porEquipo[eq].sort((a,b)=>a-b);
+    for(let i=1;i<fechas.length;i++){
+      sumaIntervalos += (fechas[i]-fechas[i-1])/3600000;
+      nIntervalos++;
+    }
+  }
+  const mtbf = nIntervalos ? sumaIntervalos/nIntervalos : null;
+
+  const disp = (mtbf!=null && mttr!=null && (mtbf+mttr)>0) ? (mtbf/(mtbf+mttr)*100) : null;
+
+  const tiles = [
+    { val: ots.length, unit:'órdenes', label:'OTs en el período' },
+    { val: fallas.length, unit:'fallas', label:'CFs en el período' },
+    { val: mttr!=null?mttr.toFixed(1)+'h':'N/D', unit:'promedio reparación', label:'MTTR' },
+    { val: mtbf!=null?mtbf.toFixed(0)+'h':'N/D', unit:'aprox. — tiempo calendario', label:'MTBF' },
+    { val: disp!=null?disp.toFixed(1)+'%':'N/D', unit:'MTBF/(MTBF+MTTR)', label:'Disponibilidad' },
+  ];
+  document.getElementById('kpiStrip').innerHTML = tiles.map(t=>`
+    <div class="kpi-tile"><div class="kpi-value">${t.val}</div><div class="kpi-unit">${t.unit}</div><div class="kpi-label">${t.label}</div></div>`).join('');
+  document.getElementById('topbarDate').textContent = `Período: ${desde} — ${hasta}`;
+}
+
+// ── 1. Horas semanales por técnico (navegación por semana) ──
+function calcularSemanaActual(ots){
+  // La "semana 0" es la que contiene el evento más reciente con horas reales
+  const conHoras = ots.filter(o => o.ultimas_horas_reales && o.fecha_creacion);
+  if(!conHoras.length) return inicioSemana(new Date());
+  const maxFecha = conHoras.reduce((max,o)=> new Date(o.fecha_creacion)>max?new Date(o.fecha_creacion):max, new Date(0));
+  return inicioSemana(maxFecha);
+}
+function renderHorasTecnico(ots, planta, equipo){
+  let base = ots;
+  if(planta) base = base.filter(o=>o.planta_nombre===planta);
+  if(equipo) base = base.filter(o=>o.equipo_nombre===equipo);
+
+  const semanaBase = calcularSemanaActual(base);
+  const inicio = new Date(semanaBase); inicio.setUTCDate(inicio.getUTCDate() + semanaOffset*7);
+  const fin = new Date(inicio); fin.setUTCDate(fin.getUTCDate()+6);
+  document.getElementById('semanaLabel').textContent = `${fmtFechaCorta(inicio)} – ${fmtFechaCorta(fin)}`;
+
+  const desdeStr = inicio.toISOString().slice(0,10);
+  const hastaStr = fin.toISOString().slice(0,10);
+
+  const enSemana = base.filter(o => o.fecha_creacion && fmtDia(o.fecha_creacion) >= desdeStr && fmtDia(o.fecha_creacion) <= hastaStr && o.tecnico_nombre);
+  const porTecnico = {};
+  for(const o of enSemana) porTecnico[o.tecnico_nombre] = (porTecnico[o.tecnico_nombre]||0) + (Number(o.ultimas_horas_reales)||0);
+
+  const labels = Object.keys(porTecnico).sort((a,b)=>porTecnico[b]-porTecnico[a]);
+  const data = labels.map(t=>porTecnico[t]);
+  const colores = data.map(h => h>48 ? 'rgba(239,68,68,.75)' : h>=38 ? 'rgba(34,197,94,.75)' : 'rgba(249,115,22,.75)');
+
+  destruirChart('horasTecnico');
+  const ctx = document.getElementById('chartHorasTecnico').getContext('2d');
+  if(!labels.length){
+    ctx.canvas.parentElement.innerHTML = '<div class="empty-note">Sin horas reportadas en esta semana</div>';
+    return;
+  }
+  charts['horasTecnico'] = new Chart(ctx, {
+    type:'bar',
+    data:{ labels, datasets:[
+      { label:'Horas reales', data, backgroundColor:colores, borderRadius:4 },
+      { label:'Esperado (48h)', data:labels.map(()=>48), type:'line', borderColor:'#64748B', borderDash:[6,4], pointRadius:0, borderWidth:2 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12, font:{size:11} } } },
+      scales:{ y:{ beginAtZero:true, title:{display:true,text:'Horas'} } } }
+  });
+}
+function cambiarSemana(delta){
+  semanaOffset += delta;
+  const planta = document.getElementById('fPlanta').value;
+  const equipo = document.getElementById('fEquipo').value;
+  renderHorasTecnico(otsTodas, planta, equipo);
+}
+
+// ── 2. Horas de intervención por máquina ──
+function renderHorasMaquina(ots){
+  const porMaquina = {};
+  for(const o of ots){
+    if(!o.equipo_nombre || !o.ultimas_horas_reales) continue;
+    porMaquina[o.equipo_nombre] = (porMaquina[o.equipo_nombre]||0) + Number(o.ultimas_horas_reales);
+  }
+  const entradas = Object.entries(porMaquina).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  destruirChart('horasMaquina');
+  const ctx = document.getElementById('chartHorasMaquina').getContext('2d');
+  if(!entradas.length){ ctx.canvas.parentElement.innerHTML = '<div class="empty-note">Sin datos en el período</div>'; return; }
+  charts['horasMaquina'] = new Chart(ctx, {
+    type:'bar',
+    data:{ labels: entradas.map(e=>e[0]), datasets:[{ label:'Horas', data: entradas.map(e=>e[1]), backgroundColor:'rgba(59,130,246,.75)', borderRadius:4 }]},
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ x:{ beginAtZero:true, title:{display:true,text:'Horas'} } } }
+  });
+}
+
+// ── 3. Fallas por máquina ──
+function renderFallasMaquina(fallas){
+  const conteo = {};
+  for(const f of fallas) conteo[f.equipo_nombre] = (conteo[f.equipo_nombre]||0)+1;
+  const entradas = Object.entries(conteo).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  destruirChart('fallasMaquina');
+  const ctx = document.getElementById('chartFallasMaquina').getContext('2d');
+  if(!entradas.length){ ctx.canvas.parentElement.innerHTML = '<div class="empty-note">Sin fallas en el período</div>'; return; }
+  charts['fallasMaquina'] = new Chart(ctx, {
+    type:'bar',
+    data:{ labels: entradas.map(e=>e[0]), datasets:[{ label:'Fallas', data: entradas.map(e=>e[1]), backgroundColor:'rgba(239,68,68,.75)', borderRadius:4 }]},
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ x:{ beginAtZero:true, ticks:{precision:0}, title:{display:true,text:'Cantidad'} } } }
+  });
+}
+
+// ── 4. Fallas sin OT (torta) ──
+function renderSinOT(fallas, ots){
+  const activas = fallas.filter(f => f.estado === 'Abierta' || f.estado === 'En curso');
+  const fallaIdsConOT = new Set(otsTodas.map(o=>o.falla_id).filter(Boolean));
+  const sinOT = activas.filter(f => !fallaIdsConOT.has(f.falla_id));
+  const conOT = activas.length - sinOT.length;
+
+  destruirChart('sinOT');
+  const ctx = document.getElementById('chartSinOT').getContext('2d');
+  if(!activas.length){ ctx.canvas.parentElement.innerHTML = '<div class="empty-note">Sin fallas activas en el período</div>'; return; }
+  charts['sinOT'] = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels:[`Sin OT (${sinOT.length})`, `Con OT (${conOT})`], datasets:[{ data:[sinOT.length, conOT], backgroundColor:['rgba(239,68,68,.8)','rgba(34,197,94,.7)'] }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'bottom', labels:{font:{size:11}}},
+        tooltip:{ callbacks:{ label: c => `${c.label}: ${(c.raw/activas.length*100).toFixed(0)}%` } } } }
+  });
+}
+
+// ── 5. Fallas por planta (torta) ──
+function renderPorPlanta(fallas){
+  const conteo = {};
+  for(const f of fallas) conteo[f.planta_nombre] = (conteo[f.planta_nombre]||0)+1;
+  const entradas = Object.entries(conteo).sort((a,b)=>b[1]-a[1]);
+  destruirChart('porPlanta');
+  const ctx = document.getElementById('chartPorPlanta').getContext('2d');
+  if(!entradas.length){ ctx.canvas.parentElement.innerHTML = '<div class="empty-note">Sin fallas en el período</div>'; return; }
+  const paleta = ['#6366F1','#10B981','#F97316','#3B82F6','#8B5CF6','#EAB308'];
+  charts['porPlanta'] = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels: entradas.map(e=>e[0]), datasets:[{ data: entradas.map(e=>e[1]), backgroundColor: entradas.map((_,i)=>paleta[i%paleta.length]) }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'bottom', labels:{font:{size:11}}},
+        tooltip:{ callbacks:{ label: c => `${c.label}: ${c.raw} (${(c.raw/fallas.length*100).toFixed(0)}%)` } } } }
+  });
+}
+
+// ── 6. Estado de OTs (torta) ──
+function renderEstadoOT(ots){
+  const conteo = {};
+  for(const o of ots) conteo[o.estado] = (conteo[o.estado]||0)+1;
+  const orden = ['Abierta','En curso','Cerrada','Anulada'];
+  const entradas = orden.filter(e=>conteo[e]).map(e=>[e,conteo[e]]);
+  for(const k in conteo) if(!orden.includes(k)) entradas.push([k,conteo[k]]);
+
+  destruirChart('estadoOT');
+  const ctx = document.getElementById('chartEstadoOT').getContext('2d');
+  if(!entradas.length){ ctx.canvas.parentElement.innerHTML = '<div class="empty-note">Sin OTs en el período</div>'; return; }
+  const colorPorEstado = { 'Abierta':'rgba(249,115,22,.8)', 'En curso':'rgba(59,130,246,.8)', 'Cerrada':'rgba(34,197,94,.75)', 'Anulada':'rgba(100,116,139,.7)' };
+  const total = entradas.reduce((a,e)=>a+e[1],0);
+  charts['estadoOT'] = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels: entradas.map(e=>e[0]), datasets:[{ data: entradas.map(e=>e[1]), backgroundColor: entradas.map(e=>colorPorEstado[e[0]]||'#8B5CF6') }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'bottom', labels:{font:{size:11}}},
+        tooltip:{ callbacks:{ label: c => `${c.label}: ${c.raw} (${(c.raw/total*100).toFixed(0)}%)` } } } }
+  });
+}
+
+// ── Inicio ──
+window.addEventListener('DOMContentLoaded', () => {
+  const hoy = new Date();
+  const hace30 = new Date(hoy.getTime() - 30*86400000);
+  document.getElementById('fDesde').value = hace30.toISOString().slice(0,10);
+  document.getElementById('fHasta').value = hoy.toISOString().slice(0,10);
+  cargarTodo();
+});
+</script>
+</body></html>
