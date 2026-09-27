@@ -600,6 +600,169 @@ html[data-theme="dark"] .bar.plan{background:#2a3a55}
 .col.dragover,.fallas-panel-body.dragover{background:var(--accent-soft)}
 .agenda-wrap,.prev-wrap{padding:26px}
 
+/* ── CARGA HORARIA POR TÉCNICO (nuevo, no modifica lo existente) ── */
+.carga-wrap{padding:0 26px 18px}
+.carga-card .ops-card-h{align-items:center}
+.carga-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.carga-mini{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.carga-mini .cm-k{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.carga-mini .cm-v{font-size:19px;font-weight:800;font-family:var(--mono);margin-top:2px;color:var(--text)}
+.carga-mini .cm-v small{font-size:12px;font-weight:600;color:var(--muted);margin-left:2px}
+.carga-list{display:flex;flex-direction:column;gap:12px}
+.carga-row{display:flex;align-items:center;gap:12px}
+.carga-tec{display:flex;align-items:center;gap:9px;width:168px;flex-shrink:0;min-width:0}
+.carga-tec .avatar{width:28px;height:28px;font-size:10px}
+.carga-tec-info{min-width:0}
+.carga-tec-n{font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.carga-tec-s{font-size:10.5px;color:var(--muted)}
+.carga-bar-track{flex:1;height:22px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;position:relative;overflow:visible;min-width:0}
+.carga-bar-fill{height:100%;border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:7px;transition:width .5s ease;min-width:2px;overflow:hidden}
+.carga-bar-fill span{font-size:10px;font-weight:700;color:#fff;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.carga-bar-track.over::after{content:'';position:absolute;right:0;top:0;bottom:0;width:2px;background:var(--danger)}
+.carga-pct{width:54px;flex-shrink:0;text-align:right;font-size:11.5px;font-weight:700;font-family:var(--mono)}
+.carga-pct.ok{color:var(--ok)}
+.carga-pct.warn{color:var(--warn)}
+.carga-pct.over{color:var(--danger)}
+.carga-empty{padding:26px;text-align:center;color:var(--muted);font-size:12px}
+.carga-legend{display:flex;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);flex-wrap:wrap}
+.carga-legend span{display:inline-flex;align-items:center;gap:6px}
+.carga-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+
+/* ═══ v3: KPIs compactos del Tablero ═══ */
+#kpiRow{gap:8px;padding-top:12px}
+#kpiRow .kpi{padding:8px 12px 8px 14px;gap:1px;flex-direction:column}
+#kpiRow .kpi-ic,#kpiRow .kpi .n{display:none}
+#kpiRow .kpi .k{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#kpiRow .kpi .v{font-size:19px;margin-top:0;line-height:1.15}
+#kpiRow .kpi .u{font-size:11px}
+#kpiRow .kpi-trend{font-size:9.5px;margin-top:0}
+#kpiRow .kpi:hover{transform:none}
+
+/* ═══ v3: módulos nuevos ═══ */
+.mod-wrap{padding:0 26px 22px}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:0 26px 16px}
+@media(max-width:1100px){.grid-2{grid-template-columns:1fr}}
+.mod-chips{display:flex;gap:8px;flex-wrap:wrap;padding:14px 26px 0}
+.mchip{background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:6px 12px;font-size:12px;color:var(--label);box-shadow:var(--shadow-sm)}
+.mchip b{color:var(--text);font-family:var(--mono);margin-left:4px}
+.mchip.bad b{color:var(--danger)}
+.mini-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:14px 26px 0}
+.mini-strip .carga-mini{background:var(--surface);box-shadow:var(--shadow-sm)}
+.demo-banner{margin:14px 26px 0;padding:10px 14px;border-radius:10px;background:var(--warn-soft);color:var(--label);font-size:12.5px;border:1px dashed var(--border-hi)}
+.hb-list{display:flex;flex-direction:column;gap:9px}
+.hb-row{display:grid;grid-template-columns:minmax(90px,170px) 1fr 64px;gap:10px;align-items:center;font-size:12px}
+.hb-lbl{color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb-lbl small{display:block;font-weight:400;color:var(--muted);font-size:10.5px}
+.hb-track{height:10px;background:var(--surface2);border-radius:100px;overflow:hidden}
+.hb-fill{height:100%;border-radius:100px;transition:width .4s}
+.hb-val{text-align:right;font-family:var(--mono);font-weight:700;color:var(--label)}
+.vbars{display:flex;align-items:flex-end;gap:14px;height:170px;border-bottom:1px solid var(--border);padding:0 6px}
+.vb-g{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:4px;height:100%}
+.vb{width:14px;border-radius:4px 4px 0 0;min-height:2px}
+.vb-lbls{display:flex;gap:14px;padding:6px 6px 0}
+.vb-lbls span{flex:1;text-align:center;font-size:11px;color:var(--muted)}
+.stack{display:flex;height:14px;border-radius:100px;overflow:hidden;background:var(--surface2);margin:6px 0 14px}
+.stack div{height:100%}
+.pill.p-gris{background:var(--surface3);color:var(--muted)}
+.pill.p-bajo{background:var(--warn-soft);color:var(--warn)}
+/* Tablero: tabla prioritaria más compacta */
+#viewKanban .prio-table th,#viewKanban .prio-table td{padding:10px 14px}
+#viewKanban .prio-table{table-layout:fixed}
+#viewKanban .prio-table th:nth-child(1){width:36%}#viewKanban .prio-table th:nth-child(2){width:23%}#viewKanban .prio-table th:nth-child(3){width:17%}#viewKanban .prio-table th:nth-child(4){width:20%}#viewKanban .prio-table th:nth-child(5){width:4%}
+#viewKanban .prio-table td{overflow:hidden}
+#viewKanban .resp span:last-child{overflow:hidden;text-overflow:ellipsis}
+#viewKanban .pt-title,#viewKanban .pt-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#viewKanban .venc,#viewKanban .resp span:last-child{white-space:nowrap}
+#viewKanban .ops-grid{grid-template-columns:minmax(0,2.3fr) minmax(260px,1fr)}
+
+/* Reportes */
+.rep-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:16px 26px 0;background:var(--surface3);border-radius:14px;padding:6px}
+.rep-tab{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;text-align:left;color:var(--label)}
+.rep-tab b{display:block;font-size:13.5px;color:var(--text)}
+.rep-tab small{font-size:11px;color:var(--muted)}
+.rep-tab.on{background:var(--surface);box-shadow:var(--shadow-md)}
+.rep-tab.on small{color:var(--accent)}
+.rep-ic{width:34px;height:34px;border-radius:9px;background:var(--surface2);display:grid;place-items:center;font-size:15px;flex-shrink:0}
+.rep-tab.on .rep-ic{background:var(--accent-soft)}
+.rep-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;padding:20px 26px 10px;flex-wrap:wrap}
+.rep-head .page-eyebrow{font-size:9.5px}
+.rep-head h2{font-size:16px;font-weight:800;margin-top:4px}
+.rep-nav{display:flex;gap:6px;align-items:center}
+.rep-cells{display:grid;grid-template-columns:repeat(4,1fr);margin:0 26px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);overflow:hidden}
+@media(max-width:900px){.rep-cells{grid-template-columns:repeat(2,1fr)}}
+.rep-cell{padding:16px 18px;border-right:1px solid var(--border)}
+.rep-cell:last-child{border-right:none}
+.rep-cell .k{font-size:11.5px;color:var(--label)}
+.rep-cell .v{font-size:28px;font-weight:800;margin-top:6px;color:var(--text)}
+.rep-cell .v small{font-size:13px;color:var(--muted);font-weight:600;margin-left:3px}
+.rep-cell .s{font-size:11px;margin-top:6px;color:var(--muted)}
+.rep-cell .s.up{color:var(--ok)} .rep-cell .s.down{color:var(--danger)}
+.acc-list{display:flex;flex-direction:column}
+.acc-row{display:grid;grid-template-columns:34px 1fr 150px 90px;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);font-size:12px}
+.acc-row:last-child{border-bottom:none}
+.acc-n{width:26px;height:26px;border-radius:7px;background:var(--surface2);display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted)}
+.acc-n.crit{background:rgba(220,38,38,.1);color:#dc2626}
+.acc-t{font-weight:700;color:var(--text)} .acc-s{font-size:11px;color:var(--muted);margin-top:2px}
+.acc-r{color:var(--muted);font-size:11px} .acc-w{text-align:right;font-weight:700;color:var(--label)}
+.hero{margin:0 26px 16px;border-radius:var(--r-lg);background:radial-gradient(120% 140% at 0% 0%,#1e3a5f 0%,#0f172a 55%);color:#e2e8f0;display:grid;grid-template-columns:1.1fr 1fr 1fr;overflow:hidden;box-shadow:var(--shadow-md)}
+@media(max-width:900px){.hero{grid-template-columns:1fr}}
+.hero-main{padding:24px}
+.hero-main .lbl{font-size:10px;letter-spacing:.14em;font-weight:700;color:#94a3b8}
+.hero-main .score{font-size:54px;font-weight:800;color:#fff;line-height:1;margin-top:10px}
+.hero-main .score small{font-size:20px;color:#94a3b8}
+.hero-main .st{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;margin-top:10px}
+.hero-main .st i{width:8px;height:8px;border-radius:50%}
+.hero-main p{font-size:12px;color:#cbd5e1;margin-top:10px;line-height:1.5}
+.hero-m{padding:18px 22px;border-left:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
+.hero-m .k{font-size:11.5px;color:#94a3b8}
+.hero-m .v{font-size:24px;font-weight:800;color:#fff;margin-top:6px}
+.hero-m .s{font-size:10.5px;margin-top:4px;color:#94a3b8}
+.hero-col{display:grid;grid-template-rows:1fr 1fr}
+.risk{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.risk:last-child{border-bottom:none}
+.risk-tag{font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:3px 7px;border-radius:5px;flex-shrink:0;margin-top:1px}
+.risk-tag.ALTO{background:rgba(220,38,38,.1);color:#dc2626}
+.risk-tag.MEDIO{background:var(--warn-soft);color:var(--warn)}
+.risk-tag.BAJO{background:rgba(22,163,74,.1);color:#16a34a}
+.risk b{font-size:12.5px;color:var(--text)} .risk small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.lectura{margin:0 26px 26px;border-radius:var(--r-lg);background:var(--accent-soft);border-left:4px solid var(--accent);padding:18px 20px}
+.lectura .page-eyebrow{font-size:9.5px}
+.lectura b{display:block;font-size:14.5px;color:var(--text);margin-top:6px}
+.lectura p{font-size:12.5px;color:var(--label);margin-top:6px;line-height:1.55}
+
+/* Equipo */
+.eq-fecha{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--muted)}
+.eq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;padding:4px 26px 26px}
+.eq-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);padding:16px;display:flex;flex-direction:column;gap:11px;transition:opacity .2s}
+.eq-card.aus{background:var(--surface2);border-style:dashed}
+.eq-card.aus .eq-top .avatar{filter:grayscale(1);opacity:.6}
+.eq-top{display:flex;align-items:center;gap:11px}
+.eq-top .avatar{width:40px;height:40px;font-size:13px}
+.eq-n{font-weight:700;font-size:14px;color:var(--text)} .eq-e{font-size:11px;color:var(--muted)}
+.eq-sec{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.eq-tags{display:flex;flex-wrap:wrap;gap:5px}
+.eq-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px;background:var(--surface2);border:1px solid var(--border);color:var(--label)}
+.eq-tag.hab{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.eq-tag.hist{font-style:italic}
+.eq-tag.chk{cursor:pointer;user-select:none}
+.eq-tag.chk.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.eq-foot{display:flex;gap:8px;align-items:center;margin-top:auto;padding-top:10px;border-top:1px solid var(--border)}
+.eq-foot select{flex:1;height:34px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;padding:0 8px}
+.eq-mini{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}
+.eq-mini .hb-track{flex:1;height:7px}
+
+/* Impresión de reportes */
+@media print{
+  body{height:auto!important;overflow:visible!important;display:block!important;background:#fff}
+  .sidebar,.sidebar-overlay,.mini-header,.no-print,.loading,.toast{display:none!important}
+  .main-col{height:auto!important;overflow:visible!important}
+  .view{display:none!important}
+  #viewReportes.active{display:block!important;overflow:visible!important}
+  .ops-card,.rep-cells{box-shadow:none!important;break-inside:avoid}
+  .hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
 </style>
 </head>
 <body>
@@ -667,6 +830,12 @@ html[data-theme="dark"] .bar.plan{background:#2a3a55}
     <button class="nav-btn active" data-view="kanban" onclick="switchView('kanban',this)"><span class="nav-ic">🗂</span><span class="nav-lbl">Tablero</span><span class="nav-badge" id="navBadgeOT" style="display:none">0</span></button>
     <button class="nav-btn" data-view="agenda" onclick="switchView('agenda',this)"><span class="nav-ic">📅</span><span class="nav-lbl">Planificación</span></button>
     <button class="nav-btn" data-view="preventivo" onclick="switchView('preventivo',this)"><span class="nav-ic">🔁</span><span class="nav-lbl">Preventivo</span></button>
+    <button class="nav-btn" data-view="carga" onclick="switchView('carga',this)"><span class="nav-ic">⏱</span><span class="nav-lbl">Carga horaria</span></button>
+    <button class="nav-btn" data-view="activos" onclick="switchView('activos',this)"><span class="nav-ic">🏭</span><span class="nav-lbl">Activos</span></button>
+    <button class="nav-btn" data-view="analitica" onclick="switchView('analitica',this)"><span class="nav-ic">📊</span><span class="nav-lbl">Analítica</span></button>
+    <button class="nav-btn" data-view="reportes" onclick="switchView('reportes',this)"><span class="nav-ic">📑</span><span class="nav-lbl">Reportes</span></button>
+    <button class="nav-btn" data-view="inventario" onclick="switchView('inventario',this)"><span class="nav-ic">📦</span><span class="nav-lbl">Inventario</span></button>
+    <button class="nav-btn" data-view="equipo" onclick="switchView('equipo',this)"><span class="nav-ic">👥</span><span class="nav-lbl">Equipo</span><span class="nav-badge" id="navBadgeAus" style="display:none;background:var(--danger)">0</span></button>
     <button class="nav-btn" data-view="nuevaOt" onclick="switchView('nuevaOt',this)"><span class="nav-ic">＋</span><span class="nav-lbl">Nueva OT</span></button>
   </nav>
   <div class="sidebar-foot">
@@ -763,26 +932,6 @@ html[data-theme="dark"] .bar.plan{background:#2a3a55}
   <div class="kpi-row" id="kpiRow"></div>
 
   <div class="ops-grid" style="padding-top:16px">
-    <div class="ops-card">
-      <div class="ops-card-h">
-        <div><h3>Rendimiento de mantenimiento</h3><p>OT cerradas vs. programadas</p></div>
-        <div class="seg"><button id="segSem" class="on" onclick="opsModo('semana')">Semana</button><button id="segMes" onclick="opsModo('mes')">Mes</button></div>
-      </div>
-      <div class="bars" id="opsBars"></div>
-      <div class="bar-lbls" id="opsLbls"></div>
-      <div class="bars-foot"><span><i style="background:var(--accent)"></i>Cerradas</span><span><i style="background:#dfe4ea"></i>Programadas</span><b id="opsCumpl"></b></div>
-    </div>
-    <div class="ops-card">
-      <div class="ops-card-h">
-        <div><h3>Actividad reciente</h3><p>Últimos movimientos</p></div>
-        <span class="ops-link" onclick="setVistaOT('lista')">Ver todo ›</span>
-      </div>
-      <div class="act-list" id="opsAct"></div>
-      <div class="streak" id="opsStreak"></div>
-    </div>
-  </div>
-
-  <div class="prio-wrap">
     <div class="ops-card prio-card">
       <div class="ops-card-h">
         <div><h3>Órdenes de trabajo prioritarias</h3><p>Requieren atención o seguimiento</p></div>
@@ -795,7 +944,17 @@ html[data-theme="dark"] .bar.plan{background:#2a3a55}
         </table>
       </div>
     </div>
+    <div class="ops-card">
+      <div class="ops-card-h">
+        <div><h3>Actividad reciente</h3><p>Últimos movimientos</p></div>
+        <span class="ops-link" onclick="setVistaOT('lista')">Ver todo ›</span>
+      </div>
+      <div class="act-list" id="opsAct"></div>
+      <div class="streak" id="opsStreak"></div>
+    </div>
   </div>
+
+
 
 
   <div id="tecnicoResumen" style="display:none"></div>
@@ -936,6 +1095,131 @@ html[data-theme="dark"] .bar.plan{background:#2a3a55}
     </div>
   </div>
 </div>
+
+
+<!-- ═══ CARGA HORARIA ═══ -->
+<div class="view" id="viewCarga">
+  <div class="page-head"><div><div class="page-eyebrow">Gestión de personal</div><h1>Carga horaria por técnico</h1><p>Horas cargadas en OT vs. disponibilidad (9 h/día · 48 h/semana · 192 h/mes), descontando ausencias registradas.</p></div></div>
+  <div class="carga-wrap" style="padding-top:22px">
+    <div class="ops-card carga-card">
+      <div class="ops-card-h">
+        <div><h3>Detalle por técnico</h3><p>Ordenado de mayor a menor carga · pasá el mouse sobre el nombre para verlo completo</p></div>
+        <div class="seg"><button id="segCargaSem" class="on" onclick="cargaModo('semana')">Semana</button><button id="segCargaMes" onclick="cargaModo('mes')">Mes</button></div>
+      </div>
+      <div class="carga-kpis" id="cargaKpis"></div>
+      <div class="carga-list" id="cargaLista"></div>
+      <div class="carga-legend">
+        <span><i style="background:var(--ok)"></i>Hasta 85% de la disponibilidad</span>
+        <span><i style="background:var(--warn)"></i>85%–100%</span>
+        <span><i style="background:var(--danger)"></i>Por encima del 100% (sobrecarga)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ACTIVOS ═══ -->
+<div class="view" id="viewActivos">
+  <div class="page-head">
+    <div><div class="page-eyebrow">Catálogo</div><h1>Activos</h1><p>Equipos registrados en el sistema, con su historial de fallas y OT.</p></div>
+    <button class="btn-ghost" onclick="actCargarArchivo()">⬆ Cargar archivo</button>
+  </div>
+  <div class="mod-chips" id="actResumen"></div>
+  <div class="filters">
+    <input type="text" class="f-in" id="actBuscar" placeholder="Buscar código o nombre…" oninput="renderActivos()">
+    <select class="f-in" id="actPlanta" onchange="renderActivos()"><option value="">Todas las plantas</option></select>
+    <select class="f-in" id="actEstado" onchange="renderActivos()"><option value="">Todos los estados</option><option value="det">Detenido</option><option value="ot">Con OT abierta</option><option value="sin">Sin fallas 90d</option></select>
+    <span class="f-count" id="actCount"></span>
+  </div>
+  <div class="mod-wrap"><div class="ops-card prio-card"><div style="overflow-x:auto"><table class="prio-table" style="margin-top:0">
+    <thead><tr><th>Código</th><th>Activo</th><th>Planta</th><th>Fallas 90d</th><th>OT abiertas</th><th>Última falla</th><th>Estado</th><th></th></tr></thead>
+    <tbody id="actTabla"></tbody></table></div></div></div>
+</div>
+
+<!-- ═══ ANALÍTICA ═══ -->
+<div class="view" id="viewAnalitica">
+  <div class="page-head">
+    <div><div class="page-eyebrow">Análisis de confiabilidad</div><h1>Analítica</h1><p>Tendencias, Pareto de fallas y comparativo por planta.</p></div>
+    <div class="seg"><button class="on" data-d="30" onclick="anaPeriodo(30,this)">30 días</button><button data-d="90" onclick="anaPeriodo(90,this)">90 días</button><button data-d="365" onclick="anaPeriodo(365,this)">12 meses</button></div>
+  </div>
+  <div class="mini-strip" id="anaKpis"></div>
+  <div class="ops-grid" style="padding-top:14px">
+    <div class="ops-card">
+      <div class="ops-card-h">
+        <div><h3>Rendimiento de mantenimiento</h3><p>OT cerradas vs. programadas</p></div>
+        <div class="seg"><button id="segSem" class="on" onclick="opsModo('semana')">Semana</button><button id="segMes" onclick="opsModo('mes')">Mes</button></div>
+      </div>
+      <div class="bars" id="opsBars"></div>
+      <div class="bar-lbls" id="opsLbls"></div>
+      <div class="bars-foot"><span><i style="background:var(--accent)"></i>Cerradas</span><span><i style="background:#dfe4ea"></i>Programadas</span><b id="opsCumpl"></b></div>
+    </div>
+    <div class="ops-card"><div class="ops-card-h"><div><h3>Distribución por tipo de OT</h3><p>OT del período</p></div></div><div id="anaTipos"></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="ops-card"><div class="ops-card-h"><div><h3>Pareto de equipos</h3><p>Top 10 por cantidad de fallas</p></div></div><div id="anaPareto"></div></div>
+    <div class="ops-card"><div class="ops-card-h"><div><h3>Fallas por sistema</h3><p>Dónde se concentran las fallas</p></div></div><div id="anaSistemas"></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="ops-card"><div class="ops-card-h"><div><h3>Tendencia mensual</h3><p>Fallas reportadas vs. OT cerradas · últimos 6 meses</p></div></div><div id="anaTendencia"></div></div>
+    <div class="ops-card prio-card"><div class="ops-card-h"><div><h3>Comparativo por planta</h3><p>Indicadores del período</p></div></div><div style="overflow-x:auto"><table class="prio-table"><thead><tr><th>Planta</th><th>Fallas</th><th>OT</th><th>Cumpl.</th><th>MTTR</th><th>MTBF</th><th>Disp.</th></tr></thead><tbody id="anaPlantas"></tbody></table></div></div>
+  </div>
+</div>
+
+<!-- ═══ REPORTES ═══ -->
+<div class="view" id="viewReportes">
+  <div class="page-head">
+    <div><div class="page-eyebrow">Inteligencia de mantenimiento</div><h1>Centro de reportes</h1><p>Información accionable para cada nivel de decisión.</p></div>
+    <button class="btn-ghost no-print" onclick="window.print()">⬇ Exportar PDF</button>
+  </div>
+  <div class="rep-tabs no-print">
+    <button class="rep-tab on" id="repTabOp" onclick="repTab('op')"><span class="rep-ic">🔧</span><span><b>Reporte operativo</b><small>Supervisores y mandos medios</small></span></button>
+    <button class="rep-tab" id="repTabEj" onclick="repTab('ej')"><span class="rep-ic">📈</span><span><b>Reporte ejecutivo</b><small>Dirección y alta gerencia</small></span></button>
+  </div>
+  <div id="repOp"></div>
+  <div id="repEj" style="display:none"></div>
+</div>
+
+<!-- ═══ INVENTARIO ═══ -->
+<div class="view" id="viewInventario">
+  <div class="page-head"><div><div class="page-eyebrow">Repuestos</div><h1>Inventario</h1><p>Stock de repuestos críticos vs. mínimos y máximos.</p></div></div>
+  <div class="demo-banner">🧪 <b>Maqueta con datos de ejemplo.</b> Este módulo todavía no está conectado a SAP ni al stock real — sirve solo para validar el diseño.</div>
+  <div class="mini-strip" id="invKpis"></div>
+  <div class="filters">
+    <input type="text" class="f-in" id="invBuscar" placeholder="Buscar código o descripción…" oninput="renderInventario()">
+    <select class="f-in" id="invFamilia" onchange="renderInventario()"><option value="">Todas las familias</option></select>
+    <select class="f-in" id="invEstado" onchange="renderInventario()"><option value="">Todos los estados</option><option value="sin">Sin stock</option><option value="bajo">Bajo mínimo</option><option value="ok">Normal</option><option value="sobre">Sobre máximo</option></select>
+    <span class="f-count" id="invCount"></span>
+  </div>
+  <div class="mod-wrap"><div class="ops-card prio-card"><div style="overflow-x:auto"><table class="prio-table" style="margin-top:0">
+    <thead><tr><th>Código SAP</th><th>Descripción</th><th>Familia</th><th>Stock</th><th>Nivel (mín · máx)</th><th>Estado</th><th>Consumo 90d</th><th>Cobertura</th></tr></thead>
+    <tbody id="invTabla"></tbody></table></div></div></div>
+</div>
+
+<!-- ═══ EQUIPO ═══ -->
+<div class="view" id="viewEquipo">
+  <div class="page-head">
+    <div><div class="page-eyebrow">Personal técnico</div><h1>Equipo</h1><p>Técnicos, plantas, habilidades y disponibilidad del día.</p></div>
+    <label class="eq-fecha">Día <input type="date" class="f-in" id="eqFecha" onchange="renderEquipo()"></label>
+  </div>
+  <div class="demo-banner" style="background:var(--accent-soft)">💾 Plantas, habilidades y ausencias se guardan <b>solo en este navegador</b>. Las plantas sugeridas salen del historial de OT hasta que las edites.</div>
+  <div class="mini-strip" id="eqKpis"></div>
+  <div class="filters">
+    <input type="text" class="f-in" id="eqBuscar" placeholder="Buscar técnico…" oninput="renderEquipo()">
+    <select class="f-in" id="eqHab" onchange="renderEquipo()"><option value="">Todas las habilidades</option></select>
+    <select class="f-in" id="eqPlantaF" onchange="renderEquipo()"><option value="">Todas las plantas</option></select>
+  </div>
+  <div class="eq-grid" id="eqGrid"></div>
+</div>
+
+<!-- ═══ MODAL: SOLO ADMIN ═══ -->
+<div class="overlay" id="modalAdmin"><div class="modal" style="max-width:420px">
+  <div class="modal-h"><span class="modal-t">🔒 Acceso restringido</span><button class="modal-x" onclick="closeModal('modalAdmin')">✕</button></div>
+  <div class="modal-b" style="text-align:center;gap:10px">
+    <div style="font-size:40px">🛡️</div>
+    <div style="font-weight:700;font-size:14px">Se necesita usuario administrador</div>
+    <div style="font-size:12.5px;color:var(--muted);line-height:1.5">La carga masiva de activos desde archivo está deshabilitada para evitar errores en la base de datos. Solicitá la carga al administrador del sistema (Gerencia Técnica).</div>
+  </div>
+  <div class="modal-f"><button class="btn-primary" onclick="closeModal('modalAdmin')">Entendido</button></div>
+</div></div>
 
 </div><!-- /.main-col -->
 
@@ -2841,14 +3125,119 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
     }).join(''):'<tr><td colspan="5" class="col-empty">Sin OT abiertas en el período 🎉</td></tr>';
   }
 
+  /* ══ CARGA HORARIA POR TÉCNICO (nuevo, independiente) ══ */
+  const DISP_SEMANA=48, DISP_MES=192, DISP_DIA=9;
+  let cargaModoActual='semana', cargaOtsBase=[];
+
+  window.cargaModo=function(m){
+    cargaModoActual=m;
+    document.getElementById('segCargaSem').classList.toggle('on',m==='semana');
+    document.getElementById('segCargaMes').classList.toggle('on',m==='mes');
+    renderCarga();
+  };
+
+  function inicioSemanaISO(d){
+    const x=new Date(d); const dow=(x.getDay()+6)%7; x.setDate(x.getDate()-dow); x.setHours(0,0,0,0); return x;
+  }
+  function inicioMesISO(d){ return new Date(d.getFullYear(),d.getMonth(),1); }
+
+  function renderCarga(){
+    const hoy=new Date();
+    const ini = cargaModoActual==='semana' ? inicioSemanaISO(hoy) : inicioMesISO(hoy);
+    const iniStr = iso(ini);
+    const finStr = hoyISO();
+    const disp = cargaModoActual==='semana' ? DISP_SEMANA : DISP_MES;
+    const etiquetaPeriodo = cargaModoActual==='semana' ? 'esta semana' : 'este mes';
+
+    const enPeriodo = cargaOtsBase.filter(o=>{
+      const f = f10(o.FechaCierre) || f10(o.FechaCreacion);
+      return f && f>=iniStr && f<=finStr;
+    });
+
+    const porTec = {};
+    enPeriodo.forEach(o=>{
+      const horas = parseFloat(o.HorasReales ?? o.Horas ?? 0) || 0;
+      if(horas<=0) return;
+      const tecs = D.tecnicosDe(o.Tecnico);
+      const lista = tecs.length ? tecs : ['Sin asignar'];
+      // Si hay varios técnicos en la misma OT, se reparte la hora cargada entre ellos
+      const porc = horas/lista.length;
+      lista.forEach(t=>{ porTec[t]=(porTec[t]||0)+porc; });
+    });
+
+    // Aseguramos que aparezcan también los técnicos sin horas cargadas en el período (carga 0)
+    const EXCL=/operador|encargado|tercerizado/i;
+    (TECNICOS||[]).forEach(t=>{ const n=t.nombre||t; if(!EXCL.test(n) && !(n in porTec)) porTec[n]=0; });
+    Object.keys(porTec).forEach(n=>{ if(EXCL.test(n)) delete porTec[n]; });
+    // Disponibilidad individual: descuenta 9 h por cada día hábil (lun-sáb) con ausencia registrada
+    const AUS=window.CMMS_AUS;
+    const dispDe=n=>Math.max(0, disp - (AUS?AUS.diasAusente(n,iniStr,finStr)*DISP_DIA:0));
+
+    const filas = Object.entries(porTec)
+      .filter(([t])=>t!=='Sin asignar' || porTec['Sin asignar']>0)
+      .sort((a,b)=>b[1]-a[1]);
+
+    // KPIs resumen
+    const totalHoras = filas.reduce((s,[,h])=>s+h,0);
+    const nTec = filas.filter(([t])=>t!=='Sin asignar').length || 1;
+    const promedio = totalHoras/nTec;
+    const sobrecargados = filas.filter(([t,h])=>t!=='Sin asignar' && h>dispDe(t)).length;
+    const ociosos = filas.filter(([t,h])=>t!=='Sin asignar' && h===0).length;
+    const ocupacionProm = disp ? (promedio/disp*100) : 0;
+
+    document.getElementById('cargaKpis').innerHTML = [
+      {k:'Horas cargadas '+etiquetaPeriodo, v:totalHoras.toFixed(1), u:'h'},
+      {k:'Promedio por técnico', v:promedio.toFixed(1), u:'h', s:'de '+disp+'h disponibles'},
+      {k:'Ocupación promedio', v:ocupacionProm.toFixed(0), u:'%'},
+      {k:'Técnicos sobrecargados', v:sobrecargados, u:'', s:'por encima de '+disp+'h'},
+      {k:'Técnicos sin carga', v:ociosos, u:'', s:etiquetaPeriodo}
+    ].map(x=>'<div class="carga-mini"><div class="cm-k">'+esc(x.k)+'</div><div class="cm-v">'+x.v+(x.u?'<small>'+x.u+'</small>':'')+'</div>'
+      +(x.s?'<div style="font-size:10.5px;color:var(--muted);margin-top:2px">'+esc(x.s)+'</div>':'')+'</div>').join('');
+
+    if(!filas.length || totalHoras===0){
+      document.getElementById('cargaLista').innerHTML='<div class="carga-empty">Sin horas cargadas '+etiquetaPeriodo+'</div>';
+      return;
+    }
+
+    const maxBarra = Math.max(disp, ...filas.map(([,h])=>h)) * 1.02;
+    const corto=n=>{ n=String(n); if(n.length<=15) return n; const p=n.split(/\s+/); return p.length>1? p[0]+' '+p[p.length-1][0]+'.' : n.slice(0,14)+'…'; };
+    document.getElementById('cargaLista').innerHTML = filas.map(([t,h])=>{
+      const dT = dispDe(t);
+      const pct = dT ? (h/dT*100) : 0;
+      const ausHoy = AUS && AUS.motivo(t, hoyISO());
+      const anchoBarra = Math.min(100, (h/maxBarra*100));
+      const marcaDisp = (disp/maxBarra*100);
+      const color = pct>100?'var(--danger)':pct>=85?'var(--warn)':'var(--ok)';
+      const claseTxt = pct>100?'over':pct>=85?'warn':'ok';
+      const especialidad = (TECNICOS||[]).find(x=>(x.nombre||x)===t)?.esp || '';
+      const etiquetaAfuera = anchoBarra < 12;
+      const fillHtml = etiquetaAfuera
+        ? '<div class="carga-bar-fill" style="width:'+anchoBarra.toFixed(1)+'%;background:'+color+'"></div>'
+          +'<span style="position:absolute;left:calc('+anchoBarra.toFixed(1)+'% + 6px);top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:var(--label)">'+h.toFixed(1)+'h</span>'
+        : '<div class="carga-bar-fill" style="width:'+anchoBarra.toFixed(1)+'%;background:'+color+'"><span>'+h.toFixed(1)+'h</span></div>';
+      return '<div class="carga-row">'
+        +'<div class="carga-tec"><span class="avatar" style="background:'+(t==='Sin asignar'?'#94a3b8':avColor(t))+'">'+esc(iniciales(t))+'</span>'
+        +'<div class="carga-tec-info"><div class="carga-tec-n" title="'+esc(t)+'">'+esc(corto(t))+'</div><div class="carga-tec-s">'+esc(especialidad)+(dT<disp?' · disp. '+dT+'h':'')+(ausHoy?' · <span style="color:var(--danger);font-weight:700">'+esc(ausHoy)+' hoy</span>':'')+'</div></div></div>'
+        +'<div class="carga-bar-track'+(pct>100?' over':'')+'" style="--marca:'+marcaDisp.toFixed(1)+'%">'
+          +fillHtml
+        +'</div>'
+        +'<div class="carga-pct '+claseTxt+'">'+pct.toFixed(0)+'%</div>'
+      +'</div>';
+    }).join('');
+  }
+
   // Engancha al render existente sin modificarlo
   const _rk=window.renderKPIs;
   if(typeof _rk==='function'){
     window.renderKPIs=function(fallas,ots,desde,hasta){
       _rk.apply(this,arguments);
       opsFallas=fallas||[]; opsOts=ots||[];
+      cargaOtsBase = (typeof otsTodas!=='undefined' ? otsTodas : ots) || [];
       try{renderBars();renderActividad();renderPrioritarias();}catch(e){console.warn('ops render',e);}
+      try{renderCarga();}catch(e){console.warn('carga render',e);}
+      try{ if(window.v3Refresh) window.v3Refresh(); }catch(e){console.warn('v3 render',e);}
     };
+    window.renderCarga=renderCarga;
     renderKPIs=window.renderKPIs;
   }
 
@@ -2869,6 +3258,323 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
   });
   window.addEventListener('online',saludo); window.addEventListener('offline',saludo);
   document.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();document.getElementById('hdrSearch').focus();} });
+})();
+</script>
+
+<script>
+/* ═══ v3 — Módulos: Activos · Analítica · Reportes · Inventario · Equipo · Ausencias ═══ */
+(function(){
+  const AVC=['#5b7fb5','#c0625a','#7a67b8','#3f9277','#c1873a','#4f8fa8','#9a5b8f','#6b8e3e'];
+  const avColor=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return AVC[h%AVC.length];};
+  const inic=s=>String(s||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?';
+  const pad=n=>String(n).padStart(2,'0');
+  const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const hoy=()=>iso(new Date());
+  const f10=v=>(v||'').toString().slice(0,10);
+  const addD=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return iso(d);};
+  const dDiff=(a,b)=>Math.round((new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/86400000);
+  const num=v=>Number(v)||0;
+  const EXCL=/operador|encargado|tercerizado/i;
+  const MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const fmtGs=v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'k':String(Math.round(v));
+  const parado=f=>String(f.Detenido||'').toLowerCase().includes('parado');
+  const fAll=()=>(typeof fallasTodas!=='undefined'?fallasTodas:[])||[];
+  const oAll=()=>((typeof otsTodas!=='undefined'?otsTodas:[])||[]).filter(o=>!(o.Estado==='Cerrada'&&D.esAnulada(o)));
+  const plantaSel=()=>document.getElementById('fPlanta')?.value||'';
+  const porPlanta=arr=>{const p=plantaSel();return p?arr.filter(x=>x.Planta===p):arr;};
+  const tecs=()=>(TECNICOS||[]).filter(t=>!EXCL.test(t.nombre));
+  const mini=(k,v,u,s,cls)=>'<div class="carga-mini"><div class="cm-k">'+esc(k)+'</div><div class="cm-v"'+(cls?' style="color:'+cls+'"':'')+'>'+v+(u?'<small>'+u+'</small>':'')+'</div>'+(s?'<div style="font-size:10.5px;color:var(--muted);margin-top:2px">'+s+'</div>':'')+'</div>';
+  const hbars=(rows,color,fmt)=>{
+    if(!rows.length) return '<div class="col-empty">Sin datos en el período</div>';
+    const max=Math.max(1,...rows.map(r=>r[1]));
+    return '<div class="hb-list">'+rows.map(r=>'<div class="hb-row"><div class="hb-lbl" title="'+esc(r[0])+'">'+esc(r[0])+(r[2]?'<small>'+esc(r[2])+'</small>':'')+'</div><div class="hb-track"><div class="hb-fill" style="width:'+(r[1]/max*100).toFixed(1)+'%;background:'+(typeof color==='function'?color(r):color)+'"></div></div><div class="hb-val">'+(fmt?fmt(r):r[1])+'</div></div>').join('')+'</div>';
+  };
+  const countBy=(arr,fn)=>{const m={};arr.forEach(x=>{const k=fn(x)||'No especificado';m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);};
+
+  /* ── AUSENCIAS (localStorage) ── */
+  const AUS_KEY='cimplast_ausencias';
+  const ausLoad=()=>{try{return JSON.parse(localStorage.getItem(AUS_KEY)||'{}')}catch(e){return {}}};
+  window.CMMS_AUS={
+    motivo(n,f){const a=ausLoad();return (a[f]||{})[n]||'';},
+    set(n,f,m){const a=ausLoad();a[f]=a[f]||{};if(m)a[f][n]=m;else delete a[f][n];if(!Object.keys(a[f]).length)delete a[f];try{localStorage.setItem(AUS_KEY,JSON.stringify(a))}catch(e){}},
+    diasAusente(n,ini,fin){const a=ausLoad();let c=0;Object.keys(a).forEach(f=>{if(f>=ini&&f<=fin&&a[f][n]&&new Date(f+'T00:00:00').getDay()!==0)c++;});return c;},
+    ausentesDe(f){return Object.keys(ausLoad()[f]||{});}
+  };
+  function marcarAusentesEnSelects(){
+    const aus=new Set(CMMS_AUS.ausentesDe(hoy()));
+    ['mOtTecnico','nOtTecnico'].forEach(id=>{const s=document.getElementById(id);if(!s)return;
+      [...s.options].forEach(o=>{const n=o.dataset.nombre;if(!n)return;const base=o.dataset.base||o.textContent;o.dataset.base=base;
+        o.disabled=aus.has(n);o.textContent=aus.has(n)?base+' · ausente hoy':base;});});
+    const b=document.getElementById('navBadgeAus');const n=[...aus].filter(x=>!EXCL.test(x)).length;
+    if(b){b.textContent=n;b.style.display=n?'':'none';}
+  }
+  const _cts=window.cargarTecnicosSelects;
+  if(typeof _cts==='function'){window.cargarTecnicosSelects=function(){_cts.apply(this,arguments);marcarAusentesEnSelects();};cargarTecnicosSelects=window.cargarTecnicosSelects;}
+
+  /* ── NAVEGACIÓN ── */
+  Object.assign(TITULOS_VISTA,{carga:'Carga horaria',activos:'Activos',analitica:'Analítica',reportes:'Reportes',inventario:'Inventario',equipo:'Equipo'});
+  let vistaActual='kanban';
+  const RENDER={carga:()=>window.renderCarga&&window.renderCarga(),activos:()=>renderActivos(),analitica:()=>renderAnalitica(),reportes:()=>renderReportes(),inventario:()=>renderInventario(),equipo:()=>renderEquipo()};
+  const _sv=window.switchView;
+  window.switchView=function(name,btn){_sv.apply(this,arguments);vistaActual=name;try{RENDER[name]&&RENDER[name]();}catch(e){console.warn('vista',name,e);} };
+  switchView=window.switchView;
+  window.v3Refresh=function(){try{RENDER[vistaActual]&&vistaActual!=='carga'&&RENDER[vistaActual]();}catch(e){console.warn(e);} marcarAusentesEnSelects();};
+
+  /* ══ ACTIVOS ══ */
+  function listaActivos(){const out=[];D.listaPlantas().forEach(p=>(D.equiposDe(p)||[]).forEach(e=>out.push({cod:e.cod||'',nombre:e.nombre||e,planta:p})));return out;}
+  window.actCargarArchivo=()=>openModal('modalAdmin');
+  window.renderActivos=function(){
+    const act=listaActivos(), fal=fAll(), ots=oAll(), h=hoy(), d90=addD(h,-90);
+    const q=(document.getElementById('actBuscar').value||'').toLowerCase().trim();
+    const pl=document.getElementById('actPlanta').value, est=document.getElementById('actEstado').value;
+    const rows=act.map(a=>{
+      const fa=fal.filter(f=>f.Equipo===a.nombre&&(!f.Planta||f.Planta===a.planta));
+      const f90=fa.filter(f=>f10(f.Fecha)>=d90).length;
+      const otAb=ots.filter(o=>o.Equipo===a.nombre&&(!o.Planta||o.Planta===a.planta)&&o.Estado!=='Cerrada').length;
+      const det=fa.some(f=>parado(f)&&f.Estado!=='Concluido');
+      const ult=fa.map(f=>f10(f.Fecha)).filter(Boolean).sort().pop()||'';
+      return Object.assign({f90,otAb,det,ult},a);
+    });
+    const vis=rows.filter(r=>(!pl||r.planta===pl)&&(!q||(r.cod+' '+r.nombre).toLowerCase().includes(q))
+      &&(!est||(est==='det'&&r.det)||(est==='ot'&&r.otAb)||(est==='sin'&&!r.f90)))
+      .sort((a,b)=>(b.det-a.det)||(b.otAb-a.otAb)||(b.f90-a.f90)||a.nombre.localeCompare(b.nombre));
+    const cnt=countBy(rows,r=>r.planta);
+    document.getElementById('actResumen').innerHTML='<span class="mchip">Total activos<b>'+rows.length+'</b></span>'
+      +cnt.map(([p,c])=>'<span class="mchip">'+esc(p)+'<b>'+c+'</b></span>').join('')
+      +'<span class="mchip bad">Detenidos ahora<b>'+rows.filter(r=>r.det).length+'</b></span>'
+      +'<span class="mchip">Con OT abierta<b>'+rows.filter(r=>r.otAb).length+'</b></span>';
+    document.getElementById('actCount').textContent=vis.length+' de '+rows.length+' activos';
+    document.getElementById('actTabla').innerHTML=vis.length?vis.map(r=>'<tr onclick="actVer('+D.jsa(r.nombre)+')" title="Ver en el Tablero">'
+      +'<td><span class="pt-sub"><b>'+esc(r.cod||'—')+'</b></span></td>'
+      +'<td><div class="pt-title">'+esc(r.nombre)+'</div></td><td>'+esc(r.planta)+'</td>'
+      +'<td style="font-family:var(--mono);font-weight:700;color:'+(r.f90>=4?'var(--danger)':r.f90?'var(--label)':'var(--muted)')+'">'+r.f90+'</td>'
+      +'<td style="font-family:var(--mono)">'+(r.otAb||'—')+'</td>'
+      +'<td>'+(r.ult?esc(D.fmtFecha(r.ult)):'<span style="color:var(--muted)">—</span>')+'</td>'
+      +'<td>'+(r.det?'<span class="pill p-critica">Detenido</span>':r.otAb?'<span class="pill p-curso">En intervención</span>':'<span class="pill p-cerrada">Operativo</span>')+'</td>'
+      +'<td class="pt-arrow">›</td></tr>').join(''):'<tr><td colspan="8" class="col-empty">Sin activos para ese filtro</td></tr>';
+  };
+  window.actVer=function(n){const s=document.getElementById('hdrSearch');if(s)s.value=n;hdrBuscar(n);};
+
+  /* ══ ANALÍTICA ══ */
+  let anaDias=30;
+  window.anaPeriodo=function(d,btn){anaDias=d;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===btn));renderAnalitica();};
+  window.renderAnalitica=function(){
+    const h=hoy(), ini=addD(h,-(anaDias-1));
+    const fal=porPlanta(fAll()).filter(f=>{const d=f10(f.Fecha);return d>=ini&&d<=h;});
+    const ots=porPlanta(oAll()).filter(o=>{const d=f10(o.FechaProgramada||o.FechaCreacion);return d>=ini&&d<=h;});
+    const k=D.kpis(fal,ots,anaDias);
+    document.getElementById('anaKpis').innerHTML=[
+      mini('Fallas reportadas',k.nFallas,'',k.equiposConFalla+' equipos afectados'),
+      mini('OT del período',k.validas.length,'',k.cerradas.length+' cerradas'),
+      mini('Disponibilidad',k.disp.toFixed(1),'%'),mini('MTBF',k.mtbf.toFixed(0),'h'),mini('MTTR',k.mttr.toFixed(1),'h'),
+      mini('Costo registrado',fmtGs(k.costo),'Gs')].join('');
+    const tipos=countBy(ots,o=>o.Tipo), tot=ots.length||1, TC={Correctivo:'#dc2626',Preventivo:'#16a34a',Predictivo:'#2563eb',Mejora:'#7c3aed'};
+    document.getElementById('anaTipos').innerHTML=ots.length?'<div class="stack">'+tipos.map(([t,c])=>'<div style="width:'+(c/tot*100)+'%;background:'+(TC[t]||'#94a3b8')+'" title="'+esc(t)+'"></div>').join('')+'</div>'
+      +hbars(tipos.map(([t,c])=>[t,c]),r=>TC[r[0]]||'#94a3b8',r=>r[1]+' · '+Math.round(r[1]/tot*100)+'%')
+      +'<div style="font-size:11px;color:var(--muted);margin-top:12px">Relación preventivo/correctivo recomendada en RCM: ≥ 70/30.</div>':'<div class="col-empty">Sin OT en el período</div>';
+    document.getElementById('anaPareto').innerHTML=hbars(countBy(fal,f=>(f.Equipo||'—')+'|'+(f.Planta||'')).slice(0,10).map(([k,c])=>{const [e,pl]=k.split('|');return [e,c,pl];}),'var(--accent)');
+    document.getElementById('anaSistemas').innerHTML=hbars(countBy(fal,f=>f.Sistema).map(([s,c])=>[s,c]),'#2563eb',r=>r[1]+' · '+Math.round(r[1]/(fal.length||1)*100)+'%');
+    // Tendencia 6 meses
+    const meses=[];const now=new Date();for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);meses.push({k:d.getFullYear()+'-'+pad(d.getMonth()+1),l:MESES[d.getMonth()]});}
+    const fa=porPlanta(fAll()), oa=porPlanta(oAll());
+    meses.forEach(m=>{m.f=fa.filter(f=>f10(f.Fecha).slice(0,7)===m.k).length;m.c=oa.filter(o=>o.Estado==='Cerrada'&&f10(o.FechaCierre).slice(0,7)===m.k).length;});
+    const mx=Math.max(1,...meses.map(m=>Math.max(m.f,m.c)));
+    document.getElementById('anaTendencia').innerHTML='<div class="vbars">'+meses.map(m=>'<div class="vb-g" title="'+m.l+': '+m.f+' fallas / '+m.c+' OT cerradas"><div class="vb" style="height:'+(m.f/mx*100)+'%;background:#dc2626"></div><div class="vb" style="height:'+(m.c/mx*100)+'%;background:var(--accent)"></div></div>').join('')+'</div>'
+      +'<div class="vb-lbls">'+meses.map(m=>'<span>'+m.l+'</span>').join('')+'</div>'
+      +'<div class="bars-foot"><span><i style="background:#dc2626"></i>Fallas</span><span><i style="background:var(--accent)"></i>OT cerradas</span></div>';
+    // Por planta
+    const allF=fAll().filter(f=>{const d=f10(f.Fecha);return d>=ini&&d<=h;}), allO=oAll().filter(o=>{const d=f10(o.FechaProgramada||o.FechaCreacion);return d>=ini&&d<=h;});
+    document.getElementById('anaPlantas').innerHTML=D.listaPlantas().map(p=>{const kp=D.kpis(allF.filter(f=>f.Planta===p),allO.filter(o=>o.Planta===p),anaDias);
+      if(!kp.nFallas&&!kp.validas.length) return '';
+      const c=kp.disp>=95?'var(--ok)':kp.disp>=88?'var(--warn)':'var(--danger)';
+      return '<tr style="cursor:default"><td class="pt-title">'+esc(p)+'</td><td>'+kp.nFallas+'</td><td>'+kp.validas.length+'</td><td>'+kp.cumpl.toFixed(0)+'%</td><td>'+kp.mttr.toFixed(1)+'h</td><td>'+(kp.mtbf?kp.mtbf.toFixed(0)+'h':'—')+'</td><td style="font-weight:700;color:'+c+'">'+kp.disp.toFixed(1)+'%</td></tr>';}).join('')||'<tr><td colspan="7" class="col-empty">Sin datos</td></tr>';
+  };
+
+  /* ══ REPORTES ══ */
+  let repActual='op', semOff=0, mesOff=0;
+  window.repTab=function(t){repActual=t;document.getElementById('repTabOp').classList.toggle('on',t==='op');document.getElementById('repTabEj').classList.toggle('on',t==='ej');
+    document.getElementById('repOp').style.display=t==='op'?'':'none';document.getElementById('repEj').style.display=t==='ej'?'':'none';renderReportes();};
+  window.repSem=d=>{semOff=Math.min(0,semOff+d);renderReportes();};
+  window.repMes=d=>{mesOff=Math.min(0,mesOff+d);renderReportes();};
+  const semanaISO=d=>{const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const dn=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-dn);const y=new Date(Date.UTC(t.getUTCFullYear(),0,1));return Math.ceil(((t-y)/86400000+1)/7);};
+  const trendTxt=(a,b,inv,suf)=>{if(b==null)return '';const d=a-b;if(Math.abs(d)<0.05)return '<div class="s">= período anterior</div>';const good=inv?d<0:d>0;return '<div class="s '+(good?'up':'down')+'">'+(d>0?'+':'')+(Number.isInteger(d)?d:d.toFixed(1))+(suf||'')+' vs. anterior</div>';};
+  function rango(ini,fin){const fal=porPlanta(fAll()).filter(f=>{const d=f10(f.Fecha);return d>=ini&&d<=fin;});
+    const ots=porPlanta(oAll()).filter(o=>{const d=f10(o.FechaProgramada||o.FechaCreacion);return d>=ini&&d<=fin;});return {fal,ots,k:D.kpis(fal,ots,dDiff(fin,ini)+1)};}
+  window.renderReportes=function(){ if(repActual==='op') renderRepOp(); else renderRepEj(); };
+
+  function renderRepOp(){
+    const base=new Date();base.setDate(base.getDate()+semOff*7);
+    const lun=new Date(base);lun.setDate(lun.getDate()-((lun.getDay()+6)%7));
+    const ini=iso(lun), finSem=addD(ini,6), fin=finSem>hoy()?hoy():finSem;
+    const A=rango(ini,fin), P=rango(addD(ini,-7),addD(ini,-1));
+    const h=hoy(), abiertas=porPlanta(oAll()).filter(o=>o.Estado!=='Cerrada');
+    const vencidas=abiertas.filter(o=>f10(o.FechaProgramada)&&f10(o.FechaProgramada)<h);
+    const fmtD=s=>{const d=new Date(s+'T00:00:00');return d.getDate()+' '+MESES[d.getMonth()].toLowerCase();};
+    const parA=A.fal.filter(parado).length, parP=P.fal.filter(parado).length;
+    // por especialidad
+    const espDe=n=>((TECNICOS||[]).find(t=>t.nombre===n)||{}).esp||'Sin asignar';
+    const esp={};A.k.validas.forEach(o=>{const l=D.tecnicosDe(o.Tecnico);const e=l.length?espDe(l[0]):'Sin asignar';esp[e]=esp[e]||{t:0,c:0};esp[e].t++;if(o.Estado==='Cerrada')esp[e].c++;});
+    const espRows=Object.entries(esp).sort((a,b)=>b[1].t-a[1].t).map(([e,v])=>[e,Math.round(v.c/v.t*100),v.c+' / '+v.t+' órdenes']);
+    const cumplTot=A.k.validas.length?Math.round(A.k.cerradas.length/A.k.validas.length*100):0;
+    const causas=countBy(A.fal,f=>f.Sistema);
+    // plan de acción
+    const acc=[];
+    vencidas.filter(o=>o.Prioridad==='Alta').sort((a,b)=>f10(a.FechaProgramada).localeCompare(f10(b.FechaProgramada))).slice(0,3)
+      .forEach(o=>acc.push({crit:1,t:'Intervenir '+(o.Equipo||'—'),s:(o.NroOT||'')+' vencida hace '+dDiff(h,f10(o.FechaProgramada))+'d · '+(o.Descripcion||''),r:D.tecnicosDe(o.Tecnico)[0]||'Sin asignar',w:'Hoy'}));
+    const d30=addD(h,-30), rec=countBy(porPlanta(fAll()).filter(f=>f10(f.Fecha)>=d30),f=>(f.Equipo||'—')+'|'+(f.Planta||'')).filter(([,c])=>c>=3).slice(0,2);
+    rec.forEach(([k,c])=>{const [e,pl]=k.split('|');const sis=countBy(fAll().filter(f=>f.Equipo===e&&f.Planta===pl&&f10(f.Fecha)>=d30),f=>f.Sistema)[0];acc.push({crit:c>=5,t:'Análisis de causa raíz en '+e+' ('+pl+')',s:c+' fallas en 30 días · sistema predominante: '+(sis?sis[0]:'—'),r:'Supervisor de mantenimiento',w:'Esta semana'});});
+    abiertas.filter(o=>/repuesto/i.test(o.SubEstado||'')).slice(0,2).forEach(o=>acc.push({t:'Confirmar repuesto para '+(o.Equipo||''),s:(o.NroOT||'')+' bloqueada por repuesto',r:'Compras / Pañol',w:'Hoy'}));
+    const sinTec=abiertas.filter(o=>!D.tecnicosDe(o.Tecnico).length);
+    if(sinTec.length) acc.push({t:'Asignar técnico a '+sinTec.length+' OT',s:sinTec.slice(0,3).map(o=>o.NroOT).join(', ')+(sinTec.length>3?'…':''),r:'Supervisor de turno',w:'Hoy'});
+    const prevV=vencidas.filter(o=>o.Tipo==='Preventivo');
+    if(prevV.length) acc.push({t:'Reprogramar '+prevV.length+' preventivo(s) vencido(s)',s:'Evitar acumulación de backlog preventivo',r:'Planificación',w:'Mañana'});
+    const nCrit=acc.filter(a=>a.crit).length;
+
+    document.getElementById('repOp').innerHTML=
+      '<div class="rep-head"><div><div class="page-eyebrow">Reporte semanal</div><h2>Semana '+semanaISO(lun)+' · '+fmtD(ini)+' – '+fmtD(finSem)+' '+lun.getFullYear()+'</h2></div>'
+      +'<div class="rep-nav no-print"><span class="mchip">'+esc(plantaSel()||'Todas las plantas')+'</span><button class="btn-ghost" onclick="repSem(-1)">‹</button><button class="btn-ghost" onclick="repSem(1)"'+(semOff>=0?' disabled style="opacity:.4"':'')+'>›</button></div></div>'
+      +'<div class="rep-cells">'
+        +'<div class="rep-cell"><div class="k">OT completadas</div><div class="v">'+A.k.cerradas.length+'<small>/ '+A.k.validas.length+'</small></div>'+trendTxt(A.k.cerradas.length,P.k.cerradas.length)+'</div>'
+        +'<div class="rep-cell"><div class="k">Backlog pendiente</div><div class="v">'+abiertas.length+'<small>OT</small></div><div class="s'+(vencidas.length?' down':'')+'">'+vencidas.length+' fuera de plazo</div></div>'
+        +'<div class="rep-cell"><div class="k">Tiempo medio de reparación</div><div class="v">'+A.k.mttr.toFixed(1)+'<small>h</small></div>'+trendTxt(A.k.mttr,P.k.mttr,true,' h')+'</div>'
+        +'<div class="rep-cell"><div class="k">Fallas con línea parada</div><div class="v">'+parA+'</div>'+trendTxt(parA,parP,true)+'</div>'
+      +'</div>'
+      +'<div class="grid-2">'
+        +'<div class="ops-card"><div class="ops-card-h"><div><h3>Cumplimiento por especialidad</h3><p>OT de la semana cerradas / programadas</p></div><span class="pill p-cerrada">'+cumplTot+'% total</span></div>'
+          +hbars(espRows,r=>r[1]>=85?'#16a34a':r[1]>=65?'var(--accent)':'#dc2626',r=>r[1]+'%')+'</div>'
+        +'<div class="ops-card"><div class="ops-card-h"><div><h3>Principales causas de falla</h3><p>Fallas de la semana por sistema</p></div></div>'
+          +hbars(causas.map(([s,c])=>[s,c]),'var(--accent)',r=>r[1]+' · '+Math.round(r[1]/(A.fal.length||1)*100)+'%')+'</div>'
+      +'</div>'
+      +'<div class="mod-wrap"><div class="ops-card"><div class="ops-card-h"><div><h3>Plan de acción recomendado</h3><p>Prioridades para el próximo turno (generado desde los datos)</p></div>'+(nCrit?'<span class="pill p-critica">'+nCrit+' crítica(s)</span>':'')+'</div>'
+        +(acc.length?'<div class="acc-list">'+acc.map((a,i)=>'<div class="acc-row"><div class="acc-n'+(a.crit?' crit':'')+'">'+pad(i+1)+'</div><div><div class="acc-t">'+esc(a.t)+'</div><div class="acc-s">'+esc(a.s)+'</div></div><div class="acc-r">Responsable: '+esc(a.r)+'</div><div class="acc-w">'+esc(a.w)+'</div></div>').join('')+'</div>'
+          :'<div class="col-empty">Sin acciones pendientes 🎉</div>')
+      +'</div></div>';
+  }
+
+  function renderRepEj(){
+    const now=new Date(), m0=new Date(now.getFullYear(),now.getMonth()+mesOff,1), m1=new Date(m0.getFullYear(),m0.getMonth()+1,0);
+    const ini=iso(m0), fin=iso(m1)>hoy()?hoy():iso(m1);
+    const pm0=new Date(m0.getFullYear(),m0.getMonth()-1,1), pm1=new Date(m0.getFullYear(),m0.getMonth(),0);
+    const A=rango(ini,fin), P=rango(iso(pm0),iso(pm1));
+    const prevC=r=>{const pv=r.k.validas.filter(o=>o.Tipo==='Preventivo');return pv.length?pv.filter(o=>o.Estado==='Cerrada').length/pv.length*100:null;};
+    const cpA=prevC(A), cpP=prevC(P);
+    const score=Math.round(0.5*Math.min(100,A.k.disp)+0.3*A.k.cumpl+0.2*(cpA==null?A.k.cumpl:cpA));
+    const st=score>=85?['Operación estable','#22c55e']:score>=70?['Requiere atención','#f59e0b']:['Situación crítica','#ef4444'];
+    const incA=A.fal.filter(parado).length, incP=P.fal.filter(parado).length;
+    const d90=addD(hoy(),-90), rec=countBy(porPlanta(fAll()).filter(f=>f10(f.Fecha)>=d90),f=>(f.Equipo||'—')+' ('+(f.Planta||'—')+')');
+    const top=rec[0];
+    const h=hoy(), venc=porPlanta(oAll()).filter(o=>o.Estado!=='Cerrada'&&f10(o.FechaProgramada)&&f10(o.FechaProgramada)<h);
+    const ausHoy=CMMS_AUS.ausentesDe(h).filter(n=>!EXCL.test(n)).length;
+    const risks=[];
+    rec.filter(([,c])=>c>=4).slice(0,2).forEach(([e,c])=>risks.push(['ALTO','Recurrencia de fallas en '+e,c+' fallas en 90 días — evaluar RCM / overhaul vs. reemplazo']));
+    if(venc.length>5) risks.push(['MEDIO','Backlog vencido: '+venc.length+' OT',venc.filter(o=>o.Prioridad==='Alta').length+' de prioridad alta']);
+    if(cpA!=null&&cpA<85) risks.push(['MEDIO','Cumplimiento preventivo '+cpA.toFixed(0)+'%','Meta ≥ 85% — riesgo de aumento de correctivos']);
+    if(ausHoy>=3) risks.push(['BAJO','Capacidad técnica reducida hoy',ausHoy+' técnico(s) ausentes']);
+    if(!risks.length) risks.push(['BAJO','Sin riesgos relevantes detectados','Indicadores dentro de lo esperado']);
+    // costo 6 meses
+    const meses=[];for(let i=5;i>=0;i--){const d=new Date(m0.getFullYear(),m0.getMonth()-i,1);meses.push({k:d.getFullYear()+'-'+pad(d.getMonth()+1),l:MESES[d.getMonth()]});}
+    const oa=porPlanta(oAll());meses.forEach(m=>m.v=oa.filter(o=>o.Estado==='Cerrada'&&f10(o.FechaCierre).slice(0,7)===m.k).reduce((s,o)=>s+num(o.Costo),0));
+    const mx=Math.max(1,...meses.map(m=>m.v)), tot6=meses.reduce((s,m)=>s+m.v,0);
+    const dDisp=A.k.disp-P.k.disp;
+    const arrow=(a,b,inv)=>{if(b==null||a==null)return '';const d=a-b;if(Math.abs(d)<0.05)return '= vs. mes anterior';const good=inv?d<0:d>0;return '<span style="color:'+(good?'#4ade80':'#f87171')+'">'+(d>0?'▲':'▼')+' '+Math.abs(d).toFixed(Number.isInteger(d)?0:1)+'</span> vs. mes anterior';};
+    const lectura=(score>=85?'La confiabilidad se mantiene dentro de objetivo':score>=70?'La operación requiere atención en algunos frentes':'La confiabilidad está por debajo del objetivo')
+      +': disponibilidad '+A.k.disp.toFixed(1)+'% ('+(dDisp>=0?'+':'')+dDisp.toFixed(1)+' pts vs. mes anterior)'+(cpA!=null?', cumplimiento preventivo '+cpA.toFixed(0)+'%':'')+'.';
+    const reco=top&&top[1]>=4?'Se recomienda priorizar el análisis de causa raíz en '+top[0]+' ('+top[1]+' fallas en 90 días) y evaluar con Dirección si corresponde CAPEX de overhaul o reemplazo.'
+      :venc.length>5?'Se recomienda reforzar la planificación para reducir el backlog vencido ('+venc.length+' OT).':'Mantener el foco en ejecución preventiva y registro completo de horas y costos en las OT.';
+    document.getElementById('repEj').innerHTML=
+      '<div class="rep-head"><div><div class="page-eyebrow">Resumen ejecutivo mensual</div><h2>'+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][m0.getMonth()]+' '+m0.getFullYear()+' · '+esc(plantaSel()||'Todas las plantas')+'</h2></div>'
+      +'<div class="rep-nav no-print"><button class="btn-ghost" onclick="repMes(-1)">‹</button><button class="btn-ghost" onclick="repMes(1)"'+(mesOff>=0?' disabled style="opacity:.4"':'')+'>›</button></div></div>'
+      +'<div class="hero"><div class="hero-main"><div class="lbl">SALUD OPERACIONAL</div><div class="score">'+score+'<small>/100</small></div>'
+        +'<div class="st" style="color:'+st[1]+'"><i style="background:'+st[1]+'"></i>'+st[0]+'</div><p>'+esc(lectura)+'</p>'
+        +'<p style="font-size:10px;color:#64748b">Índice = 50% disponibilidad + 30% cumplimiento OT + 20% cumplimiento preventivo</p></div>'
+        +'<div class="hero-col"><div class="hero-m"><div class="k">Disponibilidad de planta</div><div class="v">'+A.k.disp.toFixed(1)+'%</div><div class="s">'+arrow(A.k.disp,P.k.disp)+'</div></div>'
+          +'<div class="hero-m"><div class="k">Cumplimiento preventivo</div><div class="v">'+(cpA==null?'—':cpA.toFixed(1)+'%')+'</div><div class="s">'+arrow(cpA,cpP)+'</div></div></div>'
+        +'<div class="hero-col"><div class="hero-m"><div class="k">Costo registrado en OT</div><div class="v">Gs '+fmtGs(A.k.costo)+'</div><div class="s">'+(P.k.costo?arrow(A.k.costo/1e6,P.k.costo/1e6,true).replace('vs.','M vs.'):'')+'</div></div>'
+          +'<div class="hero-m"><div class="k">Incidentes críticos (línea parada)</div><div class="v">'+incA+'</div><div class="s">'+arrow(incA,incP,true)+'</div></div></div>'
+      +'</div>'
+      +'<div class="grid-2">'
+        +'<div class="ops-card"><div class="ops-card-h"><div><h3>Costo de mantenimiento registrado</h3><p>Repuestos y servicios en OT cerradas · últimos 6 meses</p></div><span class="mchip">Total<b>Gs '+fmtGs(tot6)+'</b></span></div>'
+          +'<div class="vbars">'+meses.map(m=>'<div class="vb-g" title="'+m.l+': Gs '+fmtGs(m.v)+'"><div class="vb" style="width:26px;height:'+(m.v/mx*100)+'%;background:var(--accent)"></div></div>').join('')+'</div>'
+          +'<div class="vb-lbls">'+meses.map(m=>'<span>'+m.l+'</span>').join('')+'</div></div>'
+        +'<div class="ops-card"><div class="ops-card-h"><div><h3>Riesgos y decisiones</h3><p>Temas que requieren atención directiva</p></div></div>'
+          +risks.slice(0,4).map(r=>'<div class="risk"><span class="risk-tag '+r[0]+'">'+r[0]+'</span><div><b>'+esc(r[1])+'</b><small>'+esc(r[2])+'</small></div></div>').join('')+'</div>'
+      +'</div>'
+      +'<div class="lectura"><div class="page-eyebrow">Lectura ejecutiva</div><b>'+esc(lectura)+'</b><p>'+esc(reco)+'</p></div>';
+  }
+
+  /* ══ INVENTARIO (MAQUETA) ══ */
+  const INV=[
+    ['1000231','Rodamiento rígido de bolas 6205-2RS','Rodamientos',14,6,20,9],['1000245','Rodamiento 6308-2Z','Rodamientos',2,4,12,5],
+    ['1000312','Retén 45x62x8 NBR','Retenes y sellos',0,5,15,7],['1000318','Kit sellos cilindro cierre inyectora','Retenes y sellos',1,1,3,1],
+    ['1000402','O-ring Viton 2-228','Retenes y sellos',38,20,60,24],['1000510','Filtro hidráulico retorno 10µ','Filtros',3,4,10,6],
+    ['1000514','Filtro aire compresor','Filtros',6,2,6,2],['1000520','Elemento separador aceite compresor','Filtros',1,1,3,0],
+    ['1000601','Correa dentada HTD 8M-1200','Transmisión',4,2,6,1],['1000610','Correa en V SPB 1600','Transmisión',9,3,8,2],
+    ['1000702','Contactor tripolar 32A 220V','Eléctrico',5,3,8,3],['1000711','Resistencia calefactora banda 250W','Eléctrico',0,6,18,11],
+    ['1000715','Termocupla tipo J','Eléctrico',12,8,24,6],['1000804','Válvula direccional 4/3 NG6','Hidráulico',1,1,2,0],
+    ['1000812','Manguera hidráulica 1/2" 2SN','Hidráulico',7,5,15,4],['1000901','Aceite hidráulico ISO VG46 (bidón 20L)','Lubricantes',11,6,20,8]];
+  (function(){const s=document.getElementById('invFamilia');if(s)[...new Set(INV.map(i=>i[2]))].forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;s.appendChild(o);});})();
+  window.renderInventario=function(){
+    const q=(document.getElementById('invBuscar').value||'').toLowerCase().trim(), fam=document.getElementById('invFamilia').value, est=document.getElementById('invEstado').value;
+    const e=i=>i[3]===0?'sin':i[3]<i[4]?'bajo':i[3]>i[5]?'sobre':'ok';
+    const vis=INV.filter(i=>(!fam||i[2]===fam)&&(!est||e(i)===est)&&(!q||(i[0]+' '+i[1]).toLowerCase().includes(q))).sort((a,b)=>['sin','bajo','ok','sobre'].indexOf(e(a))-['sin','bajo','ok','sobre'].indexOf(e(b)));
+    document.getElementById('invKpis').innerHTML=[mini('Ítems catalogados',INV.length),mini('Sin stock',INV.filter(i=>e(i)==='sin').length,'','reposición urgente','var(--danger)'),
+      mini('Bajo mínimo',INV.filter(i=>e(i)==='bajo').length,'','generar SC','var(--warn)'),mini('Sobre máximo',INV.filter(i=>e(i)==='sobre').length,'','capital inmovilizado'),
+      mini('Nivel de servicio',Math.round(INV.filter(i=>i[3]>0).length/INV.length*100),'%','ítems con stock')].join('');
+    document.getElementById('invCount').textContent=vis.length+' ítems';
+    const P={sin:['p-critica','Sin stock'],bajo:['p-bajo','Bajo mínimo'],ok:['p-cerrada','Normal'],sobre:['p-gris','Sobre máximo']};
+    document.getElementById('invTabla').innerHTML=vis.map(i=>{const s=e(i),pct=Math.min(100,i[3]/i[5]*100),mn=i[4]/i[5]*100,cob=i[6]?Math.round(i[3]/(i[6]/90)):null;
+      return '<tr style="cursor:default"><td><span class="pt-sub"><b>'+i[0]+'</b></span></td><td class="pt-title">'+esc(i[1])+'</td><td>'+esc(i[2])+'</td><td style="font-family:var(--mono);font-weight:700">'+i[3]+'</td>'
+      +'<td style="min-width:150px"><div class="hb-track" style="position:relative"><div class="hb-fill" style="width:'+pct+'%;background:'+(s==='sin'||s==='bajo'?'#dc2626':s==='sobre'?'#94a3b8':'#16a34a')+'"></div><div style="position:absolute;left:'+mn+'%;top:-2px;bottom:-2px;width:2px;background:var(--text);opacity:.5"></div></div><div style="font-size:10px;color:var(--muted);margin-top:3px">mín '+i[4]+' · máx '+i[5]+'</div></td>'
+      +'<td><span class="pill '+P[s][0]+'">'+P[s][1]+'</span></td><td style="font-family:var(--mono)">'+i[6]+'</td><td style="font-family:var(--mono)">'+(cob==null?'—':cob+' días')+'</td></tr>';}).join('');
+  };
+
+  /* ══ EQUIPO ══ */
+  const HAB=['Ayudante','Mecánico','Eléctrico','Electromecánico','Electrónico','Soldador','Matricero'];
+  const MOTIVOS=['Vacaciones','Falta','Reposo médico','Capacitación','Permiso'];
+  const HAB_MAP={'Herrero':'Soldador','Metricero':'Matricero','Matricero':'Matricero'};
+  const CFG_KEY='cimplast_equipo_cfg';
+  const cfgLoad=()=>{try{return JSON.parse(localStorage.getItem(CFG_KEY)||'{}')}catch(e){return {}}};
+  const cfgSave=c=>{try{localStorage.setItem(CFG_KEY,JSON.stringify(c))}catch(e){}};
+  let eqEdit=null, eqDraft=null;
+  const plantasHist=n=>countBy(oAll().filter(o=>D.tecnicosDe(o.Tecnico).includes(n)),o=>o.Planta).filter(([p])=>p!=='No especificado').slice(0,3).map(([p])=>p);
+  const perfil=t=>{const c=cfgLoad()[t.nombre];return {plantas:c&&c.plantas?c.plantas:plantasHist(t.nombre),hist:!(c&&c.plantas),hab:c&&c.hab?c.hab:[HAB_MAP[t.esp]||t.esp].filter(x=>HAB.includes(x))};};
+  (function(){const s=document.getElementById('eqHab');if(s)HAB.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;s.appendChild(o);});
+    const f=document.getElementById('eqFecha');if(f)f.value=hoy();
+    document.addEventListener('DOMContentLoaded',()=>{const p=document.getElementById('eqPlantaF'),a=document.getElementById('actPlanta');D.listaPlantas().forEach(x=>{[p,a].forEach(s=>{if(!s)return;const o=document.createElement('option');o.value=x;o.textContent=x;s.appendChild(o);});});marcarAusentesEnSelects();});})();
+  window.eqAus=function(n,m){CMMS_AUS.set(n,document.getElementById('eqFecha').value||hoy(),m);renderEquipo();marcarAusentesEnSelects();showToast(m?n+' marcado: '+m:n+' disponible');};
+  window.eqEditar=function(n){eqEdit=n;const t=tecs().find(x=>x.nombre===n);const p=perfil(t);eqDraft={plantas:[...p.plantas],hab:[...p.hab]};renderEquipo();};
+  window.eqToggle=function(tipo,v){const a=eqDraft[tipo];const i=a.indexOf(v);if(i>=0)a.splice(i,1);else a.push(v);renderEquipo();};
+  window.eqGuardar=function(){const c=cfgLoad();c[eqEdit]={plantas:eqDraft.plantas,hab:eqDraft.hab};cfgSave(c);eqEdit=null;renderEquipo();showToast('Perfil guardado');};
+  window.eqCancelar=function(){eqEdit=null;renderEquipo();};
+  window.renderEquipo=function(){
+    const fecha=document.getElementById('eqFecha').value||hoy();
+    const q=(document.getElementById('eqBuscar').value||'').toLowerCase(), fh=document.getElementById('eqHab').value, fp=document.getElementById('eqPlantaF').value;
+    const lun=new Date();lun.setDate(lun.getDate()-((lun.getDay()+6)%7));const iniS=iso(lun);
+    const horasSem=n=>oAll().filter(o=>o.Estado==='Cerrada'&&f10(o.FechaCierre)>=iniS&&D.tecnicosDe(o.Tecnico).includes(n)).reduce((s,o)=>s+num(o.HorasReales)/Math.max(1,D.tecnicosDe(o.Tecnico).length),0);
+    const lista=tecs().map(t=>Object.assign({t,aus:CMMS_AUS.motivo(t.nombre,fecha),hs:horasSem(t.nombre)},perfil(t)));
+    const vis=lista.filter(x=>(!q||x.t.nombre.toLowerCase().includes(q))&&(!fh||x.hab.includes(fh))&&(!fp||x.plantas.includes(fp)));
+    const nAus=lista.filter(x=>x.aus).length;
+    const habCnt=HAB.map(hb=>[hb,lista.filter(x=>!x.aus&&x.hab.includes(hb)).length]).filter(x=>x[1]);
+    document.getElementById('eqKpis').innerHTML=mini('Técnicos',lista.length)+mini('Disponibles',lista.length-nAus,'',fecha===hoy()?'hoy':D.fmtFecha(fecha),'var(--ok)')
+      +mini('Ausentes',nAus,'',fecha===hoy()?'hoy':D.fmtFecha(fecha),nAus?'var(--danger)':'')
+      +mini('Disponibles por habilidad',habCnt.length?'<span style="font-size:11.5px;font-family:var(--font);font-weight:600;line-height:1.6">'+habCnt.map(x=>esc(x[0])+' '+x[1]).join(' · ')+'</span>':'—');
+    document.getElementById('eqGrid').innerHTML=vis.map(x=>{
+      const n=x.t.nombre, ed=eqEdit===n;
+      const plantasHTML=ed?D.listaPlantas().map(p=>'<span class="eq-tag chk'+(eqDraft.plantas.includes(p)?' on':'')+'" onclick="eqToggle(\'plantas\','+D.jsa(p)+')">'+esc(p)+'</span>').join('')
+        :(x.plantas.length?x.plantas.map(p=>'<span class="eq-tag'+(x.hist?' hist':'')+'" '+(x.hist?'title="Sugerida por historial de OT"':'')+'>'+esc(p)+'</span>').join(''):'<span class="eq-e">Sin planta asignada</span>');
+      const habHTML=ed?HAB.map(hb=>'<span class="eq-tag chk'+(eqDraft.hab.includes(hb)?' on':'')+'" onclick="eqToggle(\'hab\','+D.jsa(hb)+')">'+esc(hb)+'</span>').join('')
+        :(x.hab.length?x.hab.map(hb=>'<span class="eq-tag hab">'+esc(hb)+'</span>').join(''):'<span class="eq-e">Sin habilidades cargadas</span>');
+      const pct=Math.min(100,x.hs/48*100);
+      return '<div class="eq-card'+(x.aus?' aus':'')+'">'
+        +'<div class="eq-top"><span class="avatar" style="background:'+avColor(n)+'">'+esc(inic(n))+'</span><div style="flex:1;min-width:0"><div class="eq-n">'+esc(n)+'</div><div class="eq-e">'+esc(x.t.esp||'')+' · ID '+esc(x.t.id)+'</div></div>'
+          +(x.aus?'<span class="pill p-critica">'+esc(x.aus)+'</span>':'<span class="pill p-cerrada">Disponible</span>')+'</div>'
+        +'<div><div class="eq-sec">Plantas'+(x.hist&&!ed&&x.plantas.length?' · según historial':'')+'</div><div class="eq-tags">'+plantasHTML+'</div></div>'
+        +'<div><div class="eq-sec">Habilidades</div><div class="eq-tags">'+habHTML+'</div></div>'
+        +'<div class="eq-mini"><span>Semana</span><div class="hb-track"><div class="hb-fill" style="width:'+pct+'%;background:'+(pct>100?'#dc2626':pct>=85?'var(--warn)':'#16a34a')+'"></div></div><span style="font-family:var(--mono);font-weight:700">'+x.hs.toFixed(1)+' / 48h</span></div>'
+        +'<div class="eq-foot">'+(ed?'<button class="btn-primary" style="padding:8px 14px;font-size:12px" onclick="eqGuardar()">Guardar</button><button class="btn-ghost" onclick="eqCancelar()">Cancelar</button>'
+          :'<select onchange="eqAus('+D.jsa(n)+',this.value)"><option value="">✅ Disponible</option>'+MOTIVOS.map(m=>'<option'+(x.aus===m?' selected':'')+'>'+m+'</option>').join('')+'</select><button class="btn-ghost" onclick="eqEditar('+D.jsa(n)+')">✏ Editar</button>')+'</div>'
+      +'</div>';}).join('')||'<div class="col-empty">Sin técnicos para ese filtro</div>';
+  };
 })();
 </script>
 
