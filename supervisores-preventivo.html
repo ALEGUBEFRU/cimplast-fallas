@@ -1649,14 +1649,14 @@ function _addMonthsJS(date, n){
   return date;
 }
 function _proximoVencimiento(p){
-  const base = p.UltimaGeneracion ? new Date(p.UltimaGeneracion+'T00:00:00') : new Date(p.FechaInicio+'T00:00:00');
-  if(!p.UltimaGeneracion) return base; // nunca generó → vence en FechaInicio
+  const inicio = new Date(p.FechaInicio+'T00:00:00');
+  if(!p.UltimaGeneracion) return inicio;
   const intervalo = Number(p.IntervaloNum)||1;
-  const prox = new Date(base);
+  const prox = new Date(new Date(p.UltimaGeneracion+'T00:00:00'));
   if(p.Periodicidad==='semanas') prox.setDate(prox.getDate()+intervalo*7);
   else if(p.Periodicidad==='meses') _addMonthsJS(prox, intervalo);
   else prox.setDate(prox.getDate()+intervalo);
-  return prox;
+  return prox > inicio ? prox : inicio; // nunca antes de FechaInicio
 }
 function renderPlanesCronograma(){
   const cont = document.getElementById('planesCronograma');
