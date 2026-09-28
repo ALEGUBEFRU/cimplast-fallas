@@ -645,6 +645,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
           <button class="chip active" id="btnPrevVistaTarjetas" onclick="setVistaPreventivo('tarjetas')">🗂 Tarjetas</button>
           <button class="chip" id="btnPrevVistaLista" onclick="setVistaPreventivo('lista')">📋 Lista</button>
           <button class="chip" id="btnPrevVistaPlanta" onclick="setVistaPreventivo('planta')">🏭 Por Planta</button>
+          <button class="chip" id="btnPrevVistaCron" onclick="setVistaPreventivo('cronograma')">📊 Cronograma</button>
         </div>
         <button class="btn-secondary" onclick="ejecutarPlanesAhora()" id="btnEjecutarAhora">▶ Ejecutar ahora</button>
         <button class="btn-primary" onclick="abrirModalPlan()">+ Nuevo plan</button>
@@ -653,6 +654,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
     <div class="prev-grid" id="planesGrid"></div>
     <div class="prev-lista" id="planesLista" style="display:none"></div>
     <div class="prev-planta" id="planesPorPlanta" style="display:none"></div>
+    <div class="prev-cronograma" id="planesCronograma" style="display:none"></div>
   </div>
 </div>
 
@@ -1630,10 +1632,59 @@ function setVistaPreventivo(v){
   document.getElementById('btnPrevVistaTarjetas').classList.toggle('active', v==='tarjetas');
   document.getElementById('btnPrevVistaLista').classList.toggle('active', v==='lista');
   document.getElementById('btnPrevVistaPlanta').classList.toggle('active', v==='planta');
+  document.getElementById('btnPrevVistaCron').classList.toggle('active', v==='cronograma');
   document.getElementById('planesGrid').style.display = v==='tarjetas' ? 'grid' : 'none';
   document.getElementById('planesLista').style.display = v==='lista' ? 'flex' : 'none';
   document.getElementById('planesPorPlanta').style.display = v==='planta' ? 'block' : 'none';
+  document.getElementById('planesCronograma').style.display = v==='cronograma' ? 'block' : 'none';
   if(v==='planta') renderPlanesPorPlanta();
+  if(v==='cronograma') renderPlanesCronograma();
+}
+
+// ── Cronograma: días restantes para el próximo vencimiento de cada plan ──
+function _addMonthsJS(date, n){
+  const d = date.getDate();
+  date.setMonth(date.getMonth()+n);
+  if(date.getDate() < d) date.setDate(0);
+  return date;
+}
+function _proximoVencimiento(p){
+  const base = p.UltimaGeneracion ? new Date(p.UltimaGeneracion+'T00:00:00') : new Date(p.FechaInicio+'T00:00:00');
+  if(!p.UltimaGeneracion) return base; // nunca generó → vence en FechaInicio
+  const intervalo = Number(p.IntervaloNum)||1;
+  const prox = new Date(base);
+  if(p.Periodicidad==='semanas') prox.setDate(prox.getDate()+intervalo*7);
+  else if(p.Periodicidad==='meses') _addMonthsJS(prox, intervalo);
+  else prox.setDate(prox.getDate()+intervalo);
+  return prox;
+}
+function renderPlanesCronograma(){
+  const cont = document.getElementById('planesCronograma');
+  const activos = planesTodos.filter(p=>String(p.Activo)==='Si');
+  if(!activos.length){ cont.innerHTML='<div class="col-empty">No hay planes activos.</div>'; return; }
+
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const filas = activos.map(p=>{
+    const prox = _proximoVencimiento(p);
+    const dias = Math.round((prox - hoy) / 86400000);
+    return { nombre: p.Nombre, dias };
+  }).sort((a,b)=>a.dias-b.dias);
+
+  const maxDias = Math.max(...filas.map(f=>Math.abs(f.dias)), 30);
+
+  cont.innerHTML = filas.map(f=>{
+    const vencido = f.dias < 0;
+    const pct = Math.min(100, Math.round((Math.abs(f.dias)/maxDias)*100));
+    const color = vencido ? '#a3352b' : (f.dias<=2 ? '#8a5c0a' : '#2f6b34');
+    const txt = vencido ? `Vencido hace ${Math.abs(f.dias)}d` : (f.dias===0 ? 'Vence hoy' : `Faltan ${f.dias}d`);
+    return `<div class="cron-row" style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <div style="width:220px;font-size:13px;flex-shrink:0">${esc(f.nombre)}</div>
+      <div style="flex:1;background:var(--surface2);border-radius:4px;height:18px;position:relative;overflow:hidden">
+        <div style="width:${pct}%;background:${color};height:100%"></div>
+      </div>
+      <div style="width:130px;text-align:right;font-size:12px;font-weight:600;color:${color};flex-shrink:0">${txt}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderPlanes(){
