@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#f2f2f3">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="manifest" href="manifest-preventivo.json">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<!-- manifest omitido en versión de prueba: evita conflicto de instalación con la app de PC -->
 <title>Cimplast · Preventivo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1162,6 +1162,7 @@ html[data-theme="dark"] .bar.plan{background:#2a3a55}
     <div class="ops-card"><div class="ops-card-h"><div><h3>Tendencia mensual</h3><p>Fallas reportadas vs. OT cerradas · últimos 6 meses</p></div></div><div id="anaTendencia"></div></div>
     <div class="ops-card prio-card"><div class="ops-card-h"><div><h3>Comparativo por planta</h3><p>Indicadores del período</p></div></div><div style="overflow-x:auto"><table class="prio-table"><thead><tr><th>Planta</th><th>Fallas</th><th>OT</th><th>Cumpl.</th><th>MTTR</th><th>MTBF</th><th>Disp.</th></tr></thead><tbody id="anaPlantas"></tbody></table></div></div>
   </div>
+  <div class="mod-wrap"><div class="ops-card"><div class="ops-card-h"><div><h3>Calidad de datos</h3><p>Registros de la base que afectan la precisión de los indicadores (histórico completo)</p></div></div><div id="anaCalidad"></div></div></div>
 </div>
 
 <!-- ═══ REPORTES ═══ -->
@@ -1411,545 +1412,33 @@ html[data-theme="dark"] .bar.plan{background:#2a3a55}
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalWA')">Cerrar</button><button class="btn-primary" onclick="copyWA()">Copiar texto</button></div>
 </div></div>
 
+<script src="../datos.js"></script>
 <script>
-// ══ MOCK datos.js — SOLO PREVIEW (equipos/técnicos reales, fallas/OT ficticias) ══
+/* ═══ Correcciones de datos (auditoría vs. base real) — solo afectan a esta app ═══ */
 (function(){
-  const PLANTAS=["Planta 3","Planta 4","Planta 5","Titese","Matricería","Otros"];
-  const EQ={
-  "Planta 3": [
-    {
-      "cod": "INY 3",
-      "nombre": "Inyectora Negri Bossi"
-    },
-    {
-      "cod": "INY 4",
-      "nombre": "Inyectora Husky 1"
-    },
-    {
-      "cod": "INY 5",
-      "nombre": "Inyectora Husky 2"
-    },
-    {
-      "cod": "INY 6",
-      "nombre": "Inyectora Husky 3"
-    },
-    {
-      "cod": "INY 7",
-      "nombre": "Inyectora Husky 4"
-    },
-    {
-      "cod": "INY 14",
-      "nombre": "Inyectora Husky 6"
-    },
-    {
-      "cod": "INS 01",
-      "nombre": "Inyecto-Sopladora Automa"
-    },
-    {
-      "cod": "INS 02",
-      "nombre": "Inyecto-Sopladora Nissei 70/5"
-    },
-    {
-      "cod": "INS 03",
-      "nombre": "Inyecto-Sopladora Nissei 250/1"
-    },
-    {
-      "cod": "INS 05",
-      "nombre": "Inyecto-Sopladora Nissei 70/2"
-    },
-    {
-      "cod": "INS 06",
-      "nombre": "Inyecto-Sopladora Nissei 70/3"
-    },
-    {
-      "cod": "INS 07",
-      "nombre": "Inyecto-Sopladora Nissei 250/2"
-    },
-    {
-      "cod": "CHI 22",
-      "nombre": "Chiller Trane 50 TR - Planta 3"
-    },
-    {
-      "cod": "CAA 2",
-      "nombre": "Compresor Reavell (Booster)"
-    },
-    {
-      "cod": "CAA 3",
-      "nombre": "Compresor ABC 01"
-    },
-    {
-      "cod": "CAA 4",
-      "nombre": "Compresor ABC 02"
-    },
-    {
-      "cod": "CAA 5",
-      "nombre": "Compresor Shangair 2 (de 3 compresores)"
-    },
-    {
-      "cod": "CAA 6",
-      "nombre": "Compresor Shangair 3 (de 4 compresores)"
-    },
-    {
-      "cod": "CAB 5",
-      "nombre": "Compresor ATLAS COPCO GA 90"
-    },
-    {
-      "cod": "Trafo 6",
-      "nombre": "Trafo de potencia de 1.250KVA"
-    },
-    {
-      "cod": "Trafo 2",
-      "nombre": "Trafo de potencia de 1.000KVA"
-    },
-    {
-      "cod": "Trafo 4",
-      "nombre": "Trafo de potencia de 400 KVA"
-    },
-    {
-      "cod": "Trafo 5",
-      "nombre": "Trafo de potencia de 750 kVA"
-    },
-    {
-      "cod": "CAB 4",
-      "nombre": "Compresor Kaeser Planta 3"
-    },
-    {
-      "cod": "CAB 10",
-      "nombre": "Compresor Kaeser 2 planta 3"
-    },
-    {
-      "cod": "INY 13",
-      "nombre": "Inyectora Husky 5 XL 300"
-    },
-    {
-      "cod": "CHI 33",
-      "nombre": "Chiller Blauwer 1 Planta 3"
-    },
-    {
-      "cod": "CHI 34",
-      "nombre": "Chiller Blauwer 2 Planta 3"
-    },
-    {
-      "cod": "CHI 35",
-      "nombre": "Chiller Bluwer 3 Planta 3"
-    },
-    {
-      "cod": "CHI 36",
-      "nombre": "Chiller Bluwer 4 Planta 3"
-    },
-    {
-      "cod": "CAB 14",
-      "nombre": "Compresor Atlas Copco GA 45"
-    },
-    {
-      "cod": "SOP 31",
-      "nombre": "Ekou 5"
-    },
-    {
-      "cod": "INS 09",
-      "nombre": "Inyecto Sopladora AOKI"
-    },
-    {
-      "cod": "LEC01",
-      "nombre": "Lechita - Embal"
-    },
-    {
-      "cod": "OTR",
-      "nombre": "Otro"
-    }
-  ],
-  "Planta 4": [
-    {
-      "cod": "INY 9",
-      "nombre": "Inyectora Sandretto 2"
-    },
-    {
-      "cod": "INY 10",
-      "nombre": "Inyectora Sandretto 3"
-    },
-    {
-      "cod": "INY 11",
-      "nombre": "Inyectora Sandretto 4"
-    },
-    {
-      "cod": "INY 12",
-      "nombre": "Inyectora Sandretto 5"
-    },
-    {
-      "cod": "CHI 1",
-      "nombre": "Chiller Termo Regulador SACMI - Planta 4"
-    },
-    {
-      "cod": "CHI 27",
-      "nombre": "Chiller York 50 TR - Planta 4"
-    },
-    {
-      "cod": "CAB 12",
-      "nombre": "Compresor de Aire Atlas Copco GA 45"
-    },
-    {
-      "cod": "Trafo 3",
-      "nombre": "Transformador de 750KVA"
-    },
-    {
-      "cod": "CCM 3",
-      "nombre": "SACMI CCM 3"
-    },
-    {
-      "cod": "INY 15",
-      "nombre": "Borche"
-    },
-    {
-      "cod": "OTR",
-      "nombre": "Otro"
-    }
-  ],
-  "Planta 5": [
-    {
-      "cod": "SOP 16",
-      "nombre": "Ekou 1"
-    },
-    {
-      "cod": "SOP 17",
-      "nombre": "Ekou 2"
-    },
-    {
-      "cod": "SOP 18",
-      "nombre": "Ekou 3"
-    },
-    {
-      "cod": "SOP 20",
-      "nombre": "MAG PLASTIC 2"
-    },
-    {
-      "cod": "SOP 21",
-      "nombre": "MAG PLASTIC 4"
-    },
-    {
-      "cod": "SOP 22",
-      "nombre": "MAG PLASTIC 3"
-    },
-    {
-      "cod": "SOP 14",
-      "nombre": "Pavan 6"
-    },
-    {
-      "cod": "SOP 35",
-      "nombre": "Ekou 4"
-    },
-    {
-      "cod": "CHI 15",
-      "nombre": "Chiller Reiken 10 TR Nissei 70/2 y 3 - Planta 2"
-    },
-    {
-      "cod": "CHI 23",
-      "nombre": "Chiller Piovan 25 TR - Planta 2"
-    },
-    {
-      "cod": "CAA 1",
-      "nombre": "Compresor Ingersoll Rand PHE-NL"
-    },
-    {
-      "cod": "Trafo 7",
-      "nombre": "Trafo de potencia de 1.000KVA"
-    },
-    {
-      "cod": "SOP 32",
-      "nombre": "Ekou 6"
-    },
-    {
-      "cod": "SOP 33",
-      "nombre": "Ekou 7"
-    },
-    {
-      "cod": "OTR",
-      "nombre": "Otro"
-    }
-  ],
-  "Titese": [
-    {
-      "cod": "SOP 1",
-      "nombre": "Pavan Zanetti 1"
-    },
-    {
-      "cod": "SOP 2",
-      "nombre": "Pavan Zanetti 2"
-    },
-    {
-      "cod": "SOP 3",
-      "nombre": "Krupp"
-    },
-    {
-      "cod": "SOP 4",
-      "nombre": "Battenfeld Pugliese"
-    },
-    {
-      "cod": "SOP 5",
-      "nombre": "Plastiblow 1"
-    },
-    {
-      "cod": "SOP 6",
-      "nombre": "Plastiblow 2"
-    },
-    {
-      "cod": "SOP 7",
-      "nombre": "Plastiblow 3"
-    },
-    {
-      "cod": "SOP 12",
-      "nombre": "Bekum 2"
-    },
-    {
-      "cod": "SOP 13",
-      "nombre": "Pavan Zanetti 4"
-    },
-    {
-      "cod": "SOP 24",
-      "nombre": "UNILOY 2 - 20 lts"
-    },
-    {
-      "cod": "SOP 25",
-      "nombre": "UNILOY 1 - 5 lts"
-    },
-    {
-      "cod": "SOP26",
-      "nombre": "Sopladora Multipack 1"
-    },
-    {
-      "cod": "CHI 29",
-      "nombre": "Chiller York 120 TR - Titese"
-    },
-    {
-      "cod": "CHI 30",
-      "nombre": "Chiller Blauwer 1 50 TR - Titese"
-    },
-    {
-      "cod": "CHI 31",
-      "nombre": "Chiller Blauwer 2 50 TR - Titese"
-    },
-    {
-      "cod": "Trafo 8",
-      "nombre": "Trafo de potencia 1 de 1.000KVA titese"
-    },
-    {
-      "cod": "Trafo 9",
-      "nombre": "Trafo de potencia 2 de 1.000KVA titese"
-    },
-    {
-      "cod": "CAB 9",
-      "nombre": "Compresor Kaeser 1 TITESE"
-    },
-    {
-      "cod": "CAB 11",
-      "nombre": "Compresor Kaeser 3 TITESE"
-    },
-    {
-      "cod": "SOP27",
-      "nombre": "Sopladora Multipack 2"
-    },
-    {
-      "cod": "SOP28",
-      "nombre": "Sopladora Z"
-    },
-    {
-      "cod": "CAB 8",
-      "nombre": "Compresor Kaeser 4 TITESE"
-    },
-    {
-      "cod": "CHI 37",
-      "nombre": "Chiller Smart MK3 y MK4"
-    },
-    {
-      "cod": "CAB 13",
-      "nombre": "Compresor Atlas Copco GA 160"
-    },
-    {
-      "cod": "SOP29",
-      "nombre": "Sopladora Multipack 3"
-    },
-    {
-      "cod": "SOP 30",
-      "nombre": "Sopladora Multipack 4"
-    },
-    {
-      "cod": "OTR",
-      "nombre": "Otro"
-    }
-  ],
-  "Matricería": [
-    {
-      "cod": "MAT-01",
-      "nombre": "Torno CNC 1"
-    },
-    {
-      "cod": "MAT-02",
-      "nombre": "Torno CNC 2"
-    },
-    {
-      "cod": "MAT-03",
-      "nombre": "Fresadora CNC"
-    },
-    {
-      "cod": "MAT-04",
-      "nombre": "Rectificadora"
-    },
-    {
-      "cod": "MAT-05",
-      "nombre": "Soldadora MIG"
-    },
-    {
-      "cod": "MAT-06",
-      "nombre": "Compresor Matricería"
-    },
-    {
-      "cod": "OTR",
-      "nombre": "Otro"
-    }
-  ],
-  "Otros": [
-    {
-      "cod": "OTR-01",
-      "nombre": "Caldera"
-    },
-    {
-      "cod": "OTR-02",
-      "nombre": "Planta de tratamiento de agua"
-    },
-    {
-      "cod": "OTR-03",
-      "nombre": "Generador eléctrico"
-    },
-    {
-      "cod": "OTR-04",
-      "nombre": "Puente grúa"
-    }
-  ]
-};
-  const TECNICOS=[
-  {
-    "id": 14,
-    "nombre": "Carlos Mongelos",
-    "esp": "Eléctrico"
-  },
-  {
-    "id": 4,
-    "nombre": "Claudio Cerezo",
-    "esp": "Eléctrico"
-  },
-  {
-    "id": 11,
-    "nombre": "Edgar Maqueda",
-    "esp": "Metricero"
-  },
-  {
-    "id": 13,
-    "nombre": "Enrique Monges",
-    "esp": "Eléctrico"
-  },
-  {
-    "id": 10,
-    "nombre": "Jose Caballero",
-    "esp": "Mecánico"
-  },
-  {
-    "id": 2,
-    "nombre": "José González",
-    "esp": "Mecánico"
-  },
-  {
-    "id": 16,
-    "nombre": "Maximo Duarte",
-    "esp": "Eléctrico"
-  },
-  {
-    "id": 15,
-    "nombre": "Nicolas Vazquez",
-    "esp": "Mecánico"
-  },
-  {
-    "id": 7,
-    "nombre": "Oscar Duarte",
-    "esp": "Electromecánico"
-  },
-  {
-    "id": 6,
-    "nombre": "Pablo Gomez",
-    "esp": "Herrero"
-  },
-  {
-    "id": 8,
-    "nombre": "Valentin Escobar",
-    "esp": "Herrero"
-  },
-  {
-    "id": 12,
-    "nombre": "Victor Saucedo",
-    "esp": "Mecánico"
-  },
-  {
-    "id": 17,
-    "nombre": "Agustín Dure",
-    "esp": "Electrónico"
-  },
-  {
-    "id": 18,
-    "nombre": "Jose Bogado",
-    "esp": "Mecánico"
-  },
-  {
-    "id": 19,
-    "nombre": "Operador/Encargado",
-    "esp": "Producción"
-  },
-  {
-    "id": 20,
-    "nombre": "Tercerizado",
-    "esp": "Externo"
-  }
-];
-  const TEC=TECNICOS.filter(t=>!/Operador|Tercerizado/.test(t.nombre)).map(t=>t.nombre);
-  const SINT=['Ruido anormal en rodamiento','Fuga de aceite hidráulico','No arranca','Vibración excesiva','Sobrecalentamiento de motor','Fuga de aire comprimido','Falla sensor de temperatura'];
-  const DESC=['Inspección bomba hidráulica','Cambio de filtro hidráulico','Lubricación de rodamientos','Reemplazo de correa','Calibración de sensores','Revisión tablero eléctrico','Limpieza intercambiador'];
-  let seed=11; const r=()=>{seed=(seed*9301+49297)%233280;return seed/233280;};
-  const pick=a=>a[Math.floor(r()*a.length)];
+  const D=window.CIMPLAST_DATA; if(!D) return;
+  // 1) Anuladas: usar la columna "Anulada" (Si/No) además del prefijo "ANULADA:" en ObservacionesCierre
+  const esA=D.esAnulada.bind(D);
+  D.esAnulada=function(o){return String((o&&o.Anulada)||'').trim().toLowerCase()==='si'||esA(o);};
+  // 2) Técnicos: normalizar variantes tipo "Valentin Escobar — Herrero" → "Valentin Escobar"
+  const tDe=D.tecnicosDe.bind(D);
+  D.tecnicosDe=function(s){return [...new Set(tDe(s).map(t=>t.split(/\s+[—–]\s+/)[0].trim()).filter(Boolean))];};
+  // 3) Plantas: agregar las que aparecen en los datos y no están en el catálogo (ej. "Planta 2")
+  D._plantasExtra=new Set();
+  const lp=D.listaPlantas.bind(D);
+  D.listaPlantas=function(){const b=lp();return b.concat([...D._plantasExtra].filter(p=>!b.includes(p)).sort());};
+  D.plantasCatalogo=lp;
+  // 4) Fechas: convertir timestamps UTC ("2026-08-12T23:10:00Z") a fecha local de Paraguay
   const pad=n=>String(n).padStart(2,'0');
-  const dAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
-  const hot=['Planta 3','Planta 3','Planta 4','Planta 5','Titese','Matricería'];
-  const fallas=[],ots=[];let n=120;
-  for(let i=0;i<260;i++){
-    const da=Math.floor(Math.pow(r(),1.3)*180), pl=pick(hot), lst=EQ[pl]; const eq=(r()<0.35?lst[0]:pick(lst)).nombre;
-    fallas.push({ID:'F'+i,Fecha:dAgo(da),Hora:'08:00',Planta:pl,Equipo:eq,Sintoma:pick(SINT),Sistema:pick(['Mecánico','Mecánico','Eléctrico','Hidráulico','Neumático','No sé']),Prioridad:pick(['Alta','Media','Media','Baja']),Estado:da<5?pick(['Pendiente','En curso']):'Concluido',Detenido:r()<0.22?'Sí — parado':'No',Operador:'Operador'});
-  }
-  for(let i=0;i<320;i++){
-    const da=Math.floor(Math.pow(r(),1.3)*180)-6, pl=pick(hot), eq=pick(EQ[pl]).nombre;
-    const cerr=da>1&&r()>0.2; const tecs=r()<0.2?pick(TEC)+', '+pick(TEC):(r()<0.05?'':pick(TEC));
-    ots.push({NroOT:'OT-2026-'+String(n++).padStart(4,'0'),FechaCreacion:dAgo(Math.max(da,0)+2),FechaProgramada:dAgo(da),FechaCierre:cerr?dAgo(Math.max(0,da-Math.floor(r()*2))):'',Planta:pl,Equipo:eq,Tipo:pick(['Correctivo','Correctivo','Preventivo','Preventivo','Mejora']),Prioridad:pick(['Alta','Media','Media','Baja']),Estado:cerr?'Cerrada':pick(['Abierta','En curso']),SubEstado:!cerr&&r()<0.2?'Aguardando repuestos':'',Tecnico:tecs,Descripcion:pick(DESC),HorasReales:cerr?(r()*7+0.5).toFixed(1):'',Costo:cerr?Math.floor(r()*1800000):0,ObservacionesCierre:''});
-  }
-  const esAnulada=o=>String(o.ObservacionesCierre||'').trim().toUpperCase().indexOf('ANULADA')===0;
-  function kpis(fal,ot,dias){const nn=v=>Number(v)||0;
-    const anuladas=ot.filter(o=>o.Estado==='Cerrada'&&esAnulada(o)),validas=ot.filter(o=>!(o.Estado==='Cerrada'&&esAnulada(o))),cerradas=validas.filter(o=>o.Estado==='Cerrada');
-    const conHoras=cerradas.filter(o=>nn(o.HorasReales)>0),mttr=conHoras.length?conHoras.reduce((a,o)=>a+nn(o.HorasReales),0)/conHoras.length:0;
-    const nFallas=fal.length,equiposConFalla=new Set(fal.map(f=>f.Equipo).filter(Boolean)).size||1,hp=Math.max(1,dias)*24;
-    const mtbf=nFallas?(hp*equiposConFalla)/nFallas:0,disp=(mtbf+mttr)>0?mtbf/(mtbf+mttr)*100:100,cumpl=validas.length?cerradas.length/validas.length*100:0;
-    return {mttr,mtbf,disp,cumpl,nFallas,equiposConFalla,dias:Math.max(1,dias),cerradas,conHoras,anuladas,validas,backlog:validas.filter(o=>o.Estado!=='Cerrada').length,costo:cerradas.reduce((a,o)=>a+nn(o.Costo),0)};}
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  window.CIMPLAST_DATA={api:'mock://api',tecnicos:TECNICOS,apiGet:q=>'mock://get?'+q,apiPostBody:o=>JSON.stringify(o),
-    listaPlantas:()=>PLANTAS,equiposDe:p=>EQ[p]||[],esc,jsa(s){return esc(JSON.stringify(String(s??'')));},
-    nuevoReqId:()=>'r-'+Date.now(),esAnulada,kpis,
-    tieneTecnico:(s,q)=>!!s&&!!q&&s.toLowerCase().includes(q.toLowerCase()),
-    tecnicosDe:s=>s?s.split(',').map(t=>t.trim()).filter(Boolean):[],
-    estadoVisible:o=>o.SubEstado&&o.Estado!=='Cerrada'?o.Estado+' · '+o.SubEstado:(o.Estado||'—'),
-    fmtFecha:f=>f?new Date(String(f).slice(0,10)+'T00:00:00').toLocaleDateString('es-PY'):'—',
-    fmtFechaHora:(f,h)=>f?new Date(String(f).slice(0,10)+'T00:00:00').toLocaleDateString('es-PY')+(h?' '+h:''):'—'};
-  const _f=window.fetch.bind(window);
-  window.fetch=function(u,o){u=String(u||'');
-    if(u.startsWith('mock://')){let p={ok:true};
-      if(u.includes('accion=fallas'))p={fallas};else if(u.includes('accion=ots'))p={ots};else if(u.includes('accion=planes'))p={planes:[]};
-      else if(u.includes('accion=equipos'))p={equipos:[]};
-      return Promise.resolve({ok:true,json:()=>Promise.resolve(p)});}
-    return _f(u,o);};
+  D.f10=function(v){if(!v)return '';const s=String(v);if(s.length>10&&s.indexOf('T')===10){const d=new Date(s);if(!isNaN(d))return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}return s.slice(0,10);};
+  // 5) Fecha efectiva de cierre: si una OT cerrada no tiene FechaCierre, usa la programada o la de creación
+  D.fCierre=function(o){return D.f10(o.FechaCierre)||D.f10(o.FechaProgramada)||D.f10(o.FechaCreacion);};
+  // 6) ¿Hay costos cargados en alguna OT?
+  D.hayCostos=function(ots){return (ots||[]).some(o=>Number(o.Costo)>0);};
+  // 7) Sin fallas en el período → disponibilidad 100% (la fórmula base devolvía 0% si había OT con horas)
+  const kp=D.kpis.bind(D);
+  D.kpis=function(f,o,d){const k=kp(f,o,d);if(!k.nFallas){k.disp=100;k.mtbf=0;}return k;};
 })();
-
 </script>
 <script>
 const API=window.CIMPLAST_DATA.api, TECNICOS=window.CIMPLAST_DATA.tecnicos, D=window.CIMPLAST_DATA;
@@ -2114,7 +1603,7 @@ function renderKPIs(fallas,ots,desde,hasta){
     {k:'Cumplimiento',v:cumpl.toFixed(0),u:'%',n:cerradas.length+' de '+k.validas.length+' OT cerradas'+(k.anuladas.length?' · '+k.anuladas.length+' anuladas excluidas':''),t:tone(cumpl,85,65),ic:'✅',trend:kAnt?calcTrend(cumpl,kAnt.cumpl):null},
     {k:'Backlog',v:backlog,u:'',n:'OT abiertas o en curso',t:backlog>10?'var(--danger)':backlog>4?'var(--warn)':'var(--ok)',ic:'📋',trend:kAnt?calcTrend(backlog,kAnt.backlog,true):null},
     {k:'Fallas con línea parada',v:parados,u:'',n:equiposParados+' equipo(s) distintos sin concluir',t:parados?'var(--danger)':'var(--ok)',ic:'⚠️'},
-    {k:'Costo del período',v:costo>=1e6?(costo/1e6).toFixed(1)+'M':(costo/1000).toFixed(0)+'k',u:'Gs',n:'repuestos y servicios en OT cerradas',t:'var(--accent)',ic:'💰',trend:kAnt?calcTrend(costo,kAnt.costo,true):null}
+    (D.hayCostos(typeof otsTodas!=='undefined'?otsTodas:ots)?{k:'Costo del período',v:costo>=1e6?(costo/1e6).toFixed(1)+'M':(costo/1000).toFixed(0)+'k',u:'Gs',n:'repuestos y servicios en OT cerradas',t:'var(--accent)',ic:'💰',trend:kAnt?calcTrend(costo,kAnt.costo,true):null}:{k:'Costo del período',v:'—',u:'',n:'el costo no se carga en las OT',t:'var(--border-hi)',ic:'💰'})
   ];
   document.getElementById('kpiRow').innerHTML=K.map(x=>
     '<div class="kpi" style="--tone:'+x.t+'">'
@@ -2205,8 +1694,8 @@ function renderResumenTecnico(tec,ots,desde,hasta){
   // Agrupar horas por día (FechaCierre)
   const porDia={};
   cerradas.forEach(o=>{
-    if(!o.FechaCierre||!o.HorasReales) return;
-    const d=o.FechaCierre.slice(0,10);
+    if(!o.HorasReales) return;
+    const d=D.fCierre(o); if(!d) return;
     porDia[d]=(porDia[d]||0)+num(o.HorasReales);
   });
   const diasOrdenados=Object.entries(porDia).sort((a,b)=>a[0]<b[0]?1:-1);
@@ -3565,7 +3054,7 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
   const avColor=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return AV_COLORS[h%AV_COLORS.length];};
   const iniciales=s=>String(s||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?';
   const iso=d=>d.toISOString().slice(0,10);
-  const f10=v=>(v||'').toString().slice(0,10);
+  const f10=v=>D.f10(v);
   const hoyISO=()=>iso(new Date());
   const diffDias=(a,b)=>Math.round((new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/86400000);
   let opsModoActual='semana', opsOts=[], opsFallas=[];
@@ -3600,7 +3089,7 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
     const validas=opsOts.filter(o=>!(D.esAnulada&&D.esAnulada(o)));
     grupos.forEach(g=>{
       g.plan=validas.filter(o=>{const f=f10(o.FechaProgramada||o.FechaCreacion);return f>=g.ini&&f<=g.fin;}).length;
-      g.done=validas.filter(o=>o.Estado==='Cerrada'&&(()=>{const f=f10(o.FechaCierre);return f>=g.ini&&f<=g.fin;})()).length;
+      g.done=validas.filter(o=>o.Estado==='Cerrada'&&(()=>{const f=D.fCierre(o);return f>=g.ini&&f<=g.fin;})()).length;
     });
     const max=Math.max(1,...grupos.map(g=>Math.max(g.plan,g.done)));
     document.getElementById('opsBars').innerHTML=grupos.map(g=>
@@ -3617,7 +3106,7 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
   function renderActividad(){
     const ev=[];
     opsOts.forEach(o=>{
-      if(o.Estado==='Cerrada'&&o.FechaCierre) ev.push({f:f10(o.FechaCierre),cls:'ok',ic:'✓',t:(o.NroOT||'OT')+' cerrada',s:(D.tecnicosDe(o.Tecnico)[0]||'—')+' · '+(o.Equipo||''),id:o.NroOT});
+      if(o.Estado==='Cerrada') ev.push({f:D.fCierre(o),cls:'ok',ic:'✓',t:(o.NroOT||'OT')+' cerrada',s:(D.tecnicosDe(o.Tecnico)[0]||'—')+' · '+(o.Equipo||''),id:o.NroOT});
       else if(o.FechaCreacion) ev.push({f:f10(o.FechaCreacion),cls:'info',ic:'＋',t:(o.NroOT||'OT')+' creada',s:(o.Equipo||'')+' · '+(o.Planta||''),id:o.NroOT});
     });
     opsFallas.forEach(fl=>{
@@ -3689,7 +3178,7 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
     const etiquetaPeriodo = cargaModoActual==='semana' ? 'esta semana' : 'este mes';
 
     const enPeriodo = cargaOtsBase.filter(o=>{
-      const f = f10(o.FechaCierre) || f10(o.FechaCreacion);
+      const f = o.Estado==='Cerrada' ? D.fCierre(o) : '';
       return f && f>=iniStr && f<=finStr;
     });
 
@@ -3809,7 +3298,7 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
   const pad=n=>String(n).padStart(2,'0');
   const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const hoy=()=>iso(new Date());
-  const f10=v=>(v||'').toString().slice(0,10);
+  const f10=v=>D.f10(v);
   const addD=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return iso(d);};
   const dDiff=(a,b)=>Math.round((new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/86400000);
   const num=v=>Number(v)||0;
@@ -3906,7 +3395,7 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
       mini('Fallas reportadas',k.nFallas,'',k.equiposConFalla+' equipos afectados'),
       mini('OT del período',k.validas.length,'',k.cerradas.length+' cerradas'),
       mini('Disponibilidad',k.disp.toFixed(1),'%'),mini('MTBF',k.mtbf.toFixed(0),'h'),mini('MTTR',k.mttr.toFixed(1),'h'),
-      mini('Costo registrado',fmtGs(k.costo),'Gs')].join('');
+      (D.hayCostos(oAll())?mini('Costo registrado',fmtGs(k.costo),'Gs'):mini('Costo registrado','—','','no se carga en las OT'))].join('');
     const tipos=countBy(ots,o=>o.Tipo), tot=ots.length||1, TC={Correctivo:'#dc2626',Preventivo:'#16a34a',Predictivo:'#2563eb',Mejora:'#7c3aed'};
     document.getElementById('anaTipos').innerHTML=ots.length?'<div class="stack">'+tipos.map(([t,c])=>'<div style="width:'+(c/tot*100)+'%;background:'+(TC[t]||'#94a3b8')+'" title="'+esc(t)+'"></div>').join('')+'</div>'
       +hbars(tipos.map(([t,c])=>[t,c]),r=>TC[r[0]]||'#94a3b8',r=>r[1]+' · '+Math.round(r[1]/tot*100)+'%')
@@ -3916,7 +3405,7 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
     // Tendencia 6 meses
     const meses=[];const now=new Date();for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);meses.push({k:d.getFullYear()+'-'+pad(d.getMonth()+1),l:MESES[d.getMonth()]});}
     const fa=porPlanta(fAll()), oa=porPlanta(oAll());
-    meses.forEach(m=>{m.f=fa.filter(f=>f10(f.Fecha).slice(0,7)===m.k).length;m.c=oa.filter(o=>o.Estado==='Cerrada'&&f10(o.FechaCierre).slice(0,7)===m.k).length;});
+    meses.forEach(m=>{m.f=fa.filter(f=>f10(f.Fecha).slice(0,7)===m.k).length;m.c=oa.filter(o=>o.Estado==='Cerrada'&&D.fCierre(o).slice(0,7)===m.k).length;});
     const mx=Math.max(1,...meses.map(m=>Math.max(m.f,m.c)));
     document.getElementById('anaTendencia').innerHTML='<div class="vbars">'+meses.map(m=>'<div class="vb-g" title="'+m.l+': '+m.f+' fallas / '+m.c+' OT cerradas"><div class="vb" style="height:'+(m.f/mx*100)+'%;background:#dc2626"></div><div class="vb" style="height:'+(m.c/mx*100)+'%;background:var(--accent)"></div></div>').join('')+'</div>'
       +'<div class="vb-lbls">'+meses.map(m=>'<span>'+m.l+'</span>').join('')+'</div>'
@@ -4009,17 +3498,19 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
     if(venc.length>5) risks.push(['MEDIO','Backlog vencido: '+venc.length+' OT',venc.filter(o=>o.Prioridad==='Alta').length+' de prioridad alta']);
     if(cpA!=null&&cpA<85) risks.push(['MEDIO','Cumplimiento preventivo '+cpA.toFixed(0)+'%','Meta ≥ 85% — riesgo de aumento de correctivos']);
     if(ausHoy>=3) risks.push(['BAJO','Capacidad técnica reducida hoy',ausHoy+' técnico(s) ausentes']);
+    const hayC=D.hayCostos(oAll());
+    if(!hayC) risks.push(['MEDIO','Costos de mantenimiento no registrados','El campo Costo no se completa al cerrar OT — no hay base para control de Budget']);
     if(!risks.length) risks.push(['BAJO','Sin riesgos relevantes detectados','Indicadores dentro de lo esperado']);
     // costo 6 meses
     const meses=[];for(let i=5;i>=0;i--){const d=new Date(m0.getFullYear(),m0.getMonth()-i,1);meses.push({k:d.getFullYear()+'-'+pad(d.getMonth()+1),l:MESES[d.getMonth()]});}
-    const oa=porPlanta(oAll());meses.forEach(m=>m.v=oa.filter(o=>o.Estado==='Cerrada'&&f10(o.FechaCierre).slice(0,7)===m.k).reduce((s,o)=>s+num(o.Costo),0));
+    const oa=porPlanta(oAll());meses.forEach(m=>m.v=oa.filter(o=>o.Estado==='Cerrada'&&D.fCierre(o).slice(0,7)===m.k).reduce((s,o)=>s+num(o.Costo),0));
     const mx=Math.max(1,...meses.map(m=>m.v)), tot6=meses.reduce((s,m)=>s+m.v,0);
     const dDisp=A.k.disp-P.k.disp;
     const arrow=(a,b,inv)=>{if(b==null||a==null)return '';const d=a-b;if(Math.abs(d)<0.05)return '= vs. mes anterior';const good=inv?d<0:d>0;return '<span style="color:'+(good?'#4ade80':'#f87171')+'">'+(d>0?'▲':'▼')+' '+Math.abs(d).toFixed(Number.isInteger(d)?0:1)+'</span> vs. mes anterior';};
     const lectura=(score>=85?'La confiabilidad se mantiene dentro de objetivo':score>=70?'La operación requiere atención en algunos frentes':'La confiabilidad está por debajo del objetivo')
       +': disponibilidad '+A.k.disp.toFixed(1)+'% ('+(dDisp>=0?'+':'')+dDisp.toFixed(1)+' pts vs. mes anterior)'+(cpA!=null?', cumplimiento preventivo '+cpA.toFixed(0)+'%':'')+'.';
     const reco=top&&top[1]>=4?'Se recomienda priorizar el análisis de causa raíz en '+top[0]+' ('+top[1]+' fallas en 90 días) y evaluar con Dirección si corresponde CAPEX de overhaul o reemplazo.'
-      :venc.length>5?'Se recomienda reforzar la planificación para reducir el backlog vencido ('+venc.length+' OT).':'Mantener el foco en ejecución preventiva y registro completo de horas y costos en las OT.';
+      :venc.length>5?'Se recomienda reforzar la planificación para reducir el backlog vencido ('+venc.length+' OT).':(D.hayCostos(oAll())?'Mantener el foco en ejecución preventiva y registro completo de horas y costos en las OT.':'Se recomienda exigir la carga del costo (repuestos y servicios) al cerrar cada OT, para poder controlar el Budget desde el sistema.');
     document.getElementById('repEj').innerHTML=
       '<div class="rep-head"><div><div class="page-eyebrow">Resumen ejecutivo mensual</div><h2>'+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][m0.getMonth()]+' '+m0.getFullYear()+' · '+esc(plantaSel()||'Todas las plantas')+'</h2></div>'
       +'<div class="rep-nav no-print"><button class="btn-ghost" onclick="repMes(-1)">‹</button><button class="btn-ghost" onclick="repMes(1)"'+(mesOff>=0?' disabled style="opacity:.4"':'')+'>›</button></div></div>'
@@ -4028,13 +3519,14 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
         +'<p style="font-size:10px;color:#64748b">Índice = 50% disponibilidad + 30% cumplimiento OT + 20% cumplimiento preventivo</p></div>'
         +'<div class="hero-col"><div class="hero-m"><div class="k">Disponibilidad de planta</div><div class="v">'+A.k.disp.toFixed(1)+'%</div><div class="s">'+arrow(A.k.disp,P.k.disp)+'</div></div>'
           +'<div class="hero-m"><div class="k">Cumplimiento preventivo</div><div class="v">'+(cpA==null?'—':cpA.toFixed(1)+'%')+'</div><div class="s">'+arrow(cpA,cpP)+'</div></div></div>'
-        +'<div class="hero-col"><div class="hero-m"><div class="k">Costo registrado en OT</div><div class="v">Gs '+fmtGs(A.k.costo)+'</div><div class="s">'+(P.k.costo?arrow(A.k.costo/1e6,P.k.costo/1e6,true).replace('vs.','M vs.'):'')+'</div></div>'
+        +'<div class="hero-col"><div class="hero-m"><div class="k">Costo registrado en OT</div><div class="v">'+(hayC?'Gs '+fmtGs(A.k.costo):'—')+'</div><div class="s">'+(!hayC?'Sin costos cargados en las OT':P.k.costo?arrow(A.k.costo/1e6,P.k.costo/1e6,true).replace('vs.','M vs.'):'')+'</div></div>'
           +'<div class="hero-m"><div class="k">Incidentes críticos (línea parada)</div><div class="v">'+incA+'</div><div class="s">'+arrow(incA,incP,true)+'</div></div></div>'
       +'</div>'
       +'<div class="grid-2">'
-        +'<div class="ops-card"><div class="ops-card-h"><div><h3>Costo de mantenimiento registrado</h3><p>Repuestos y servicios en OT cerradas · últimos 6 meses</p></div><span class="mchip">Total<b>Gs '+fmtGs(tot6)+'</b></span></div>'
+        +(!hayC?'<div class="ops-card"><div class="ops-card-h"><div><h3>Costo de mantenimiento registrado</h3><p>Repuestos y servicios en OT cerradas</p></div></div><div style="display:block;padding:18px 4px;font-size:12.5px;color:var(--label);line-height:1.6">⚠️ <b>No hay costos cargados.</b> El campo <b>Costo</b> está en 0 en el 100% de las OT cerradas; los repuestos se registran solo como texto en <b>Repuestos</b>. Para ver esta tendencia, hay que cargar el monto al cerrar cada OT.</div></div>':'')
+        +(!hayC?'':'<div class="ops-card"><div class="ops-card-h"><div><h3>Costo de mantenimiento registrado</h3><p>Repuestos y servicios en OT cerradas · últimos 6 meses</p></div><span class="mchip">Total<b>Gs '+fmtGs(tot6)+'</b></span></div>'
           +'<div class="vbars">'+meses.map(m=>'<div class="vb-g" title="'+m.l+': Gs '+fmtGs(m.v)+'"><div class="vb" style="width:26px;height:'+(m.v/mx*100)+'%;background:var(--accent)"></div></div>').join('')+'</div>'
-          +'<div class="vb-lbls">'+meses.map(m=>'<span>'+m.l+'</span>').join('')+'</div></div>'
+          +'<div class="vb-lbls">'+meses.map(m=>'<span>'+m.l+'</span>').join('')+'</div></div>')
         +'<div class="ops-card"><div class="ops-card-h"><div><h3>Riesgos y decisiones</h3><p>Temas que requieren atención directiva</p></div></div>'
           +risks.slice(0,4).map(r=>'<div class="risk"><span class="risk-tag '+r[0]+'">'+r[0]+'</span><div><b>'+esc(r[1])+'</b><small>'+esc(r[2])+'</small></div></div>').join('')+'</div>'
       +'</div>'
@@ -4089,7 +3581,7 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
     const fecha=document.getElementById('eqFecha').value||hoy();
     const q=(document.getElementById('eqBuscar').value||'').toLowerCase(), fh=document.getElementById('eqHab').value, fp=document.getElementById('eqPlantaF').value;
     const lun=new Date();lun.setDate(lun.getDate()-((lun.getDay()+6)%7));const iniS=iso(lun);
-    const horasSem=n=>oAll().filter(o=>o.Estado==='Cerrada'&&f10(o.FechaCierre)>=iniS&&D.tecnicosDe(o.Tecnico).includes(n)).reduce((s,o)=>s+num(o.HorasReales)/Math.max(1,D.tecnicosDe(o.Tecnico).length),0);
+    const horasSem=n=>oAll().filter(o=>o.Estado==='Cerrada'&&D.fCierre(o)>=iniS&&D.tecnicosDe(o.Tecnico).includes(n)).reduce((s,o)=>s+num(o.HorasReales)/Math.max(1,D.tecnicosDe(o.Tecnico).length),0);
     const lista=tecs().map(t=>Object.assign({t,aus:CMMS_AUS.motivo(t.nombre,fecha),hs:horasSem(t.nombre)},perfil(t)));
     const vis=lista.filter(x=>(!q||x.t.nombre.toLowerCase().includes(q))&&(!fh||x.hab.includes(fh))&&(!fp||x.plantas.includes(fp)));
     const nAus=lista.filter(x=>x.aus).length;
@@ -4114,6 +3606,55 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
           :'<select onchange="eqAus('+D.jsa(n)+',this.value)"><option value="">✅ Disponible</option>'+MOTIVOS.map(m=>'<option'+(x.aus===m?' selected':'')+'>'+m+'</option>').join('')+'</select><button class="btn-ghost" onclick="eqEditar('+D.jsa(n)+')">✏ Editar</button>')+'</div>'
       +'</div>';}).join('')||'<div class="col-empty">Sin técnicos para ese filtro</div>';
   };
+})();
+</script>
+
+<script>
+/* ═══ v4 — Auditoría de datos: plantas fuera de catálogo + panel de calidad (Analítica) ═══ */
+(function(){
+  const fT=()=>(typeof fallasTodas!=='undefined'?fallasTodas:[])||[];
+  const oT=()=>(typeof otsTodas!=='undefined'?otsTodas:[])||[];
+  function sincronizarPlantas(){
+    const cat=D.plantasCatalogo();
+    [...fT(),...oT()].forEach(x=>{if(x.Planta&&!cat.includes(x.Planta))D._plantasExtra.add(x.Planta);});
+    ['fPlanta','sbPlanta','actPlanta','eqPlantaF'].forEach(id=>{const s=document.getElementById(id);if(!s)return;
+      const ex=new Set([...s.options].map(o=>o.value));
+      D._plantasExtra.forEach(p=>{if(!ex.has(p)){const o=document.createElement('option');o.value=p;o.textContent=p+' (fuera de catálogo)';s.appendChild(o);}});});
+  }
+  function renderCalidad(){
+    const el=document.getElementById('anaCalidad'); if(!el) return;
+    const ots=oT(), fal=fT();
+    const anul=ots.filter(o=>o.Estado==='Cerrada'&&D.esAnulada(o));
+    const val=ots.filter(o=>!(o.Estado==='Cerrada'&&D.esAnulada(o)));
+    const cerr=val.filter(o=>o.Estado==='Cerrada');
+    const sinFC=cerr.filter(o=>!D.f10(o.FechaCierre));
+    const sinH=cerr.filter(o=>!(Number(o.HorasReales)>0));
+    const sinTec=val.filter(o=>!D.tecnicosDe(o.Tecnico).length);
+    const conCosto=cerr.filter(o=>Number(o.Costo)>0);
+    const cat=D.plantasCatalogo();
+    const fuera={};[...ots,...fal].forEach(x=>{if(x.Planta&&!cat.includes(x.Planta))fuera[x.Planta]=(fuera[x.Planta]||0)+1;});
+    const nombres=new Set((TECNICOS||[]).map(t=>t.nombre));
+    const tecFuera={};val.forEach(o=>D.tecnicosDe(o.Tecnico).forEach(t=>{if(!nombres.has(t))tecFuera[t]=(tecFuera[t]||0)+1;}));
+    const sinSis=fal.filter(f=>!f.Sistema||/no s[eé]/i.test(f.Sistema));
+    const pct=(a,b)=>b?Math.round(a/b*100)+'%':'0%';
+    const rows=[
+      [conCosto.length?'BAJO':'ALTO','Costo no cargado en OT cerradas',(cerr.length-conCosto.length)+' de '+cerr.length+' ('+pct(cerr.length-conCosto.length,cerr.length)+') con Costo = 0. Los indicadores de costo se ocultan hasta que se cargue el monto al cerrar.',cerr.length-conCosto.length],
+      [sinH.length?'MEDIO':'BAJO','OT cerradas sin horas reales',pct(sinH.length,cerr.length)+' de las cerradas. No suman en MTTR ni en Carga horaria.',sinH.length],
+      [sinFC.length?'MEDIO':'BAJO','OT cerradas sin fecha de cierre','Se usa la fecha programada (o de creación) como aproximación para tendencias y carga horaria.',sinFC.length],
+      [sinTec.length?'MEDIO':'BAJO','OT sin técnico asignado','Aparecen como "Sin asignar" en Carga horaria y Reportes.',sinTec.length],
+      [Object.keys(fuera).length?'MEDIO':'BAJO','Plantas fuera del catálogo',Object.keys(fuera).length?Object.entries(fuera).map(([p,c])=>p+' ('+c+' registros)').join(' · ')+' — revisar si es error de carga o una planta real a agregar en datos.js.':'Todas las plantas coinciden con el catálogo.',Object.values(fuera).reduce((a,b)=>a+b,0)],
+      [Object.keys(tecFuera).length?'MEDIO':'BAJO','Técnicos fuera del catálogo',Object.keys(tecFuera).length?Object.entries(tecFuera).map(([t,c])=>t+' ('+c+')').join(' · '):'Todos los técnicos coinciden con datos.js.',Object.keys(tecFuera).length],
+      [sinSis.length?'BAJO':'BAJO','Fallas sin sistema identificado','Sistema vacío o "No sé" — reduce la precisión del análisis por sistema.',sinSis.length],
+      (()=>{const np=fal.filter(f=>String(f.Detenido||'').toLowerCase().includes('parado')).length;const pc=fal.length?np/fal.length*100:0;return [pc>60?'MEDIO':'BAJO','Fallas reportadas con línea parada',Math.round(pc)+'% de las fallas se reportan como "Sí — parado". Si es mayor a lo real, infla los incidentes críticos del Reporte ejecutivo — revisar criterio con operadores.',np];})(),
+      ['BAJO','OT anuladas (excluidas de los KPIs)','Detectadas por la columna "Anulada" o por el prefijo "ANULADA:" en observaciones de cierre.',anul.length]
+    ];
+    el.innerHTML=rows.map(r=>'<div class="risk"><span class="risk-tag '+r[0]+'">'+r[0]+'</span><div style="flex:1"><b>'+esc(r[1])+'</b><small>'+esc(r[2])+'</small></div><div style="font-family:var(--mono);font-weight:800;font-size:15px;color:var(--text)">'+r[3]+'</div></div>').join('')
+      +'<div style="font-size:11px;color:var(--muted);margin-top:10px">Base: '+ots.length+' OT · '+fal.length+' fallas cargadas.</div>';
+  }
+  const _rk=window.renderKPIs;
+  if(typeof _rk==='function'){window.renderKPIs=function(){try{sincronizarPlantas();}catch(e){}return _rk.apply(this,arguments);};renderKPIs=window.renderKPIs;}
+  const _ra=window.renderAnalitica;
+  if(typeof _ra==='function'){window.renderAnalitica=function(){_ra.apply(this,arguments);try{renderCalidad();}catch(e){console.warn('calidad',e);}};}
 })();
 </script>
 
