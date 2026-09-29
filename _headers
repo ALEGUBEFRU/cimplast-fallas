@@ -1,0 +1,11 @@
+# Cloudflare Pages — encabezados de caché
+# Sin esto, Cloudflare dejaba datos.js y sw.js en el navegador hasta 4 horas:
+# después de cada deploy se mezclaba HTML nuevo con datos.js viejo y fallaban
+# "Crear OT" y la carga de Preventivo. no-cache = el navegador siempre pregunta
+# si hay versión nueva (si no cambió, responde 304 sin re-descargar).
+/*.js
+  Cache-Control: no-cache
+/sw.js
+  Cache-Control: no-cache
+/manifest.json
+  Cache-Control: no-cache
