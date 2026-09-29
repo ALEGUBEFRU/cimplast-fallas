@@ -962,7 +962,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalWA')">Cerrar</button><button class="btn-primary" onclick="copyWA()">Copiar texto</button></div>
 </div></div>
 
-<script src="../datos.js"></script>
+<script src="../datos.js?v=20260929"></script>
 <script>
 const API=window.CIMPLAST_DATA.api, TECNICOS=window.CIMPLAST_DATA.tecnicos, D=window.CIMPLAST_DATA;
 let fallasTodas=[], otsTodas=[], fallaActual=null, otActual=null, ultimaCarga=null;
@@ -1038,8 +1038,8 @@ async function recargar(){
   icon.classList.add('spinning');
   try{
     const [rf,ro]=await Promise.all([
-      fetch(window.CIMPLAST_DATA.apiGet('accion=fallas')).then(r=>r.json()),
-      fetch(window.CIMPLAST_DATA.apiGet('accion=ots')).then(r=>r.json())
+      D.apiJSON('accion=fallas'),
+      D.apiJSON('accion=ots')
     ]);
     fallasTodas=rf.fallas||[]; otsTodas=ro.ots||[]; ultimaCarga=Date.now();
     try{localStorage.setItem('cimplast_sup_cache',JSON.stringify({fallas:fallasTodas,ots:otsTodas,ts:ultimaCarga}))}catch(e){}
@@ -1434,6 +1434,7 @@ async function guardarSubEstadoOT(nroOT, subEstado){
 /* ══ MODAL GENERAR OT ══ */
 function abrirModalOT(id){
   fallaActual=fallasTodas.find(f=>f.ID===id); if(!fallaActual) return;
+  window._reqOTModal=null; // cada falla abre su propio envío: nunca reutilizar el de otra
   document.getElementById('mOtEquipo').textContent=(fallaActual.Equipo||'')+' · '+(fallaActual.Planta||'');
   document.getElementById('mOtDesc').textContent=(fallaActual.Sintoma||'').slice(0,140);
   document.getElementById('mOtNro').value=nuevoNro();
@@ -1453,16 +1454,16 @@ async function submitModalOT(){
   if(!nro||!tipo||!prio||!tecnicos||!fechaProg){ showToast('Completá los campos obligatorios','err'); return; }
   const btn=document.getElementById('btnModalOT'); btn.disabled=true; btn.textContent='Creando…';
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody({
-      accion:'ot', reqId:(window._reqOT=window._reqOT||D.nuevoReqId()), fallaId:fallaActual?.ID||'',
+    const d=await D.apiPost({
+      accion:'ot', reqId:(window._reqOTModal=window._reqOTModal||D.nuevoReqId()), fallaId:fallaActual?.ID||'',
       equipo:fallaActual?.Equipo||'', planta:fallaActual?.Planta||'',
       tipo, prioridad:prio, tecnico:tecnicos,
       descripcion:document.getElementById('mOtObs').value.trim(),
       horasEstimadas:document.getElementById('mOtHoras').value||'',
       fechaProgramada:document.getElementById('mOtFecha').value, observaciones:''
-    }))});
-    const d=await r.json(); if(d.ok===false) throw new Error(d.error);
-    window._reqOT=null; showToast('OT '+(d.nroOT||'')+' creada'); closeModal('modalGenOT');
+    },2);
+    if(d.ok===false) throw new Error(d.error);
+    window._reqOTModal=null; showToast('OT '+(d.nroOT||'')+' creada'); closeModal('modalGenOT');
     setTimeout(recargar, 1500);
   }catch(e){ showToast('Error: '+e.message,'err'); }
   btn.disabled=false; btn.textContent='Crear OT';
@@ -1602,13 +1603,13 @@ async function crearOTDirecta(){
   if(!nro||!planta||!equipo||!tipo||!prio||!tecnicos||!desc){ showToast('Completá todos los campos obligatorios','err'); return; }
   const btn=document.getElementById('btnNuevaOT'); btn.disabled=true; btn.textContent='Creando…';
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody({
-      accion:'ot', reqId:(window._reqOT=window._reqOT||D.nuevoReqId()), fallaId:'', equipo, planta, tipo, prioridad:prio,
+    const d=await D.apiPost({
+      accion:'ot', reqId:(window._reqOTNueva=window._reqOTNueva||D.nuevoReqId()), fallaId:'', equipo, planta, tipo, prioridad:prio,
       tecnico:tecnicos, descripcion:desc,
       horasEstimadas:g('nOtHoras')||'', fechaProgramada:g('nOtFecha'), observaciones:g('nOtObs').trim()
-    }))});
-    const d=await r.json(); if(d.ok===false) throw new Error(d.error);
-    window._reqOT=null; showToast('OT '+(d.nroOT||'')+' creada');
+    },2);
+    if(d.ok===false) throw new Error(d.error);
+    window._reqOTNueva=null; showToast('OT '+(d.nroOT||'')+' creada');
     ['nOtDesc','nOtObs','nOtHoras'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('nOtNro').value=nuevoNro();
     document.querySelectorAll('#viewNuevaOt .chip').forEach(c=>c.classList.remove('selected'));
@@ -1657,17 +1658,21 @@ function preventivoIniciar(){
 async function cargarPlanes(){
   document.getElementById('planesGrid').innerHTML = '<div class="col-empty">Cargando planes…</div>';
   try{
-    const [rPlanes, rEquipos] = await Promise.all([
-      fetch(window.CIMPLAST_DATA.apiGet('accion=planes')),
-      fetch(window.CIMPLAST_DATA.apiGet('accion=equipos'))
+    const [dPlanes, dEquipos] = await Promise.all([
+      D.apiJSON('accion=planes'),
+      D.apiJSON('accion=equipos')
     ]);
-    const dPlanes = await rPlanes.json();
-    const dEquipos = await rEquipos.json();
+    if(dPlanes.ok===false) throw new Error(dPlanes.error);
     planesTodos = dPlanes.planes || [];
     equiposTodos = dEquipos.equipos || [];
-    renderPlanes();
   }catch(e){
-    document.getElementById('planesGrid').innerHTML = '<div class="col-empty">No se pudieron cargar los planes</div>';
+    document.getElementById('planesGrid').innerHTML = '<div class="col-empty">No se pudieron cargar los planes ('+esc(e.message)+'). <a href="#" onclick="cargarPlanes();return false">Reintentar</a></div>';
+    return;
+  }
+  try{ renderPlanes(); }
+  catch(e){
+    console.error(e);
+    document.getElementById('planesGrid').innerHTML = '<div class="col-empty">Error al mostrar los planes: '+esc(e.message)+'</div>';
   }
 }
 
