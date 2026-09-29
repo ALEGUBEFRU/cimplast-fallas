@@ -78,6 +78,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .a-start:hover{background:rgba(91,155,213,.18)}
 .a-close{border-color:rgba(92,180,107,.5);color:#8fd39a;background:rgba(92,180,107,.07)}
 .a-close:hover{background:rgba(92,180,107,.18)}
+.a-av{border-color:rgba(242,107,29,.45);color:var(--accent);background:rgba(242,107,29,.06)}
+.a-av:hover{background:rgba(242,107,29,.16)}
 .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:var(--muted);padding:60px 32px;text-align:center}
 .empty .big{font-size:32px;opacity:.5}
 .empty p{font-size:13.5px;line-height:1.6;max-width:280px;text-wrap:pretty}
@@ -210,6 +212,22 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   </div>
 </div></div>
 
+<!-- modal avance (carga diaria del trabajo) -->
+<div class="overlay" id="modalAvance"><div class="modal">
+  <div class="modal-h"><span class="modal-t">Avance del trabajo</span><button class="modal-x" onclick="cerrarAvance()">✕</button></div>
+  <div class="modal-b">
+    <div class="origin"><div class="l">OT</div><div class="e" id="aNro">—</div><div class="d" id="aEquipo">—</div></div>
+    <div class="field">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><label>Qué falló y qué hiciste</label><button type="button" class="btn ghost" style="padding:8px 12px;font-size:13px" onclick="insertarFechaAvance()">+ Fecha de hoy</button></div>
+      <textarea id="aObs" maxlength="20000" style="min-height:220px" placeholder="Cargá lo que hiciste hoy. Al cerrar la OT este texto aparece ya cargado."></textarea>
+    </div>
+  </div>
+  <div class="modal-f">
+    <button class="btn ghost" onclick="cerrarAvance()">Cancelar</button>
+    <button class="btn green" id="btnAvance" onclick="guardarAvance()">Guardar avance</button>
+  </div>
+</div></div>
+
 <script src="datos.js?v=20260929"></script>
 <script>
 const D=window.CIMPLAST_DATA, API=D.api, TECNICOS=D.tecnicos;
@@ -329,11 +347,12 @@ function render(){
       +(cerrada&&o.HorasReales?'<span>'+esc(o.HorasReales)+'h reales</span>':'')+'</div>'
       +(cerrada?'':'<div class="ot-acts">'
         +(o.Estado==='Abierta'?'<button class="act a-start" data-a="start" data-id="'+esc(o.NroOT)+'">Empezar</button>':'')
+        +(o.Estado==='En curso'?'<button class="act a-av" data-a="avance" data-id="'+esc(o.NroOT)+'">✏️ Avance</button>':'')
         +'<button class="act a-close" data-a="close" data-id="'+esc(o.NroOT)+'">Cerrar OT</button></div>')
       +'</div>';
   }).join('');
   el.querySelectorAll('.act').forEach(b=>b.onclick=()=>{
-    b.dataset.a==='start'?empezar(b.dataset.id):abrirCierre(b.dataset.id);
+    b.dataset.a==='start'?empezar(b.dataset.id):b.dataset.a==='avance'?abrirAvance(b.dataset.id):abrirCierre(b.dataset.id);
   });
 }
 const sum=(k,v,t)=>'<div class="sum" style="--tone:'+t+'"><span class="v">'+v+'</span><span class="k">'+k+'</span></div>';
@@ -357,6 +376,8 @@ function abrirCierre(nro){
   document.getElementById('cNro').textContent=nro;
   document.getElementById('cEquipo').textContent=(otActual.Equipo||'')+' · '+(otActual.Planta||'');
   ['cHoras','cRepuestos','cCosto','cObs'].forEach(id=>document.getElementById(id).value='');
+  const avPrev=normAvance(otActual.ObservacionesCierre);
+  if(avPrev && !/^ANULADA/i.test(avPrev)) document.getElementById('cObs').value=avPrev;
   document.getElementById('cFecha').value=today();
   if(otActual.HorasEstimadas) document.getElementById('cHoras').placeholder='Estimado: '+otActual.HorasEstimadas+'h';
   renderChecklistCierre(otActual);
@@ -412,11 +433,56 @@ async function confirmarCierre(){
     // Rechazo real del servidor: se avisa y la OT queda abierta (antes decía "Sin conexión" y se trababa la cola)
     showToast('No se cerró: '+d.error,'err'); return;
   }
-  otActual.Estado='Cerrada'; otActual.HorasReales=horas; otActual.Costo=body.costo;
+  otActual.Estado='Cerrada'; otActual.HorasReales=horas; otActual.Costo=body.costo; otActual.ObservacionesCierre=obs;
   if(enCola){ Q.add(body); showToast('Sin conexión — el cierre se envía al volver la red'); }
   else showToast('OT '+body.otNro+' cerrada');
   try{localStorage.setItem('cimplast_tec_cache',JSON.stringify(ots))}catch(e){}
   closeModal(); render();
+}
+
+/* avance diario: se guarda en la OT (accion=avanceOT) y el cierre parte de ese texto. Necesita red. */
+let otAvance=null, avanceOriginal='';
+const normAvance=s=>String(s??'').replace(/\r\n/g,'\n').trim();
+function abrirAvance(nro){
+  const o=ots.find(x=>x.NroOT===nro); if(!o) return;
+  otAvance=o; avanceOriginal=normAvance(o.ObservacionesCierre);
+  document.getElementById('aNro').textContent=nro;
+  document.getElementById('aEquipo').textContent=(o.Equipo||'')+' · '+(o.Planta||'');
+  document.getElementById('aObs').value=avanceOriginal;
+  document.getElementById('modalAvance').classList.add('show');
+}
+function insertarFechaAvance(){
+  const ta=document.getElementById('aObs'), d=new Date();
+  const f=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+  const previo=ta.value.replace(/\s+$/,'');
+  ta.value=(previo?previo+'\n\n':'')+'['+f+'] ';
+  ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); ta.scrollTop=ta.scrollHeight;
+}
+function cerrarAvance(){
+  if(normAvance(document.getElementById('aObs').value)!==avanceOriginal && !confirm('Hay cambios sin guardar. ¿Descartarlos?')) return;
+  document.getElementById('modalAvance').classList.remove('show');
+}
+async function guardarAvance(){
+  if(!otAvance) return;
+  const nro=otAvance.NroOT, txt=normAvance(document.getElementById('aObs').value);
+  if(/^ANULADA/i.test(txt)){ showToast('El avance no puede empezar con "ANULADA"','err'); return; }
+  if(txt===avanceOriginal){ document.getElementById('modalAvance').classList.remove('show'); return; }
+  if(!navigator.onLine){ showToast('Sin conexión — el avance necesita red. No cierres esta ventana y reintentá','err'); return; }
+  const btn=document.getElementById('btnAvance'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Guardando…';
+  const aplicar=v=>{ [otAvance, ots.find(x=>x.NroOT===nro)].forEach(o=>{ if(o) o.ObservacionesCierre=v; }); avanceOriginal=v;
+    try{localStorage.setItem('cimplast_tec_cache',JSON.stringify(ots))}catch(e){} };
+  try{
+    const d=await D.apiPost({accion:'avanceOT', nroOT:nro, observaciones:txt, obsAnterior:avanceOriginal},2);
+    if(d.ok===false&&d.conflicto){
+      const suyo=normAvance(d.observaciones); aplicar(suyo);
+      document.getElementById('aObs').value=suyo+'\n\n──── TU TEXTO (todavía no se guardó: dejá lo que corresponda y guardá) ────\n'+txt;
+      throw new Error(d.error);
+    }
+    if(d.ok===false) throw new Error(d.error);
+    aplicar(d.observaciones!==undefined?normAvance(d.observaciones):txt);
+    showToast('Avance de '+nro+' guardado'); document.getElementById('modalAvance').classList.remove('show');
+  }catch(e){ showToast('No se guardó: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='Guardar avance';
 }
 
 let tt;
@@ -428,6 +494,7 @@ function showToast(m,type='ok'){
 window.addEventListener('online',()=>{ui();flush()});
 window.addEventListener('offline',ui);
 document.getElementById('modalCerrar').addEventListener('click',e=>{ if(e.target.id==='modalCerrar') closeModal() });
+document.getElementById('modalAvance').addEventListener('click',e=>{ if(e.target.id==='modalAvance') cerrarAvance() });
 setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },90000);
 
 (function init(){

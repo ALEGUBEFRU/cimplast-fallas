@@ -748,6 +748,20 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalCerrar')">Cancelar</button><button class="btn-primary green" id="btnModalCerrar" onclick="submitCerrar()">Confirmar cierre</button></div>
 </div></div>
 
+<!-- ═══ MODAL: AVANCE DE OT (carga diaria del trabajo) ═══ -->
+<div class="overlay" id="modalAvance"><div class="modal">
+  <div class="modal-h"><span class="modal-t">Avance de la orden de trabajo</span><button class="modal-x" onclick="cerrarAvance()">✕</button></div>
+  <div class="modal-b">
+    <div class="origin"><div class="l">OT</div><div class="e" id="mAvNro">—</div><div class="d" id="mAvEquipo">—</div></div>
+    <div class="field">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><label>Causa raíz y trabajo realizado</label><button type="button" class="btn-secondary" style="padding:5px 10px;font-size:11.5px" onclick="insertarFechaAvance()">+ Fecha de hoy</button></div>
+      <textarea id="mAvObs" maxlength="20000" style="min-height:220px" placeholder="Cargá lo que se hizo cada día. Al cerrar la OT este texto aparece ya cargado en «Causa raíz y trabajo realizado»."></textarea>
+    </div>
+    <div style="font-size:11.5px;color:var(--muted);line-height:1.5">Podés agregar, corregir o borrar. Queda guardado en la OT y al cerrarla aparece ya cargado.</div>
+  </div>
+  <div class="modal-f"><button class="btn-secondary" onclick="cerrarAvance()">Cancelar</button><button class="btn-primary" id="btnAvance" onclick="guardarAvance()">Guardar avance</button></div>
+</div></div>
+
 <!-- ═══ MODAL: PROGRAMAR OT ═══ -->
 <div class="overlay" id="modalProgramar"><div class="modal" style="max-width:400px">
   <div class="modal-h"><span class="modal-t" id="mProgTitulo">Programar OT</span><button class="modal-x" onclick="closeModal('modalProgramar')">✕</button></div>
@@ -848,6 +862,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
         <option value="Sin técnico disponible">Sin técnico disponible</option>
       </select>
     </div>
+    <div id="dOtAvanceWrap" style="display:none"><div class="field"><label>Avance / trabajo realizado</label><div id="dOtAvance" style="font-size:13px;color:var(--label);padding:6px 0;line-height:1.5;white-space:pre-wrap">—</div></div></div>
     <div id="dOtCierreWrap" style="display:none">
       <div style="height:1px;background:var(--border);margin:4px 0"></div>
       <div class="row-2">
@@ -855,7 +870,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
         <div class="field"><label>Fecha de cierre</label><div id="dOtFechaCierre" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
       </div>
       <div class="field"><label>Costo (Gs.)</label><div id="dOtCosto" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
-      <div class="field"><label>Causa raíz / trabajo realizado</label><div id="dOtObsCierre" style="font-size:13px;color:var(--label);padding:6px 0;line-height:1.5">—</div></div>
+      <div class="field"><label>Causa raíz / trabajo realizado</label><div id="dOtObsCierre" style="font-size:13px;color:var(--label);padding:6px 0;line-height:1.5;white-space:pre-wrap">—</div></div>
     </div>
   </div>
   <div id="dOtFotoWrap" class="ot-foto-wrap" style="display:none">
@@ -872,7 +887,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
       <button class="btn-secondary" style="flex:1" id="dOtBtnWA">📲 WhatsApp</button>
     </div>
   </div>
-  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalDetalleOT')">Cerrar</button></div>
+  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalDetalleOT')">Cerrar</button><button class="btn-primary" id="dOtBtnAvance" style="display:none" onclick="closeModal('modalDetalleOT');abrirAvance(document.getElementById('dOtNro').textContent)">✏️ Editar avance</button></div>
 </div></div>
 
 <!-- ═══ MODAL: WHATSAPP ═══ -->
@@ -1267,6 +1282,7 @@ function cardOT(o){
     +'<div class="card-acts">'
     +(o.Estado==='Abierta'?'<button class="card-btn" data-act="programar" data-id="'+esc(o.NroOT)+'">📅 Programar</button>':'')
     +(o.Estado==='En curso'?'<button class="card-btn" data-act="reprogramar" data-id="'+esc(o.NroOT)+'">↩ Reprogramar</button>':'')
+    +(o.Estado==='En curso'?'<button class="card-btn" data-act="avance" data-id="'+esc(o.NroOT)+'">✏️ Avance</button>':'')
     +(!cerrada?'<button class="card-btn b-close" data-act="cerrar" data-id="'+esc(o.NroOT)+'">Cerrar</button>':'')
     +'<button class="card-btn b-copy" data-act="wa" data-id="'+esc(o.NroOT)+'">WhatsApp</button></div>'
     +(tieneChecklist?'<div class="card-acts" style="margin-top:6px">'
@@ -1281,6 +1297,7 @@ function bindCards(){
       const id=b.dataset.id;
       if(b.dataset.act==='genot') abrirModalOT(id);
       if(b.dataset.act==='cerrar') abrirModalCerrar(id);
+      if(b.dataset.act==='avance') abrirAvance(id);
       if(b.dataset.act==='wa') abrirWA(id);
       if(b.dataset.act==='programar') abrirModalProgramar(id, false);
       if(b.dataset.act==='reprogramar') abrirModalProgramar(id, true);
@@ -1385,6 +1402,53 @@ async function submitModalOT(){
   btn.disabled=false; btn.textContent='Crear OT';
 }
 
+/* ══ AVANCE DE OT — carga diaria del trabajo realizado ══
+   Se guarda en ObservacionesCierre (accion=avanceOT). El cierre parte de ese texto. */
+let otAvance=null, avanceOriginal='';
+const normAvance=s=>String(s??'').replace(/\r\n/g,'\n').trim();
+function abrirAvance(nroOT){
+  const o=otsTodas.find(x=>x.NroOT===nroOT); if(!o) return;
+  if(o.Estado==='Cerrada'){ showToast('La OT ya está cerrada','err'); return; }
+  otAvance=o; avanceOriginal=normAvance(o.ObservacionesCierre);
+  document.getElementById('mAvNro').textContent=o.NroOT;
+  document.getElementById('mAvEquipo').textContent=(o.Equipo||'')+' · '+(o.Planta||'');
+  document.getElementById('mAvObs').value=avanceOriginal;
+  openModal('modalAvance');
+}
+function insertarFechaAvance(){
+  const ta=document.getElementById('mAvObs'), d=new Date();
+  const f=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+  const previo=ta.value.replace(/\s+$/,'');
+  ta.value=(previo?previo+'\n\n':'')+'['+f+'] ';
+  ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); ta.scrollTop=ta.scrollHeight;
+}
+function cerrarAvance(){
+  if(normAvance(document.getElementById('mAvObs').value)!==avanceOriginal && !confirm('Hay cambios sin guardar en el avance. ¿Descartarlos?')) return;
+  closeModal('modalAvance');
+}
+function cerrarOverlay(o){ if(o.id==='modalAvance') cerrarAvance(); else o.classList.remove('show'); }
+async function guardarAvance(){
+  if(!otAvance) return;
+  const nro=otAvance.NroOT, txt=normAvance(document.getElementById('mAvObs').value);
+  if(/^ANULADA/i.test(txt)){ showToast('El avance no puede empezar con "ANULADA" — para anular usá Cerrar','err'); return; }
+  if(txt===avanceOriginal){ closeModal('modalAvance'); return; }
+  const btn=document.getElementById('btnAvance'); btn.disabled=true; btn.textContent='Guardando…';
+  const aplicar=v=>{ [otAvance, otsTodas.find(x=>x.NroOT===nro)].forEach(o=>{ if(o) o.ObservacionesCierre=v; }); avanceOriginal=v; };
+  try{
+    const d=await D.apiPost({accion:'avanceOT', nroOT:nro, observaciones:txt, obsAnterior:avanceOriginal},2);
+    if(d.ok===false&&d.conflicto){
+      // Otra persona guardó antes: se muestra su versión y debajo lo tuyo, para que no se pierda nada
+      const suyo=normAvance(d.observaciones); aplicar(suyo);
+      document.getElementById('mAvObs').value=suyo+'\n\n──── TU TEXTO (todavía no se guardó: dejá lo que corresponda y guardá) ────\n'+txt;
+      throw new Error(d.error);
+    }
+    if(d.ok===false) throw new Error(d.error);
+    aplicar(d.observaciones!==undefined?normAvance(d.observaciones):txt);
+    showToast('Avance de '+nro+' guardado'); closeModal('modalAvance');
+  }catch(e){ showToast('Error: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='Guardar avance';
+}
+
 /* ══ MODAL CERRAR ══ */
 function abrirModalCerrar(nroOT){
   const o=otsTodas.find(x=>x.NroOT===nroOT); if(!o) return;
@@ -1392,6 +1456,8 @@ function abrirModalCerrar(nroOT){
   document.getElementById('mCerrarNro').textContent=nroOT;
   document.getElementById('mCerrarEquipo').textContent=(o.Equipo||'')+' · '+(o.Planta||'');
   ['mCerrarHoras','mCerrarRepuestos','mCerrarCosto','mCerrarObs','mCerrarMotivo'].forEach(id=>document.getElementById(id).value='');
+  const avPrev=normAvance(o.ObservacionesCierre);
+  if(avPrev && !/^ANULADA/i.test(avPrev)) document.getElementById('mCerrarObs').value=avPrev;
   document.getElementById('mCerrarAnular').checked=false;
   toggleAnular();
   if(o.HorasEstimadas) document.getElementById('mCerrarHoras').placeholder='Estimado: '+o.HorasEstimadas+'h';
@@ -1450,9 +1516,10 @@ async function submitCerrar(){
   if(anulando){
     const motivo=document.getElementById('mCerrarMotivo').value.trim();
     if(!motivo){ showToast('Cargá el motivo de anulación','err'); return; }
+    const avAnt=normAvance(otActual.ObservacionesCierre);
     body={accion:'cerrarOT', cerradoPor:'Supervisor', otNro:otActual.NroOT, fallaId:otActual.FallaID||'',
       anulando:true, horasReales:0, repuestos:'', costo:0,
-      observaciones:'ANULADA: '+motivo, fechaCierre:today()};
+      observaciones:'ANULADA: '+motivo+(avAnt&&!/^ANULADA/i.test(avAnt)?'\n\nAvance registrado antes de anular:\n'+avAnt:''), fechaCierre:today()};
     btn.disabled=true; btn.textContent='Anulando…';
   } else {
     const horas=document.getElementById('mCerrarHoras').value, obs=document.getElementById('mCerrarObs').value.trim();
@@ -2386,6 +2453,10 @@ function abrirDetalleOT(nroOT){
   subSel.value = o.SubEstado || '';
   subSel.onchange = () => guardarSubEstadoOT(o.NroOT, subSel.value);
   document.getElementById('dOtCierreWrap').style.display = cerrada ? 'block' : 'none';
+  const avance = String(o.ObservacionesCierre || '').trim();
+  document.getElementById('dOtAvanceWrap').style.display = !cerrada && avance ? 'block' : 'none';
+  document.getElementById('dOtAvance').textContent = avance;
+  document.getElementById('dOtBtnAvance').style.display = cerrada ? 'none' : '';
   if(cerrada){
     document.getElementById('dOtHorasReales').textContent = o.HorasReales ? o.HorasReales + ' h' : '—';
     document.getElementById('dOtFechaCierre').textContent = o.FechaCierre ? D.fmtFecha(o.FechaCierre) : '—';
@@ -2533,8 +2604,8 @@ function netUI(){
 }
 window.addEventListener('online',()=>{netUI();recargar()});
 window.addEventListener('offline',netUI);
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('show') }));
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show')) });
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) cerrarOverlay(o) }));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.overlay.show').forEach(o=>cerrarOverlay(o)) });
 setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
 </script>
 </body>
