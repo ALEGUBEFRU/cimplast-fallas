@@ -2,10 +2,10 @@
 // Estrategia "red primero": siempre intenta bajar la versión nueva (así un
 // datos.js o un HTML actualizado llega enseguida) y solo usa la copia guardada
 // si no hay señal. Nunca intercepta la API de Apps Script ni otros dominios.
-const CACHE = 'cimplast-v1';
+const CACHE = 'cimplast-v2'; // v2 (29/09): borra las copias viejas de datos.js guardadas por v1
 // Cloudflare Pages redirige /x.html → /x (308): no se precachean rutas .html
 // y nunca se guardan respuestas redirigidas (el navegador las rechaza offline).
-const BASE = ['./', 'datos.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
+const BASE = ['./', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(BASE).catch(() => {})));

@@ -523,6 +523,37 @@ window.CIMPLAST_DATA = (function() {
       return JSON.stringify(Object.assign({}, bodyObj, { token: TOKEN }));
     },
 
+    // ── Llamadas a la API con tiempo límite y reintento ──
+    // Apps Script a veces responde una página HTML de error de Google en vez de
+    // JSON, o tarda de más. Antes eso se veía como "No se pudieron cargar los
+    // planes" o una OT que quedaba en "Creando…". Ahora: 30 s de límite y hasta
+    // 2 reintentos. Solo se reintenta lo que es seguro repetir (lecturas, y OT
+    // gracias a reqId).
+    async _pedir(url, opts, reintentos) {
+      let ultimo;
+      for (let intento = 0; intento <= reintentos; intento++) {
+        if (intento) await new Promise(r => setTimeout(r, 1500 * intento));
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 30000);
+        try {
+          const r = await fetch(url, Object.assign({}, opts, { signal: ctrl.signal }));
+          const txt = await r.text();
+          if (!r.ok) throw new Error('El servidor respondió ' + r.status);
+          if (txt.trim().charAt(0) === '<') throw new Error('Google devolvió una página de error — reintentá');
+          return JSON.parse(txt);
+        } catch (e) {
+          ultimo = e.name === 'AbortError' ? new Error('El servidor tardó demasiado — reintentá') : e;
+        } finally { clearTimeout(timer); }
+      }
+      throw ultimo;
+    },
+    apiJSON(params, reintentos = 2) {
+      return this._pedir(this.apiGet(params), {}, reintentos);
+    },
+    apiPost(body, reintentos = 0) {
+      return this._pedir(API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: this.apiPostBody(body) }, reintentos);
+    },
+
     listaPlantas() {
       return PLANTAS;
     },
@@ -587,21 +618,20 @@ window.CIMPLAST_DATA = (function() {
       return tecStr.split(',').map(t => t.trim()).filter(Boolean);
     },
 
-    // ── estadoVisible: Estado + SubEstado combinados en un solo texto ──
-    // Usada en supervisores.html y supervisores-preventivo.html (Kanban,
-    // modal de detalle y vista Lista/Atrasos). Faltaba en este archivo —
-    // causaba "D.estadoVisible is not a function" y cortaba el render
-    // de la ventana de planificación antes de pintar la tabla.
+    // ── estadoVisible: texto de estado para MOSTRAR (Kanban, detalle, agenda, lista) ──
+    // 1) Anulada: en el Sheet queda Estado=Cerrada + "ANULADA:" (y columna Anulada=Si),
+    //    así Kanban y filtros no se rompen, pero en pantalla se ve "Anulada".
+    // 2) OT abierta con motivo de espera: "Abierta — Aguardando repuestos".
     estadoVisible(o) {
+      const estado = o.Estado || '—';
+      if (estado === 'Cerrada' && (this.esAnulada(o) || String(o.Anulada) === 'Si')) return 'Anulada';
       const SUBESTADO_TXT = {
         'Aguardando repuestos': 'Aguardando repuestos',
         'Aguardando fecha de intervención': 'Aguardando fecha',
         'Sin técnico disponible': 'Sin técnico'
       };
-      const estado = o.Estado || '—';
       if (estado === 'Cerrada' || estado === 'Anulada' || !o.SubEstado) return estado;
-      const sub = SUBESTADO_TXT[o.SubEstado] || o.SubEstado;
-      return estado + ' — ' + sub;
+      return estado + ' — ' + (SUBESTADO_TXT[o.SubEstado] || o.SubEstado);
     },
 
     fmtFecha(iso) {
