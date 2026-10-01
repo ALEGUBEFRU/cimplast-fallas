@@ -185,6 +185,8 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .b-close:hover{background:rgba(47,107,52,.18)}
 .b-copy{border-color:rgba(31,95,104,.5);color:var(--info);background:rgba(31,95,104,.07)}
 .b-copy:hover{background:rgba(31,95,104,.18)}
+.b-anular{border-color:rgba(163,53,43,.5);color:var(--danger);background:rgba(163,53,43,.07)}
+.b-anular:hover{background:rgba(163,53,43,.18)}
 .col-empty{flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);padding:26px 16px;text-align:center;line-height:1.5}
 
 /* ── MODAL ── */
@@ -1281,6 +1283,20 @@ html[data-theme="dark"] .bar.plan{background:#2a3a55}
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalCerrar')">Cancelar</button><button class="btn-primary green" id="btnModalCerrar" onclick="submitCerrar()">Confirmar cierre</button></div>
 </div></div>
 
+<!-- ═══ MODAL: CHECKLIST SEMANAL (PM diario consolidado — 30-sep-2026) ═══ -->
+<div class="overlay" id="modalSemanal"><div class="modal">
+  <div class="modal-h"><span class="modal-t">PM diario — checklist semanal</span><button class="modal-x" onclick="closeModal('modalSemanal')">✕</button></div>
+  <div class="modal-b">
+    <div class="origin"><div class="l">OT</div><div class="e" id="mSemNro">—</div><div class="d" id="mSemEquipo">—</div></div>
+    <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">
+      Esta OT se cierra sola cuando los 6 días (Lunes a Sábado) quedan completos. Guardá cada día por separado — no hace falta esperar a fin de semana.
+    </div>
+    <div id="mSemProgreso" style="font-size:12px;font-weight:700;color:var(--label);margin-bottom:10px">—</div>
+    <div id="mSemDias" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+  <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalSemanal')">Cerrar</button></div>
+</div></div>
+
 <!-- ═══ MODAL: AVANCE DE OT (carga diaria del trabajo) ═══ -->
 <div class="overlay" id="modalAvance"><div class="modal">
   <div class="modal-h"><span class="modal-t">Avance de la orden de trabajo</span><button class="modal-x" onclick="cerrarAvance()">✕</button></div>
@@ -1355,7 +1371,13 @@ html[data-theme="dark"] .bar.plan{background:#2a3a55}
     </div>
     <div class="row-2">
       <div class="field"><label>Repetir cada *</label><input type="number" id="mPlanIntervalo" min="1" value="1"></div>
-      <div class="field"><label>Unidad *</label><select id="mPlanPeriodicidad"><option value="dias">Día(s)</option><option value="semanas">Semana(s)</option><option value="meses">Mes(es)</option></select></div>
+      <div class="field"><label>Unidad *</label><select id="mPlanPeriodicidad" onchange="toggleModoSemanal()"><option value="dias">Día(s)</option><option value="semanas">Semana(s)</option><option value="meses">Mes(es)</option></select></div>
+    </div>
+    <div class="field" id="mPlanSemanalWrap" style="display:none">
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(43,108,176,.08);border:1px solid rgba(43,108,176,.25);border-radius:var(--r);cursor:pointer">
+        <input type="checkbox" id="mPlanSemanal" style="width:16px;height:16px;accent-color:var(--accent)">
+        <span style="font-size:12.5px;color:var(--label)">Consolidar en 1 sola OT semanal (Lunes a Sábado) en vez de 1 OT por día — para inspecciones diarias con muchas OT sueltas. La OT se cierra sola cuando los 6 días quedan completos (no se cierra con el botón "Cerrar" normal).</span>
+      </label>
     </div>
     <div class="row-2">
       <div class="field"><label>Fecha de inicio *</label><input type="date" id="mPlanFechaInicio"></div>
@@ -1842,6 +1864,15 @@ function chipSubEstado(subEstado){
   if(!info) return '';
   return '<span class="chip-subestado '+info.cls+'">'+info.txt+'</span>';
 }
+// PM diario consolidado (30-sep-2026): una OT es "semanal" si TODOS los
+// ítems de su checklist snapshot traen el campo `dia` (Lunes..Sábado).
+// Estas OTs no se cierran con el modal normal — se completan día a día
+// y se cierran solas (autoCerrarOTsSemanalesHusky en el backend).
+function esOTSemanal(o){
+  if(!o.Checklist||o.Checklist==='[]'||o.Checklist==='') return false;
+  let items; try{ items=JSON.parse(o.Checklist); }catch(e){ return false; }
+  return Array.isArray(items)&&items.length>0&&items.every(it=>!!it.dia);
+}
 function cardOT(o){
   const p=o.Prioridad||'Media';
   const cls=p==='Alta'?'t-alta':p==='Baja'?'t-baja':'t-media';
@@ -1849,6 +1880,7 @@ function cardOT(o){
   const fallaAsoc=o.FallaID?fallasTodas.find(f=>f.ID===o.FallaID):null;
   const fotoUrl=fallaAsoc&&fallaAsoc.FotoURL?fallaAsoc.FotoURL:'';
   const tieneChecklist=!!(o.Checklist&&o.Checklist!=='[]'&&o.Checklist!=='');
+  const esSemanal=!cerrada&&esOTSemanal(o);
   return '<div class="card'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'" onclick="abrirDetalleOT('+D.jsa(o.NroOT)+')" style="cursor:pointer">'
     +'<div class="card-top"><span class="card-num">'+esc(o.NroOT||'—')+'</span><span class="tag '+cls+'">'+(cerrada&&D.esAnulada(o)?'Anulada':esc(p))+'</span></div>'
     +'<div class="card-eq">'+esc(o.Equipo||'—')+'</div>'
@@ -1862,8 +1894,10 @@ function cardOT(o){
     +'<div class="card-acts">'
     +(o.Estado==='Abierta'?'<button class="card-btn" data-act="programar" data-id="'+esc(o.NroOT)+'">📅 Programar</button>':'')
     +(o.Estado==='En curso'?'<button class="card-btn" data-act="reprogramar" data-id="'+esc(o.NroOT)+'">↩ Reprogramar</button>':'')
-    +(o.Estado==='En curso'?'<button class="card-btn" data-act="avance" data-id="'+esc(o.NroOT)+'">✏️ Avance</button>':'')
-    +(!cerrada?'<button class="card-btn b-close" data-act="cerrar" data-id="'+esc(o.NroOT)+'">Cerrar</button>':'')
+    +(o.Estado==='En curso'&&!esSemanal?'<button class="card-btn" data-act="avance" data-id="'+esc(o.NroOT)+'">✏️ Avance</button>':'')
+    +(esSemanal?'<button class="card-btn" data-act="semanal" data-id="'+esc(o.NroOT)+'">📅 Checklist semanal</button>'
+      +'<button class="card-btn b-anular" data-act="anular" data-id="'+esc(o.NroOT)+'">⛔ Anular</button>'
+      :(!cerrada?'<button class="card-btn b-close" data-act="cerrar" data-id="'+esc(o.NroOT)+'">Cerrar</button>':''))
     +'<button class="card-btn b-copy" data-act="wa" data-id="'+esc(o.NroOT)+'">WhatsApp</button></div>'
     +(tieneChecklist?'<div class="card-acts" style="margin-top:6px">'
       +'<button class="card-btn" onclick="event.stopPropagation();imprimirChecklist('+D.jsa(o.NroOT)+')">📄 PDF checklist</button>'
@@ -1878,6 +1912,8 @@ function bindCards(){
       if(b.dataset.act==='genot') abrirModalOT(id);
       if(b.dataset.act==='cerrar') abrirModalCerrar(id);
       if(b.dataset.act==='avance') abrirAvance(id);
+      if(b.dataset.act==='semanal') abrirModalSemanal(id);
+      if(b.dataset.act==='anular'){ abrirModalCerrar(id); const c=document.getElementById('mCerrarAnular'); c.checked=true; toggleAnular(); }
       if(b.dataset.act==='wa') abrirWA(id);
       if(b.dataset.act==='programar') abrirModalProgramar(id, false);
       if(b.dataset.act==='reprogramar') abrirModalProgramar(id, true);
@@ -2129,6 +2165,76 @@ async function submitCerrar(){
     setTimeout(recargar, 1500);
   }catch(e){ showToast('Error: '+e.message,'err'); }
   btn.disabled=false; btn.textContent=anulando?'Confirmar anulación':'Confirmar cierre';
+}
+
+/* ══ CHECKLIST SEMANAL (PM diario consolidado) ══ */
+let semanalActual=null; // respuesta cruda de accion=checklistSemanal, para no repedirla al guardar un día
+async function abrirModalSemanal(nroOT){
+  document.getElementById('mSemNro').textContent=nroOT;
+  const o=otsTodas.find(x=>x.NroOT===nroOT);
+  document.getElementById('mSemEquipo').textContent=o?(o.Equipo||'')+' · '+(o.Planta||''):'—';
+  document.getElementById('mSemProgreso').textContent='Cargando…';
+  document.getElementById('mSemDias').innerHTML='';
+  openModal('modalSemanal');
+  try{
+    const d=await window.CIMPLAST_DATA.apiJSON('accion=checklistSemanal&nroOT='+encodeURIComponent(nroOT));
+    if(d.ok===false) throw new Error(d.error);
+    semanalActual=d;
+    renderModalSemanal();
+  }catch(e){
+    document.getElementById('mSemProgreso').textContent='Error: '+e.message;
+  }
+}
+function renderModalSemanal(){
+  const d=semanalActual; if(!d) return;
+  document.getElementById('mSemProgreso').textContent=
+    d.diasCompletados.length+'/6 días completos'+(d.diasFaltantes.length?' — faltan: '+d.diasFaltantes.join(', '):' — se cierra sola en la próxima corrida automática');
+  const guardadosPorItem={}; // "fecha|nombre" -> resultado guardado
+  (d.resultadosGuardados||[]).forEach(r=>{ guardadosPorItem[r.fecha+'|'+r.itemNombre]=r; });
+
+  document.getElementById('mSemDias').innerHTML=d.dias.map(dia=>{
+    const items=d.itemsPorDia[dia]||[];
+    const fecha=items.length?items[0].fecha:'';
+    const completo=d.diasCompletados.indexOf(dia)>=0;
+    const itemsHtml=items.map((it,i)=>{
+      const g=guardadosPorItem[fecha+'|'+it.nombre];
+      if(it.tipo==='lectura'){
+        return `<div class="field" data-item-idx="${i}" data-item-tipo="lectura" data-item-nombre="${esc(it.nombre)}" data-item-unidad="${esc(it.unidad||'')}">
+          <label>🔢 ${esc(it.nombre)}${it.unidad?' ('+esc(it.unidad)+')':''}</label>
+          <input type="number" step="any" class="chk-valor" value="${g?esc(g.valor):''}" ${completo?'disabled':''}>
+        </div>`;
+      }
+      return `<label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--label)" data-item-idx="${i}" data-item-tipo="check" data-item-nombre="${esc(it.nombre)}">
+        <input type="checkbox" class="chk-valor" style="width:16px;height:16px;accent-color:var(--ok)" ${g&&g.cumplido==='Si'?'checked':''} ${completo?'disabled':''}> ☑ ${esc(it.nombre)}
+      </label>`;
+    }).join('');
+    return `<div style="border:1px solid var(--border);border-radius:var(--r);padding:10px;${completo?'background:rgba(46,125,50,.08)':''}" data-dia="${esc(dia)}" data-fecha="${esc(fecha)}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-weight:700;font-size:12.5px">${completo?'✅':'⬜'} ${esc(dia)} <span style="color:var(--muted);font-weight:400">(${esc(fecha)})</span></span>
+        ${completo?'':'<button class="card-btn" onclick="guardarDiaSemanal(\''+esc(dia)+'\')">Guardar '+esc(dia)+'</button>'}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">${itemsHtml}</div>
+    </div>`;
+  }).join('');
+}
+async function guardarDiaSemanal(dia){
+  const bloque=document.querySelector('#mSemDias [data-dia="'+dia+'"]');
+  if(!bloque) return;
+  const resultados=Array.from(bloque.querySelectorAll('[data-item-idx]')).map(el=>{
+    const tipo=el.dataset.itemTipo, input=el.querySelector('.chk-valor');
+    const r={nombre:el.dataset.itemNombre, tipo, unidad:el.dataset.itemUnidad||''};
+    if(tipo==='check') r.cumplido=input.checked; else r.valor=input.value;
+    return r;
+  });
+  const incompleto=resultados.find(r=>(r.tipo==='check'&&r.cumplido!==true)||(r.tipo==='lectura'&&(r.valor===''||r.valor===undefined||r.valor===null)));
+  if(incompleto){ showToast('Completá "'+incompleto.nombre+'" antes de guardar '+dia,'err'); return; }
+  try{
+    const d=await window.CIMPLAST_DATA.apiPost({accion:'guardarChecklistDiario', nroOT:semanalActual.nroOT, dia, tecnico:'Supervisor', resultados});
+    if(d.ok===false) throw new Error(d.error);
+    showToast(dia+' guardado ('+d.diasCompletados.length+'/6)');
+    await abrirModalSemanal(semanalActual.nroOT);
+    setTimeout(recargar, 1500);
+  }catch(e){ showToast('Error: '+e.message,'err'); }
 }
 
 /* ══ WHATSAPP ══ */
@@ -2521,11 +2627,21 @@ function abrirModalPlan(planId){
   document.getElementById('mPlanPeriodicidad').value = planEditando?.Periodicidad || 'dias';
   document.getElementById('mPlanFechaInicio').value = planEditando?.FechaInicio || new Date().toISOString().slice(0,10);
   document.getElementById('mPlanHoras').value = planEditando?.HorasEstimadas || '';
+  document.getElementById('mPlanSemanal').checked = planEditando?.ModoGeneracion === 'semanal_diario';
+  toggleModoSemanal();
   tareasPlanActual = planEditando?.Tareas ? [...planEditando.Tareas] : [];
   document.getElementById('mPlanTareaInput').value = '';
   renderTareasPlan();
   renderEquiposPicker(planEditando?.Planta || '', planEditando?.Equipos || []);
   openModal('modalPlan');
+}
+
+// Consolidar en 1 OT semanal (ver LEEME_PM_Semanal_Husky) solo tiene sentido
+// para planes Diario — el checkbox se oculta y se destilda para las demás unidades.
+function toggleModoSemanal(){
+  const esDiario = document.getElementById('mPlanPeriodicidad').value === 'dias';
+  document.getElementById('mPlanSemanalWrap').style.display = esDiario ? 'block' : 'none';
+  if(!esDiario) document.getElementById('mPlanSemanal').checked = false;
 }
 
 function toggleUnidadTarea(){
@@ -2587,6 +2703,7 @@ async function submitPlan(){
   const periodicidad = document.getElementById('mPlanPeriodicidad').value;
   const fechaInicio = document.getElementById('mPlanFechaInicio').value;
   const equipos = Array.from(document.querySelectorAll('#mPlanEquiposPicker input:checked')).map(c => c.value);
+  const modoGeneracion = (periodicidad === 'dias' && document.getElementById('mPlanSemanal').checked) ? 'semanal_diario' : '';
 
   if(!nombre || !planta || !fechaInicio || equipos.length === 0){
     showToast('Completá nombre, planta, fecha de inicio y al menos un equipo', 'err');
@@ -2606,7 +2723,7 @@ async function submitPlan(){
     periodicidad, intervaloNum: intervalo,
     prioridad: document.getElementById('mPlanPrioridad').value,
     horasEstimadas: document.getElementById('mPlanHoras').value || '',
-    fechaInicio
+    fechaInicio, modoGeneracion
   };
 
   const btn = document.getElementById('btnModalPlan'); btn.disabled = true; btn.textContent = 'Guardando…';
