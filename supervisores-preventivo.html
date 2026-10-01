@@ -994,11 +994,13 @@ async function recargar(){
   const icon=document.getElementById('refreshIcon');
   icon.classList.add('spinning');
   try{
-    const [rf,ro]=await Promise.all([
+    const [rf,ro,rp]=await Promise.all([
       D.apiJSON('accion=fallas'),
-      D.apiJSON('accion=ots')
+      D.apiJSON('accion=ots'),
+      D.apiJSON('accion=planes').catch(()=>null) // no bloquear el Tablero si esto falla — solo se usa para la etiqueta de periodicidad en la tarjeta
     ]);
     fallasTodas=rf.fallas||[]; otsTodas=ro.ots||[]; ultimaCarga=Date.now();
+    if(rp && rp.ok!==false) planesTodos = rp.planes || planesTodos;
     try{localStorage.setItem('cimplast_sup_cache',JSON.stringify({fallas:fallasTodas,ots:otsTodas,ts:ultimaCarga}))}catch(e){}
     aplicarFiltros();
   }catch(e){
