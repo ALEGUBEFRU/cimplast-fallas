@@ -148,7 +148,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .col-b{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px;min-height:0}
 
 /* ── CARDS ── */
-.card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;display:flex;flex-direction:column;gap:4px;transition:border-color .15s,box-shadow .15s,opacity .15s}
+.card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px 14px;display:flex;flex-direction:column;gap:8px;transition:border-color .15s,box-shadow .15s,opacity .15s}
 .card[draggable=true]{cursor:grab}
 .card:hover{border-color:var(--border-hi);box-shadow:var(--shadow-md)}
 .card.dragging{opacity:.4}
@@ -167,10 +167,10 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .t-stop{background:rgba(163,53,43,.2);color:var(--danger)}
 .t-run{background:rgba(141,129,117,.16);color:var(--muted)}
 .card-eq{font-size:13px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
-.card-desc{font-size:11px;color:var(--label);line-height:1.35;max-height:1.35em;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.card-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--muted);font-family:var(--mono)}
-.card-acts{display:flex;gap:5px;margin-top:1px}
-.card-btn{flex:1;padding:6px;border-radius:7px;font-size:10.5px;font-weight:700;border:1px solid;transition:background .15s;text-align:center}
+.card-desc{font-size:11.5px;color:var(--label);line-height:1.4;max-height:2.8em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal}
+.card-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);font-family:var(--mono)}
+.card-acts{display:flex;gap:6px;margin-top:4px}
+.card-btn{flex:1;padding:11px 6px;border-radius:7px;font-size:10.5px;font-weight:700;border:1px solid;transition:background .15s;text-align:center}
 .b-ot{border-color:rgba(65,97,128,.5);color:var(--accent);background:rgba(65,97,128,.07)}
 .b-ot:hover{background:rgba(65,97,128,.18)}
 .b-close{border-color:rgba(47,107,52,.5);color:var(--ok);background:rgba(47,107,52,.07)}
@@ -751,7 +751,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 </div></div>
 
 <!-- ═══ MODAL: CHECKLIST SEMANAL (PM diario consolidado — 30-sep-2026) ═══ -->
-<div class="overlay" id="modalSemanal"><div class="modal">
+<div class="overlay" id="modalSemanal"><div class="modal" style="max-width:min(980px,95vw)">
   <div class="modal-h"><span class="modal-t">PM diario — checklist semanal</span><button class="modal-x" onclick="closeModal('modalSemanal')">✕</button></div>
   <div class="modal-b">
     <div class="origin"><div class="l">OT</div><div class="e" id="mSemNro">—</div><div class="d" id="mSemEquipo">—</div></div>
@@ -856,7 +856,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 </div></div>
 
 <!-- ═══ MODAL: DETALLE OT ═══ -->
-<div class="overlay" id="modalDetalleOT"><div class="modal" style="max-width:500px">
+<div class="overlay" id="modalDetalleOT"><div class="modal" style="max-width:min(820px,92vw)">
   <div class="modal-h"><span class="modal-t">Detalle de orden de trabajo</span><button class="modal-x" onclick="closeModal('modalDetalleOT')">✕</button></div>
   <div class="modal-b">
     <div class="origin" id="dOtOrigen">
@@ -1612,35 +1612,49 @@ function renderModalSemanal(){
   const guardadosPorItem={}; // "fecha|nombre" -> resultado guardado
   (d.resultadosGuardados||[]).forEach(r=>{ guardadosPorItem[r.fecha+'|'+r.itemNombre]=r; });
 
-  document.getElementById('mSemDias').innerHTML=d.dias.map(dia=>{
-    const items=d.itemsPorDia[dia]||[];
-    const fecha=items.length?items[0].fecha:'';
+  // Tabla: 1 fila por tarea (orden del primer día con datos), 1 columna por día.
+  // Antes se repetía el checklist completo x6 (un bloque por día); ahora la
+  // lista de tareas aparece una sola vez a la izquierda y cada día es una
+  // columna con su propio control + botón de guardar en el encabezado.
+  const itemsRef = d.dias.map(dia=>d.itemsPorDia[dia]||[]).find(arr=>arr.length) || [];
+  const fechaPorDia={};
+  d.dias.forEach(dia=>{ const items=d.itemsPorDia[dia]||[]; fechaPorDia[dia]=items.length?items[0].fecha:''; });
+
+  const theadCols = d.dias.map(dia=>{
     const completo=d.diasCompletados.indexOf(dia)>=0;
-    const itemsHtml=items.map((it,i)=>{
-      const g=guardadosPorItem[fecha+'|'+it.nombre];
-      if(it.tipo==='lectura'){
-        return `<div class="field" data-item-idx="${i}" data-item-tipo="lectura" data-item-nombre="${esc(it.nombre)}" data-item-unidad="${esc(it.unidad||'')}">
-          <label>🔢 ${esc(it.nombre)}${it.unidad?' ('+esc(it.unidad)+')':''}</label>
-          <input type="number" step="any" class="chk-valor" value="${g?esc(g.valor):''}" ${completo?'disabled':''}>
-        </div>`;
-      }
-      return `<label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--label)" data-item-idx="${i}" data-item-tipo="check" data-item-nombre="${esc(it.nombre)}">
-        <input type="checkbox" class="chk-valor" style="width:16px;height:16px;accent-color:var(--ok)" ${g&&g.cumplido==='Si'?'checked':''} ${completo?'disabled':''}> ☑ ${esc(it.nombre)}
-      </label>`;
-    }).join('');
-    return `<div style="border:1px solid var(--border);border-radius:var(--r);padding:10px;${completo?'background:rgba(46,125,50,.08)':''}" data-dia="${esc(dia)}" data-fecha="${esc(fecha)}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span style="font-weight:700;font-size:12.5px">${completo?'✅':'⬜'} ${esc(dia)} <span style="color:var(--muted);font-weight:400">(${esc(fecha)})</span></span>
-        ${completo?'':'<button class="card-btn" onclick="guardarDiaSemanal(\''+esc(dia)+'\')">Guardar '+esc(dia)+'</button>'}
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px">${itemsHtml}</div>
-    </div>`;
+    return `<th style="padding:6px 8px;text-align:center;min-width:110px;${completo?'background:rgba(46,125,50,.1)':''}">
+      <div style="font-weight:700;font-size:11.5px">${completo?'✅':'⬜'} ${esc(dia)}</div>
+      <div style="color:var(--muted);font-weight:400;font-size:10px">${esc(fechaPorDia[dia]||'')}</div>
+      ${completo?'':'<button class="card-btn" style="margin-top:4px;padding:4px 6px;font-size:9.5px" onclick="guardarDiaSemanal(\''+esc(dia)+'\')">Guardar</button>'}
+    </th>`;
   }).join('');
+
+  const rows = itemsRef.map((itRef,i)=>{
+    const cells = d.dias.map(dia=>{
+      const items=d.itemsPorDia[dia]||[];
+      const it = items[i] || itRef;
+      const fecha=fechaPorDia[dia];
+      const completo=d.diasCompletados.indexOf(dia)>=0;
+      const g=guardadosPorItem[fecha+'|'+it.nombre];
+      let control;
+      if(it.tipo==='lectura'){
+        control = `<input type="number" step="any" class="chk-valor" style="width:72px;text-align:center" value="${g?esc(g.valor):''}" ${completo?'disabled':''}>`;
+      } else {
+        control = `<input type="checkbox" class="chk-valor" style="width:17px;height:17px;accent-color:var(--ok)" ${g&&g.cumplido==='Si'?'checked':''} ${completo?'disabled':''}>`;
+      }
+      return `<td data-dia="${esc(dia)}" data-item-tipo="${esc(it.tipo||'check')}" data-item-nombre="${esc(it.nombre)}" data-item-unidad="${esc(it.unidad||'')}" style="text-align:center;padding:6px 8px;${completo?'background:rgba(46,125,50,.05)':''}">${control}</td>`;
+    }).join('');
+    return `<tr><td style="padding:6px 8px;font-size:12px;color:var(--label);white-space:nowrap">${esc(itRef.nombre)}${itRef.unidad?' <span style="color:var(--muted);font-size:10.5px">('+esc(itRef.unidad)+')</span>':''}</td>${cells}</tr>`;
+  }).join('');
+
+  document.getElementById('mSemDias').innerHTML = itemsRef.length
+    ? `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%"><thead><tr><th style="text-align:left;padding:6px 8px;font-size:11px;color:var(--muted)">Tarea</th>${theadCols}</tr></thead><tbody>${rows}</tbody></table></div>`
+    : '<div class="col-empty">Sin tareas cargadas en el checklist</div>';
 }
 async function guardarDiaSemanal(dia){
-  const bloque=document.querySelector('#mSemDias [data-dia="'+dia+'"]');
-  if(!bloque) return;
-  const resultados=Array.from(bloque.querySelectorAll('[data-item-idx]')).map(el=>{
+  const celdas=document.querySelectorAll('#mSemDias td[data-dia="'+dia+'"]');
+  if(!celdas.length) return;
+  const resultados=Array.from(celdas).map(el=>{
     const tipo=el.dataset.itemTipo, input=el.querySelector('.chk-valor');
     const r={nombre:el.dataset.itemNombre, tipo, unidad:el.dataset.itemUnidad||''};
     if(tipo==='check') r.cumplido=input.checked; else r.valor=input.value;
@@ -1840,7 +1854,12 @@ function renderPlanesCronograma(){
   }
   const base = new Date((p.UltimaGeneracion || p.FechaInicio)+'T00:00:00');
   const intervalo = Number(p.IntervaloNum)||1;
-  const diasCiclo = p.Periodicidad==='semanas' ? intervalo*7
+  // Plan "semanal_diario": el backend fuerza un ciclo fijo de 7 días
+  // (generarOtsDesdesPlanes) sin importar Periodicidad/IntervaloNum —
+  // acá hay que replicar el mismo criterio para que la barra no quede
+  // desfasada apenas se genera la OT semanal.
+  const diasCiclo = p.ModoGeneracion==='semanal_diario' ? 7
+                   : p.Periodicidad==='semanas' ? intervalo*7
                    : p.Periodicidad==='meses' ? intervalo*30
                    : intervalo;
   const horasCiclo = diasCiclo * 24;
@@ -2186,16 +2205,29 @@ async function eliminarPlanReal(planId){
   }catch(e){ showToast('Error: '+e.message, 'err'); }
 }
 
+function etiquetaPeriodicidad(o){
+  const plan = o.PlanID ? planesTodos.find(p => p.PlanID === o.PlanID) : null;
+  if(plan && plan.ModoGeneracion === 'semanal_diario') return 'PM Semanal — Lunes a Sábado';
+  if(!plan) return '';
+  const intervalo = Number(plan.IntervaloNum) || 1;
+  const unidad = plan.Periodicidad === 'semanas' ? (intervalo===1?'Semanal':`Cada ${intervalo} semanas`)
+               : plan.Periodicidad === 'meses' ? (intervalo===1?'Mensual':`Cada ${intervalo} meses`)
+               : (intervalo===1?'Diaria':`Cada ${intervalo} días`);
+  return 'Inspección ' + unidad;
+}
+
 function imprimirChecklist(nroOT){
   const o = otsTodas.find(x => x.NroOT === nroOT); if(!o) return;
   let tareas = [];
   try { tareas = o.Checklist ? JSON.parse(o.Checklist) : []; } catch(e) { tareas = []; }
+  const periodicidad = etiquetaPeriodicidad(o);
 
   const cont = document.getElementById('printChecklist');
   cont.innerHTML = `
     <div class="pc-header">
       <h1>Cimplast · Checklist de Mantenimiento Preventivo</h1>
       <div class="sub">${esc(o.NroOT)} · Generado el ${new Date().toLocaleDateString('es-PY')}</div>
+      ${periodicidad ? `<div class="sub" style="font-weight:700">${esc(periodicidad)}</div>` : ''}
     </div>
     <div class="pc-meta">
       <div><b>Equipo:</b> ${esc(o.Equipo||'—')}</div>
@@ -2596,8 +2628,12 @@ function abrirDetalleOT(nroOT){
   try { tareasDetalle = o.Checklist ? JSON.parse(o.Checklist) : []; } catch(e) { tareasDetalle = []; }
   const checklistWrap = document.getElementById('dOtChecklistWrap');
   if(tareasDetalle.length){
-    document.getElementById('dOtChecklistLista').innerHTML = tareasDetalle.map(t =>
-      `<div class="checklist-item"><span class="box"></span><span>${esc(t)}</span></div>`).join('');
+    document.getElementById('dOtChecklistLista').innerHTML = tareasDetalle.map(t => {
+      const nombre = esc(t && t.nombre ? t.nombre : t);
+      const unidad = t && t.unidad ? ` <span style="color:var(--muted);font-size:10.5px">(${esc(t.unidad)})</span>` : '';
+      const tipoLbl = t && t.tipo === 'lectura' ? '<span style="color:var(--muted);font-size:10.5px">[lectura]</span> ' : '';
+      return `<div class="checklist-item"><span class="box"></span><span>${tipoLbl}${nombre}${unidad}</span></div>`;
+    }).join('');
     document.getElementById('dOtBtnPdf').onclick = () => imprimirChecklist(o.NroOT);
     document.getElementById('dOtBtnWA').onclick = () => compartirChecklistWA(o.NroOT);
     checklistWrap.style.display = 'block';
