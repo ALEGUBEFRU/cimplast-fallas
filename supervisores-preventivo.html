@@ -858,7 +858,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 <!-- ═══ MODAL: DETALLE OT ═══ -->
 <div class="overlay" id="modalDetalleOT"><div class="modal" style="max-width:min(820px,92vw)">
   <div class="modal-h"><span class="modal-t">Detalle de orden de trabajo</span><button class="modal-x" onclick="closeModal('modalDetalleOT')">✕</button></div>
-  <div class="modal-b">
+  <div class="modal-b" style="flex:0 1 auto;max-height:42vh;overflow-y:auto">
     <div class="origin" id="dOtOrigen">
       <div class="l">OT</div>
       <div class="e" id="dOtNro">—</div>
@@ -895,18 +895,18 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
       <div class="field"><label>Causa raíz / trabajo realizado</label><div id="dOtObsCierre" style="font-size:13px;color:var(--label);padding:6px 0;line-height:1.5;white-space:pre-wrap">—</div></div>
     </div>
   </div>
-  <div id="dOtFotoWrap" class="ot-foto-wrap" style="display:none">
-    <div style="height:1px;background:var(--border);margin:4px 0"></div>
-    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Foto de la falla</div>
-    <img id="dOtFotoImg" alt="Foto" onclick="verFotoUrl(this.src,'Foto de falla')" onerror="document.getElementById('dOtFotoWrap').style.display='none'">
-  </div>
-  <div id="dOtChecklistWrap" style="display:none">
-    <div style="height:1px;background:var(--border);margin:4px 0"></div>
-    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Checklist de mantenimiento preventivo</div>
-    <div class="checklist-view" id="dOtChecklistLista"></div>
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <button class="btn-secondary" style="flex:1" id="dOtBtnPdf">📄 PDF</button>
-      <button class="btn-secondary" style="flex:1" id="dOtBtnWA">📲 WhatsApp</button>
+  <div id="dOtMitadInferior" style="flex:1 1 auto;min-height:0;overflow-y:auto;padding:16px 20px;border-top:1px solid var(--border)">
+    <div id="dOtFotoWrap" class="ot-foto-wrap" style="display:none">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Foto de la falla</div>
+      <img id="dOtFotoImg" alt="Foto" onclick="verFotoUrl(this.src,'Foto de falla')" onerror="document.getElementById('dOtFotoWrap').style.display='none'">
+    </div>
+    <div id="dOtChecklistWrap" style="display:none">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Checklist de mantenimiento preventivo</div>
+      <div class="checklist-view" id="dOtChecklistLista"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn-secondary" style="flex:1" id="dOtBtnPdf">📄 PDF</button>
+        <button class="btn-secondary" style="flex:1" id="dOtBtnWA">📲 WhatsApp</button>
+      </div>
     </div>
   </div>
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalDetalleOT')">Cerrar</button><button class="btn-primary" id="dOtBtnAvance" style="display:none" onclick="closeModal('modalDetalleOT');abrirAvance(document.getElementById('dOtNro').textContent)">✏️ Editar avance</button></div>
@@ -1301,11 +1301,16 @@ function cardOT(o){
   const fotoUrl=fallaAsoc&&fallaAsoc.FotoURL?fallaAsoc.FotoURL:'';
   const tieneChecklist=!!(o.Checklist&&o.Checklist!=='[]'&&o.Checklist!=='');
   const esSemanal=!cerrada&&esOTSemanal(o);
+  // Preventivo: en vez del texto de la descripción (que suele repetir el
+  // nombre del plan o un detalle técnico largo), mostrar qué tipo de
+  // inspección es — es lo que un supervisor necesita ver de un vistazo.
+  const periodicidad=o.Tipo==='Preventivo'?etiquetaPeriodicidad(o):'';
+  const descLinea=periodicidad?esc(periodicidad):esc((o.Descripcion||'').slice(0,90))+((o.Descripcion||'').length>90?'…':'');
   return '<div class="card'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'" onclick="abrirDetalleOT('+D.jsa(o.NroOT)+')" style="cursor:pointer">'
     +'<div class="card-top"><span class="card-num">'+esc(o.NroOT||'—')+'</span><span class="tag '+cls+'">'+(cerrada&&D.esAnulada(o)?'Anulada':esc(p))+'</span></div>'
     +'<div class="card-eq">'+esc(o.Equipo||'—')+'</div>'
     +(!cerrada&&o.SubEstado?chipSubEstado(o.SubEstado):'')
-    +'<div class="card-desc">'+esc((o.Descripcion||'').slice(0,90))+((o.Descripcion||'').length>90?'…':'')+'</div>'
+    +'<div class="card-desc">'+descLinea+'</div>'
     +'<div class="card-meta"><span>'+esc(o.Planta||'—')+'</span><span>'+esc(o.Tecnico||'sin asignar')+'</span>'
     +(o.FechaProgramada?'<span>'+esc(D.fmtFecha(o.FechaProgramada))+'</span>':'')
     +(o.HorasEstimadas?'<span>'+esc(o.HorasEstimadas)+'h est.</span>':'')
@@ -2640,6 +2645,8 @@ function abrirDetalleOT(nroOT){
   } else {
     checklistWrap.style.display = 'none';
   }
+  const hayFoto = fotoWrap.style.display === 'block', hayChecklist = checklistWrap.style.display === 'block';
+  document.getElementById('dOtMitadInferior').style.display = (hayFoto || hayChecklist) ? 'block' : 'none';
   openModal('modalDetalleOT');
 }
 
