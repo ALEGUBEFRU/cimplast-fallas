@@ -177,6 +177,8 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .b-close:hover{background:rgba(47,107,52,.18)}
 .b-copy{border-color:rgba(31,95,104,.5);color:var(--info);background:rgba(31,95,104,.07)}
 .b-copy:hover{background:rgba(31,95,104,.18)}
+.b-anular{border-color:rgba(163,53,43,.5);color:var(--danger);background:rgba(163,53,43,.07)}
+.b-anular:hover{background:rgba(163,53,43,.18)}
 .col-empty{flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);padding:26px 16px;text-align:center;line-height:1.5}
 
 /* ── MODAL ── */
@@ -1314,6 +1316,7 @@ function cardOT(o){
     +(o.Estado==='En curso'?'<button class="card-btn" data-act="reprogramar" data-id="'+esc(o.NroOT)+'">↩ Reprogramar</button>':'')
     +(o.Estado==='En curso'&&!esSemanal?'<button class="card-btn" data-act="avance" data-id="'+esc(o.NroOT)+'">✏️ Avance</button>':'')
     +(esSemanal?'<button class="card-btn" data-act="semanal" data-id="'+esc(o.NroOT)+'">📅 Checklist semanal</button>'
+      +'<button class="card-btn b-anular" data-act="anular" data-id="'+esc(o.NroOT)+'">⛔ Anular</button>'
       :(!cerrada?'<button class="card-btn b-close" data-act="cerrar" data-id="'+esc(o.NroOT)+'">Cerrar</button>':''))
     +'<button class="card-btn b-copy" data-act="wa" data-id="'+esc(o.NroOT)+'">WhatsApp</button></div>'
     +(tieneChecklist?'<div class="card-acts" style="margin-top:6px">'
@@ -1330,6 +1333,7 @@ function bindCards(){
       if(b.dataset.act==='cerrar') abrirModalCerrar(id);
       if(b.dataset.act==='avance') abrirAvance(id);
       if(b.dataset.act==='semanal') abrirModalSemanal(id);
+      if(b.dataset.act==='anular'){ abrirModalCerrar(id); const c=document.getElementById('mCerrarAnular'); c.checked=true; toggleAnular(); }
       if(b.dataset.act==='wa') abrirWA(id);
       if(b.dataset.act==='programar') abrirModalProgramar(id, false);
       if(b.dataset.act==='reprogramar') abrirModalProgramar(id, true);

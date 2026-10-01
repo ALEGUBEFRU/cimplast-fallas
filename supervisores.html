@@ -118,6 +118,8 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .b-close:hover{background:rgba(92,180,107,.18)}
 .b-copy{border-color:rgba(91,155,213,.5);color:#8fbfe8;background:rgba(91,155,213,.07)}
 .b-copy:hover{background:rgba(91,155,213,.18)}
+.b-anular{border-color:rgba(229,87,79,.5);color:var(--danger);background:rgba(229,87,79,.07)}
+.b-anular:hover{background:rgba(229,87,79,.18)}
 .col-empty{flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#5c5347;padding:26px 16px;text-align:center;line-height:1.5}
 
 /* ── MODAL ── */
@@ -948,16 +950,30 @@ function cardFalla(f){
     +(f.FotoURL?'<button class="card-foto-btn" onclick="verFoto(event,'+D.jsa(f.FotoURL)+','+D.jsa(f.Equipo||'Falla')+')" >📷 Ver foto</button>':'')
     +'</div>';
 }
+// PM diario consolidado (30-sep-2026): una OT es "semanal" si TODOS los
+// ítems de su checklist snapshot traen el campo `dia` (Lunes..Sábado).
+// Esta app no tiene modal de checklist — se completa desde
+// supervisores-preventivo.html / la app mobile / SupervisoresPrevConSelectores.
+// Acá solo se oculta "Cerrar" (igual fallaría server-side por checklist
+// incompleto) y se deja "⛔ Anular" disponible, porque anular no valida
+// checklist.
+function esOTSemanal(o){
+  if(!o.Checklist||o.Checklist==='[]'||o.Checklist==='') return false;
+  let items; try{ items=JSON.parse(o.Checklist); }catch(e){ return false; }
+  return Array.isArray(items)&&items.length>0&&items.every(it=>!!it.dia);
+}
 function cardOT(o){
   const p=o.Prioridad||'Media';
   const cls=p==='Alta'?'t-alta':p==='Baja'?'t-baja':'t-media';
   const cerrada=o.Estado==='Cerrada';
   const fallaAsoc=o.FallaID?fallasTodas.find(f=>f.ID===o.FallaID):null;
   const fotoUrl=fallaAsoc&&fallaAsoc.FotoURL?fallaAsoc.FotoURL:'';
+  const esSemanal=!cerrada&&esOTSemanal(o);
   return '<div class="card'+(p==='Alta'&&!cerrada?' alta':'')+'" draggable="'+(!cerrada)+'" data-kind="ot" data-id="'+esc(o.NroOT)+'" data-estado="'+esc(o.Estado)+'" onclick="abrirDetalleOT('+D.jsa(o.NroOT)+')" style="cursor:pointer">'
     +'<div class="card-top"><span class="card-num">'+esc(o.NroOT||'—')+'</span><span class="tag '+cls+'">'+(cerrada&&D.esAnulada(o)?'Anulada':esc(p))+'</span></div>'
     +'<div class="card-eq">'+esc(o.Equipo||'—')+'</div>'
     +'<div class="card-desc">'+esc((o.Descripcion||'').slice(0,90))+((o.Descripcion||'').length>90?'…':'')+'</div>'
+    +(esSemanal?'<div class="card-desc" style="color:var(--muted);font-style:italic">📅 PM semanal — completar el checklist desde la app Preventivo. Se cierra sola.</div>':'')
     +'<div class="card-meta"><span>'+esc(o.Planta||'—')+'</span><span>'+esc(o.Tecnico||'sin asignar')+'</span>'
     +(o.FechaProgramada?'<span>'+esc(D.fmtFecha(o.FechaProgramada))+'</span>':'')
     +(o.HorasEstimadas?'<span>'+esc(o.HorasEstimadas)+'h est.</span>':'')
@@ -966,8 +982,9 @@ function cardOT(o){
     +'<div class="card-acts">'
     +(o.Estado==='Abierta'?'<button class="card-btn" data-act="programar" data-id="'+esc(o.NroOT)+'">📅 Programar</button>':'')
     +(o.Estado==='En curso'?'<button class="card-btn" data-act="reprogramar" data-id="'+esc(o.NroOT)+'">↩ Reprogramar</button>':'')
-    +(o.Estado==='En curso'?'<button class="card-btn" data-act="avance" data-id="'+esc(o.NroOT)+'">✏️ Avance</button>':'')
-    +(!cerrada?'<button class="card-btn b-close" data-act="cerrar" data-id="'+esc(o.NroOT)+'">Cerrar</button>':'')
+    +(o.Estado==='En curso'&&!esSemanal?'<button class="card-btn" data-act="avance" data-id="'+esc(o.NroOT)+'">✏️ Avance</button>':'')
+    +(esSemanal?'<button class="card-btn b-anular" data-act="anular" data-id="'+esc(o.NroOT)+'">⛔ Anular</button>'
+      :(!cerrada?'<button class="card-btn b-close" data-act="cerrar" data-id="'+esc(o.NroOT)+'">Cerrar</button>':''))
     +'<button class="card-btn b-copy" data-act="wa" data-id="'+esc(o.NroOT)+'">WhatsApp</button></div>'
     +(fotoUrl?'<button class="card-foto-btn" onclick="verFoto(event,'+D.jsa(fotoUrl)+','+D.jsa(o.Equipo||'OT')+')">📷 Ver foto</button>':'')
     +'</div>';
@@ -979,6 +996,7 @@ function bindCards(){
       if(b.dataset.act==='genot') abrirModalOT(id);
       if(b.dataset.act==='cerrar') abrirModalCerrar(id);
       if(b.dataset.act==='avance') abrirAvance(id);
+      if(b.dataset.act==='anular'){ abrirModalCerrar(id); const c=document.getElementById('mCerrarAnular'); c.checked=true; toggleAnular(); }
       if(b.dataset.act==='wa') abrirWA(id);
       if(b.dataset.act==='programar') abrirModalProgramar(id, false);
       if(b.dataset.act==='reprogramar') abrirModalProgramar(id, true);
