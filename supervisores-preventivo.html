@@ -2633,6 +2633,15 @@ function abrirDetalleOT(nroOT){
   // Checklist de mantenimiento preventivo (si tiene)
   let tareasDetalle = [];
   try { tareasDetalle = o.Checklist ? JSON.parse(o.Checklist) : []; } catch(e) { tareasDetalle = []; }
+  if(tareasDetalle.length){
+    const vistos = new Set();
+    tareasDetalle = tareasDetalle.filter(t => {
+      const nombre = t && t.nombre ? t.nombre : t;
+      if(vistos.has(nombre)) return false;
+      vistos.add(nombre);
+      return true;
+    });
+  }
   const checklistWrap = document.getElementById('dOtChecklistWrap');
   if(tareasDetalle.length){
     document.getElementById('dOtChecklistLista').innerHTML = tareasDetalle.map(t => {
