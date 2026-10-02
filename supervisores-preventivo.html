@@ -389,6 +389,14 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   #printChecklist .pc-meta b{color:#111}
   #printChecklist .pc-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee;font-size:13px;color:#222}
   #printChecklist .pc-box{width:16px;height:16px;border:1.5px solid #999;border-radius:3px;flex-shrink:0}
+  #printChecklist .pc-table{width:100%;border-collapse:collapse;font-size:11.5px;color:#222}
+  #printChecklist .pc-table th,#printChecklist .pc-table td{border:1px solid #ccc;padding:5px 4px;text-align:center}
+  #printChecklist .pc-table th{background:#f2f2f2;font-size:10.5px}
+  #printChecklist .pc-table td.pc-tarea{text-align:left;font-size:11.5px}
+  #printChecklist .pc-table td.pc-box-cell{width:26px}
+  #printChecklist .pc-table .pc-checkbox{width:13px;height:13px;border:1.5px solid #999;border-radius:3px;display:inline-block}
+  #printChecklist .pc-obs{margin-top:18px;font-size:12px}
+  #printChecklist .pc-obs .pc-obs-line{border-bottom:1px solid #999;height:22px;margin-top:4px}
   #printChecklist .pc-firma{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:30px}
   #printChecklist .pc-firma div{border-top:1px solid #333;padding-top:6px;font-size:11px;color:#555;text-align:center}
 }
@@ -2232,12 +2240,40 @@ function dedupeTareas(tareas){
     return true;
   });
 }
+function esSemanalDiario(o){
+  const plan = o.PlanID ? planesTodos.find(p => p.PlanID === o.PlanID) : null;
+  return !!(plan && plan.ModoGeneracion === 'semanal_diario');
+}
+const DIAS_SEMANA_PRINT = ['Lun','Mar','Mié','Jue','Vie','Sáb'];
 function imprimirChecklist(nroOT){
   const o = otsTodas.find(x => x.NroOT === nroOT); if(!o) return;
   let tareas = [];
   try { tareas = o.Checklist ? JSON.parse(o.Checklist) : []; } catch(e) { tareas = []; }
   tareas = dedupeTareas(tareas);
   const periodicidad = etiquetaPeriodicidad(o);
+  const semanal = esSemanalDiario(o);
+
+  const cuerpoChecklist = !tareas.length
+    ? '<div style="font-size:12px;color:#888">Sin tareas cargadas en el checklist</div>'
+    : semanal
+    ? `<table class="pc-table">
+        <thead><tr><th style="text-align:left">Tarea</th>${DIAS_SEMANA_PRINT.map(d=>`<th>${d}</th>`).join('')}</tr></thead>
+        <tbody>${tareas.map(t => {
+          const nombre = t.nombre || t;
+          return `<tr><td class="pc-tarea">${esc(nombre)}</td>${DIAS_SEMANA_PRINT.map(()=>`<td class="pc-box-cell"><span class="pc-checkbox"></span></td>`).join('')}</tr>`;
+        }).join('')}</tbody>
+      </table>
+      <div class="pc-obs"><b>Observaciones:</b><div class="pc-obs-line"></div><div class="pc-obs-line"></div></div>`
+    : tareas.map(t => {
+        const nombre = t.nombre || t;
+        const tipo = t.tipo || 'check';
+        if(tipo === 'lectura'){
+          return `<div class="pc-item"><span class="pc-box" style="border-radius:50%"></span><span>${esc(nombre)}: _______ ${esc(t.unidad||'')}</span></div>`;
+        } else if(tipo === 'texto'){
+          return `<div class="pc-item"><span class="pc-box" style="opacity:0"></span><span>${esc(nombre)}: ___________________________</span></div>`;
+        }
+        return `<div class="pc-item"><span class="pc-box"></span><span>${esc(nombre)}</span></div>`;
+      }).join('') + '<div class="pc-obs"><b>Observaciones:</b><div class="pc-obs-line"></div></div>';
 
   const cont = document.getElementById('printChecklist');
   cont.innerHTML = `
@@ -2254,17 +2290,7 @@ function imprimirChecklist(nroOT){
       <div><b>Prioridad:</b> ${esc(o.Prioridad||'—')}</div>
       <div><b>Horas estimadas:</b> ${o.HorasEstimada?o.HorasEstimada+' h':'—'}</div>
     </div>
-    ${tareas.length ? tareas.map(t => {
-      const nombre = t.nombre || t;
-      const tipo = t.tipo || 'check';
-      if(tipo === 'lectura'){
-        return `<div class="pc-item"><span class="pc-box" style="border-radius:50%"></span><span>${esc(nombre)}: _______ ${esc(t.unidad||'')}</span></div>`;
-      } else if(tipo === 'texto'){
-        return `<div class="pc-item"><span class="pc-box" style="opacity:0"></span><span>${esc(nombre)}: ___________________________</span></div>`;
-      }
-      return `<div class="pc-item"><span class="pc-box"></span><span>${esc(nombre)}</span></div>`;
-    }).join('')
-      : '<div style="font-size:12px;color:#888">Sin tareas cargadas en el checklist</div>'}
+    ${cuerpoChecklist}
     <div class="pc-firma">
       <div>Firma del técnico</div>
       <div>Firma del supervisor</div>
