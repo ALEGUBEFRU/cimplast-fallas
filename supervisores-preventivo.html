@@ -1594,8 +1594,8 @@ async function submitCerrar(){
     btn.disabled=true; btn.textContent='Cerrando…';
   }
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody(body))});
-    const d=await r.json(); if(d.ok===false) throw new Error(d.error);
+    const d=await window.CIMPLAST_DATA.apiPost(body, 2);
+    if(d.ok===false) throw new Error(d.error);
     showToast('OT '+otActual.NroOT+(anulando?' anulada':' cerrada')); closeModal('modalCerrar');
     setTimeout(recargar, 1500);
   }catch(e){ showToast('Error: '+e.message,'err'); }
