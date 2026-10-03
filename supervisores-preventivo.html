@@ -547,9 +547,9 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 
   <div class="filters">
     <span class="f-label">Período</span>
-    <input type="date" class="f-in" id="fDesde" onchange="aplicarFiltros()">
+    <input type="date" class="f-in" id="fDesde" onchange="recargar()">
     <span style="color:var(--muted);font-size:12px">→</span>
-    <input type="date" class="f-in" id="fHasta" onchange="aplicarFiltros()">
+    <input type="date" class="f-in" id="fHasta" onchange="recargar()">
     <span class="f-sep"></span>
     <select class="f-in" id="fPlanta" onchange="aplicarFiltros()"><option value="">Todas las plantas</option></select>
     <select class="f-in" id="fTecnico" onchange="aplicarFiltros()"><option value="">Todos los técnicos</option></select>
@@ -1002,9 +1002,15 @@ async function recargar(){
   const icon=document.getElementById('refreshIcon');
   icon.classList.add('spinning');
   try{
+    const desde=document.getElementById('fDesde').value, hasta=document.getElementById('fHasta').value;
+    // accion=ots solo trae del servidor las OT abiertas/en curso (sin límite de fecha,
+    // siempre son pocas) + las cerradas/anuladas dentro de este período — evita traer
+    // y serializar el histórico completo (cientos de filas con Checklist JSON pesado)
+    // en cada carga, que era la causa del timeout intermitente al anular OTs.
+    let qsOts='accion=ots'; if(desde) qsOts+='&desde='+encodeURIComponent(desde); if(hasta) qsOts+='&hasta='+encodeURIComponent(hasta);
     const [rf,ro,rp]=await Promise.all([
       D.apiJSON('accion=fallas'),
-      D.apiJSON('accion=ots'),
+      D.apiJSON(qsOts),
       D.apiJSON('accion=planes').catch(()=>null) // no bloquear el Tablero si esto falla — solo se usa para la etiqueta de periodicidad en la tarjeta
     ]);
     fallasTodas=rf.fallas||[]; otsTodas=ro.ots||[]; ultimaCarga=Date.now();
