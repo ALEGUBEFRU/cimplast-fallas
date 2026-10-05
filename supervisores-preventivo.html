@@ -1953,6 +1953,7 @@ function renderPlanes(){
         <button class="plan-btn pbtn-edit" onclick="abrirModalPlan(${D.jsa(p.PlanID)})">✏ Editar</button>
         <button class="plan-btn ${activo?'pbtn-pause':'pbtn-play'}" onclick="togglePlan(${D.jsa(p.PlanID)},${activo})">${activo?'⏸ Pausar':'▶ Activar'}</button>
         <button class="plan-btn pbtn-run" onclick="ejecutarPlanAhoraIndividual(${D.jsa(p.PlanID)},${D.jsa(p.Nombre)})" id="btnRun-${esc(p.PlanID)}">▶ Ejecutar ahora</button>
+        <button class="plan-btn" onclick="imprimirPlan(${D.jsa(p.PlanID)})">🖨 Imprimir plan</button>
         <button class="plan-btn pbtn-del" onclick="confirmarEliminarPlan(${D.jsa(p.PlanID)},${D.jsa(p.Nombre)})">🗑</button>
       </div>
     </div>`;
@@ -1975,6 +1976,7 @@ function renderPlanes(){
         <button class="plan-btn pbtn-edit" onclick="abrirModalPlan(${D.jsa(p.PlanID)})">✏</button>
         <button class="plan-btn ${activo?'pbtn-pause':'pbtn-play'}" onclick="togglePlan(${D.jsa(p.PlanID)},${activo})">${activo?'⏸':'▶'}</button>
         <button class="plan-btn pbtn-run" onclick="ejecutarPlanAhoraIndividual(${D.jsa(p.PlanID)},${D.jsa(p.Nombre)})" title="Ejecutar ahora">▶⚡</button>
+        <button class="plan-btn" onclick="imprimirPlan(${D.jsa(p.PlanID)})" title="Imprimir plan">🖨</button>
         <button class="plan-btn pbtn-del" onclick="confirmarEliminarPlan(${D.jsa(p.PlanID)},${D.jsa(p.Nombre)})">🗑</button>
       </div>
     </div>`;
@@ -2004,6 +2006,7 @@ function _tarjetaPlanCompacta(p){
       <button class="plan-btn pbtn-edit" onclick="abrirModalPlan(${D.jsa(p.PlanID)})">✏ Editar</button>
       <button class="plan-btn ${activo?'pbtn-pause':'pbtn-play'}" onclick="togglePlan(${D.jsa(p.PlanID)},${activo})">${activo?'⏸ Pausar':'▶ Activar'}</button>
       <button class="plan-btn pbtn-run" onclick="ejecutarPlanAhoraIndividual(${D.jsa(p.PlanID)},${D.jsa(p.Nombre)})">▶ Ejecutar ahora</button>
+      <button class="plan-btn" onclick="imprimirPlan(${D.jsa(p.PlanID)})">🖨 Imprimir plan</button>
     </div>
   </div>`;
 }
@@ -2251,6 +2254,64 @@ function esSemanalDiario(o){
   return !!(plan && plan.ModoGeneracion === 'semanal_diario');
 }
 const DIAS_SEMANA_PRINT = ['Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+// Imprime el checklist de un plan directamente (sin que exista una OT todavía).
+function imprimirPlan(planId){
+  const p = planesTodos.find(x => x.PlanID === planId); if(!p) return;
+  let tareas = dedupeTareas(p.Tareas || []);
+  const semanal = p.ModoGeneracion === 'semanal_diario';
+  const intervalo = Number(p.IntervaloNum) || 1;
+  const periodicidad = semanal ? 'PM Semanal — Lunes a Sábado'
+    : 'Inspección ' + (p.Periodicidad === 'semanas' ? (intervalo===1?'Semanal':`Cada ${intervalo} semanas`)
+      : p.Periodicidad === 'meses' ? (intervalo===1?'Mensual':`Cada ${intervalo} meses`)
+      : (intervalo===1?'Diaria':`Cada ${intervalo} días`));
+
+  const cuerpoChecklist = !tareas.length
+    ? '<div style="font-size:12px;color:#888">Sin tareas cargadas en el checklist</div>'
+    : semanal
+    ? `<table class="pc-table">
+        <thead><tr><th style="text-align:left">Tarea</th>${DIAS_SEMANA_PRINT.map(d=>`<th>${d}</th>`).join('')}</tr></thead>
+        <tbody>${tareas.map(t => {
+          const nombre = t.nombre || t;
+          return `<tr><td class="pc-tarea">${esc(nombre)}</td>${DIAS_SEMANA_PRINT.map(()=>`<td class="pc-box-cell"><span class="pc-checkbox"></span></td>`).join('')}</tr>`;
+        }).join('')}</tbody>
+      </table>
+      <div class="pc-obs"><b>Observaciones:</b><div class="pc-obs-line"></div><div class="pc-obs-line"></div></div>`
+    : tareas.map(t => {
+        const nombre = t.nombre || t;
+        const tipo = t.tipo || 'check';
+        if(tipo === 'lectura'){
+          return `<div class="pc-item"><span class="pc-box" style="border-radius:50%"></span><span>${esc(nombre)}: _______ ${esc(t.unidad||'')}</span></div>`;
+        } else if(tipo === 'texto'){
+          return `<div class="pc-item"><span class="pc-box" style="opacity:0"></span><span>${esc(nombre)}: ___________________________</span></div>`;
+        }
+        return `<div class="pc-item"><span class="pc-box"></span><span>${esc(nombre)}</span></div>`;
+      }).join('') + '<div class="pc-obs"><b>Observaciones:</b><div class="pc-obs-line"></div></div>';
+
+  const cont = document.getElementById('printChecklist');
+  cont.innerHTML = `
+    <div class="pc-header">
+      <h1>Cimplast · Checklist de Mantenimiento Preventivo</h1>
+      <div class="sub">Plan: ${esc(p.Nombre)} · Generado el ${new Date().toLocaleDateString('es-PY')}</div>
+      <div class="sub" style="font-weight:700">${esc(periodicidad)}</div>
+    </div>
+    <div class="pc-meta">
+      <div><b>Equipo(s):</b> ${esc((p.Equipos||[]).join(' · ')||'—')}</div>
+      <div><b>Planta:</b> ${esc(p.Planta||'—')}</div>
+      <div><b>Técnico:</b> A asignar</div>
+      <div><b>Fecha:</b> ___/___/______</div>
+      <div><b>Prioridad:</b> ${esc(p.Prioridad||'—')}</div>
+      <div><b>Horas estimadas:</b> ${p.HorasEstimadas?p.HorasEstimadas+' h':'—'}</div>
+    </div>
+    ${cuerpoChecklist}
+    <div class="pc-firma">
+      <div>Firma del técnico</div>
+      <div>Firma del supervisor</div>
+    </div>
+  `;
+  setTimeout(() => window.print(), 150);
+}
+
 function imprimirChecklist(nroOT){
   const o = otsTodas.find(x => x.NroOT === nroOT); if(!o) return;
   let tareas = [];
