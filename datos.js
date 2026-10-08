@@ -610,7 +610,11 @@ window.CIMPLAST_DATA = (function() {
     async cargarCostos() {
       const r = await this.apiJSON('accion=costos');
       if (!r || r.ok === false) throw new Error((r && r.error) || 'No se pudo leer Costos SAP');
-      return r.costos || [];
+      // Backend viejo (sin la acción) o sin la hoja: se lanza error para que la tarjeta
+      // use el costo de las OT en vez de mostrar un 0 engañoso.
+      if (!Array.isArray(r.costos)) throw new Error('El servidor no tiene la acción costos: publicar la versión nueva de Apps Script');
+      if (r.aviso) throw new Error(r.aviso);
+      return r.costos;
     },
 
     // desde/hasta: 'YYYY-MM-DD' (vacíos = sin límite). planta: '' = todas.
@@ -618,7 +622,8 @@ window.CIMPLAST_DATA = (function() {
       const n = v => Number(v) || 0;
       let total = 0, maquina = 0, areas = 0, lineas = 0;
       (costos || []).forEach(c => {
-        const f = String(c.Fecha_Emision || '').slice(0, 10);
+        // Base de imputación: fecha de creación de la llamada de servicio (si no viene, fecha de salida)
+        const f = String(c.Fecha_Creacion_Llamada || c.Fecha_Emision || '').slice(0, 10);
         if (desde && f < desde) return;
         if (hasta && f > hasta) return;
         if (planta && c.Planta !== planta) return;
