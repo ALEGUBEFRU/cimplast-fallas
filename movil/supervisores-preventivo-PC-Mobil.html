@@ -997,7 +997,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalWA')">Cerrar</button><button class="btn-primary" onclick="copyWA()">Copiar texto</button></div>
 </div></div>
 
-<script src="../datos.js?v=20261008"></script>
+<script src="../datos.js?v=20261008c"></script>
 <script>
 const API=window.CIMPLAST_DATA.api, TECNICOS=window.CIMPLAST_DATA.tecnicos, D=window.CIMPLAST_DATA;
 let fallasTodas=[], otsTodas=[], fallaActual=null, otActual=null, ultimaCarga=null;
@@ -1152,7 +1152,7 @@ function renderKPIs(fallas,ots,desde,hasta){
     {k:'Cumplimiento',v:cumpl.toFixed(0),u:'%',n:cerradas.length+' de '+k.validas.length+' OT cerradas'+(k.anuladas.length?' · '+k.anuladas.length+' anuladas excluidas':''),t:tone(cumpl,85,65)},
     {k:'Backlog',v:backlog,u:'',n:'OT abiertas o en curso',t:backlog>10?'var(--danger)':backlog>4?'var(--warn)':'var(--ok)'},
     {k:'Fallas con línea parada',v:parados,u:'',n:equiposParados+' equipo(s) distintos sin concluir',t:parados?'var(--danger)':'var(--ok)'},
-    {k:'Costo del período',v:costo>=1e6?(costo/1e6).toFixed(1)+'M':(costo/1000).toFixed(0)+'k',u:'Gs',n:cs?('SAP · máquinas '+mGs(cs.maquina)+' · gasto de planta '+mGs(cs.planta)):'repuestos y servicios en OT cerradas',t:'var(--accent)'}
+    {k:'Costo del período',v:costo>=1e6?(costo/1e6).toFixed(1)+'M':(costo/1000).toFixed(0)+'k',u:'Gs',n:cs?('SAP · llamadas creadas en el período · máquinas '+mGs(cs.maquina)+' · gasto de planta '+mGs(cs.planta)):'repuestos y servicios en OT cerradas',t:'var(--accent)'}
   ];
   document.getElementById('kpiRow').innerHTML=K.map(x=>
     '<div class="kpi" style="--tone:'+x.t+'"><span class="k">'+x.k+'</span>'
