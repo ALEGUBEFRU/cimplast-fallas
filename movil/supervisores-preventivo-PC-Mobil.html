@@ -970,6 +970,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
         <div class="field"><label>Fecha de cierre</label><div id="dOtFechaCierre" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
       </div>
       <div class="field"><label>Costo (Gs.)</label><div id="dOtCosto" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
+      <div class="field"><label>Costo HHOO (Gs.)</label><div id="dOtHHOO" style="font-size:13px;color:var(--text);padding:6px 0">0 Gs.</div></div>
       <div class="field"><label>Causa raíz / trabajo realizado</label><div id="dOtObsCierre" style="font-size:13px;color:var(--label);padding:6px 0;line-height:1.5;white-space:pre-wrap">—</div></div>
     </div>
   </div>
@@ -997,7 +998,7 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalWA')">Cerrar</button><button class="btn-primary" onclick="copyWA()">Copiar texto</button></div>
 </div></div>
 
-<script src="../datos.js?v=20261008c"></script>
+<script src="../datos.js?v=20261008d"></script>
 <script>
 const API=window.CIMPLAST_DATA.api, TECNICOS=window.CIMPLAST_DATA.tecnicos, D=window.CIMPLAST_DATA;
 let fallasTodas=[], otsTodas=[], fallaActual=null, otActual=null, ultimaCarga=null;
@@ -1141,7 +1142,8 @@ function renderKPIs(fallas,ots,desde,hasta){
   // Costo del período: si existe la hoja "Costos SAP" se suma por fecha de salida de mercadería
   // y por la planta elegida en el filtro; si no, queda el costo cargado en las OT cerradas.
   const cs=costosSAP?D.costoPeriodo(costosSAP,desde||isoShift(-30),hasta||today(),document.getElementById('fPlanta').value):null;
-  const costo=cs?cs.total:k.costo;
+  const hhoo=k.costoHHOO||0;
+  const costo=(cs?cs.total:k.costo)+hhoo;
   const mGs=x=>x>=1e6?(x/1e6).toFixed(1)+'M':(x/1000).toFixed(0)+'k';
 
   const tone=(v,g,y)=>v>=g?'var(--ok)':v>=y?'var(--warn)':'var(--danger)';
@@ -1152,7 +1154,7 @@ function renderKPIs(fallas,ots,desde,hasta){
     {k:'Cumplimiento',v:cumpl.toFixed(0),u:'%',n:cerradas.length+' de '+k.validas.length+' OT cerradas'+(k.anuladas.length?' · '+k.anuladas.length+' anuladas excluidas':''),t:tone(cumpl,85,65)},
     {k:'Backlog',v:backlog,u:'',n:'OT abiertas o en curso',t:backlog>10?'var(--danger)':backlog>4?'var(--warn)':'var(--ok)'},
     {k:'Fallas con línea parada',v:parados,u:'',n:equiposParados+' equipo(s) distintos sin concluir',t:parados?'var(--danger)':'var(--ok)'},
-    {k:'Costo del período',v:costo>=1e6?(costo/1e6).toFixed(1)+'M':(costo/1000).toFixed(0)+'k',u:'Gs',n:cs?('SAP · llamadas creadas en el período · máquinas '+mGs(cs.maquina)+' · gasto de planta '+mGs(cs.planta)):'repuestos y servicios en OT cerradas',t:'var(--accent)'}
+    {k:'Costo del período',v:costo>=1e6?(costo/1e6).toFixed(1)+'M':(costo/1000).toFixed(0)+'k',u:'Gs',n:cs?('SAP + caja chica + servicios · máquinas '+mGs(cs.maquina)+' · planta '+mGs(cs.planta)+' · HHOO '+mGs(hhoo)):'repuestos y servicios en OT cerradas',t:'var(--accent)'}
   ];
   document.getElementById('kpiRow').innerHTML=K.map(x=>
     '<div class="kpi" style="--tone:'+x.t+'"><span class="k">'+x.k+'</span>'
@@ -1399,7 +1401,7 @@ function cardOT(o){
     +(o.FechaProgramada?'<span>'+esc(D.fmtFecha(o.FechaProgramada))+'</span>':'')
     +(o.HorasEstimadas?'<span>'+esc(o.HorasEstimadas)+'h est.</span>':'')
     +(cerrada&&o.HorasReales?'<span>'+esc(o.HorasReales)+'h reales</span>':'')
-    +(cerrada&&o.Costo?'<span>Gs '+num(o.Costo).toLocaleString('es-PY')+'</span>':'')+'</div>'
+    +(cerrada&&o.Costo?'<span>Gs '+num(o.Costo).toLocaleString('es-PY')+'</span>':'')+(cerrada&&o.HorasReales?'<span>HHOO Gs '+num(o.HHOO_Costo).toLocaleString('es-PY')+'</span>':'')+'</div>'
     +'<div class="card-acts">'
     +(o.Estado==='Abierta'?'<button class="card-btn" data-act="programar" data-id="'+esc(o.NroOT)+'">📅 Programar</button>':'')
     +(o.Estado==='En curso'?'<button class="card-btn" data-act="reprogramar" data-id="'+esc(o.NroOT)+'">↩ Reprogramar</button>':'')
@@ -2607,6 +2609,7 @@ function abrirDetalleOT(nroOT){
     document.getElementById('dOtHorasReales').textContent = o.HorasReales ? o.HorasReales + ' h' : '—';
     document.getElementById('dOtFechaCierre').textContent = o.FechaCierre ? D.fmtFecha(o.FechaCierre) : '—';
     document.getElementById('dOtCosto').textContent = o.Costo ? Number(o.Costo).toLocaleString('es-PY') + ' Gs.' : '—';
+    document.getElementById('dOtHHOO').textContent = Number(o.HHOO_Costo||0).toLocaleString('es-PY') + ' Gs.' + (o.HHOO_SinTarifa ? '  (sin tarifa: ' + o.HHOO_SinTarifa + ')' : '');
     document.getElementById('dOtObsCierre').textContent = o.ObservacionesCierre || '—';
   }
   // Buscar foto de la falla asociada
