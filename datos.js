@@ -600,7 +600,8 @@ window.CIMPLAST_DATA = (function() {
         mttr, mtbf, disp, cumpl, nFallas, equiposConFalla, dias: Math.max(1, dias),
         cerradas, conHoras, anuladas, validas,
         backlog: validas.filter(o => o.Estado !== 'Cerrada').length,
-        costo: cerradas.reduce((a, o) => a + n(o.Costo), 0)
+        costo: cerradas.reduce((a, o) => a + n(o.Costo), 0),
+        costoHHOO: cerradas.reduce((a, o) => a + n(o.HHOO_Costo), 0)
       };
     },
 
