@@ -626,10 +626,15 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalWA')">Cerrar</button><button class="btn-primary" onclick="copyWA()">Copiar texto</button></div>
 </div></div>
 
-<script src="datos.js?v=20260929"></script>
+<script src="datos.js?v=20261008"></script>
 <script>
 const API=window.CIMPLAST_DATA.api, TECNICOS=window.CIMPLAST_DATA.tecnicos, D=window.CIMPLAST_DATA;
 let fallasTodas=[], otsTodas=[], fallaActual=null, otActual=null, ultimaCarga=null;
+/* Costos de SAP (hoja "Costos SAP"). null = aún no cargado o sin hoja: la tarjeta usa el costo de las OT */
+let costosSAP=null;
+function cargarCostosSAP(){
+  D.cargarCostos().then(c=>{ costosSAP=c; aplicarFiltros(); }).catch(()=>{});
+}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=n=>Number(n)||0;
 
@@ -674,7 +679,7 @@ async function recargar(){
       D.apiJSON('accion=fallas'),
       D.apiJSON('accion=ots')
     ]);
-    fallasTodas=rf.fallas||[]; otsTodas=ro.ots||[]; ultimaCarga=Date.now();
+    fallasTodas=rf.fallas||[]; otsTodas=ro.ots||[]; ultimaCarga=Date.now(); cargarCostosSAP();
     try{localStorage.setItem('cimplast_sup_cache',JSON.stringify({fallas:fallasTodas,ots:otsTodas,ts:ultimaCarga}))}catch(e){}
     aplicarFiltros();
   }catch(e){
@@ -731,7 +736,11 @@ function renderKPIs(fallas,ots,desde,hasta){
   const detenidas=fallas.filter(f=>(f.Detenido||'').includes('parado')&&f.Estado!=='Concluido');
   const parados=detenidas.length;
   const equiposParados=new Set(detenidas.map(f=>f.Equipo).filter(Boolean)).size;
-  const costo=k.costo;
+  // Costo del período: si existe la hoja "Costos SAP" se suma por fecha de salida de mercadería
+  // y por la planta elegida en el filtro; si no, queda el costo cargado en las OT cerradas.
+  const cs=costosSAP?D.costoPeriodo(costosSAP,desde||isoShift(-30),hasta||today(),document.getElementById('fPlanta').value):null;
+  const costo=cs?cs.total:k.costo;
+  const mGs=x=>x>=1e6?(x/1e6).toFixed(1)+'M':(x/1000).toFixed(0)+'k';
 
   const tone=(v,g,y)=>v>=g?'var(--ok)':v>=y?'var(--warn)':'var(--danger)';
   const K=[
@@ -741,7 +750,7 @@ function renderKPIs(fallas,ots,desde,hasta){
     {k:'Cumplimiento',v:cumpl.toFixed(0),u:'%',n:cerradas.length+' de '+k.validas.length+' OT cerradas'+(k.anuladas.length?' · '+k.anuladas.length+' anuladas excluidas':''),t:tone(cumpl,85,65)},
     {k:'Backlog',v:backlog,u:'',n:'OT abiertas o en curso',t:backlog>10?'var(--danger)':backlog>4?'var(--warn)':'var(--ok)'},
     {k:'Fallas con línea parada',v:parados,u:'',n:equiposParados+' equipo(s) distintos sin concluir',t:parados?'var(--danger)':'var(--ok)'},
-    {k:'Costo del período',v:costo>=1e6?(costo/1e6).toFixed(1)+'M':(costo/1000).toFixed(0)+'k',u:'Gs',n:'repuestos y servicios en OT cerradas',t:'var(--accent)'}
+    {k:'Costo del período',v:costo>=1e6?(costo/1e6).toFixed(1)+'M':(costo/1000).toFixed(0)+'k',u:'Gs',n:cs?('SAP · máquinas '+mGs(cs.maquina)+' · gasto de planta '+mGs(cs.planta)):'repuestos y servicios en OT cerradas',t:'var(--accent)'}
   ];
   document.getElementById('kpiRow').innerHTML=K.map(x=>
     '<div class="kpi" style="--tone:'+x.t+'"><span class="k">'+x.k+'</span>'

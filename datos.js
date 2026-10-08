@@ -604,6 +604,31 @@ window.CIMPLAST_DATA = (function() {
       };
     },
 
+    // ── Costos de mantenimiento desde SAP (hoja "Costos SAP", carga manual mensual) ──
+    // Una fila por línea de salida de mercadería. El costo del período es la suma
+    // por Fecha_Emision (fecha de salida), NO por cierre de OT.
+    async cargarCostos() {
+      const r = await this.apiJSON('accion=costos');
+      if (!r || r.ok === false) throw new Error((r && r.error) || 'No se pudo leer Costos SAP');
+      return r.costos || [];
+    },
+
+    // desde/hasta: 'YYYY-MM-DD' (vacíos = sin límite). planta: '' = todas.
+    costoPeriodo(costos, desde, hasta, planta) {
+      const n = v => Number(v) || 0;
+      let total = 0, maquina = 0, areas = 0, lineas = 0;
+      (costos || []).forEach(c => {
+        const f = String(c.Fecha_Emision || '').slice(0, 10);
+        if (desde && f < desde) return;
+        if (hasta && f > hasta) return;
+        if (planta && c.Planta !== planta) return;
+        const v = n(c.Costo_Total);
+        total += v; lineas++;
+        if (c.Tipo === 'Maquina') maquina += v; else areas += v;
+      });
+      return { total, maquina, planta: areas, lineas };
+    },
+
     equiposDe(planta) {
       return EQUIPOS[planta] || [];
     },
