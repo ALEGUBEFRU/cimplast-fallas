@@ -1425,6 +1425,7 @@ html[data-theme="dark"] .bar.plan{background:#2a3a55}
         <div class="field"><label>Fecha de cierre</label><div id="dOtFechaCierre" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
       </div>
       <div class="field"><label>Costo (Gs.)</label><div id="dOtCosto" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
+      <div class="field"><label>Costo HHOO (Gs.)</label><div id="dOtHHOO" style="font-size:13px;color:var(--text);padding:6px 0">0 Gs.</div></div>
       <div class="field"><label>Causa raíz / trabajo realizado</label><div id="dOtObsCierre" style="font-size:13px;color:var(--label);padding:6px 0;line-height:1.5;white-space:pre-wrap">—</div></div>
     </div>
   </div>
@@ -1452,7 +1453,7 @@ html[data-theme="dark"] .bar.plan{background:#2a3a55}
   <div class="modal-f"><button class="btn-secondary" onclick="closeModal('modalWA')">Cerrar</button><button class="btn-primary" onclick="copyWA()">Copiar texto</button></div>
 </div></div>
 
-<script src="../datos.js?v=20260929"></script>
+<script src="../datos.js?v=20261008d"></script>
 <script>
 /* ═══ Correcciones de datos (auditoría vs. base real) — solo afectan a esta app ═══ */
 (function(){
@@ -1558,7 +1559,7 @@ async function recargar(){
       D.apiJSON('accion=fallas'),
       D.apiJSON('accion=ots')
     ]);
-    fallasTodas=rf.fallas||[]; otsTodas=ro.ots||[]; ultimaCarga=Date.now();
+    fallasTodas=rf.fallas||[]; otsTodas=ro.ots||[]; ultimaCarga=Date.now(); cargarCostosSAP();
     try{localStorage.setItem('cimplast_sup_cache',JSON.stringify({fallas:fallasTodas,ots:otsTodas,ts:ultimaCarga}))}catch(e){}
     aplicarFiltros();
   }catch(e){
@@ -1566,6 +1567,11 @@ async function recargar(){
   }finally{ icon.classList.remove('spinning'); hideLoading(); }
 }
 
+/* Costos de SAP (hoja "Costos SAP"). null = aún no cargado o sin hoja: la tarjeta usa el costo de las OT */
+let costosSAP=null;
+function cargarCostosSAP(){
+  D.cargarCostos().then(c=>{ costosSAP=c; aplicarFiltros(); }).catch(()=>{});
+}
 /* ══ FILTROS ══ */
 let dt;
 function debounceFiltros(){ clearTimeout(dt); dt=setTimeout(aplicarFiltros,180); }
@@ -1622,7 +1628,11 @@ function renderKPIs(fallas,ots,desde,hasta){
   const detenidas=fallas.filter(f=>(f.Detenido||'').includes('parado')&&f.Estado!=='Concluido');
   const parados=detenidas.length;
   const equiposParados=new Set(detenidas.map(f=>f.Equipo).filter(Boolean)).size;
-  const costo=k.costo;
+  // Costo del período: SAP + caja chica + servicios (hoja "Costos SAP") por la planta del filtro, más HHOO de OT cerradas.
+  const cs=costosSAP?D.costoPeriodo(costosSAP,desde||isoShift(-30),hasta||today(),document.getElementById('fPlanta').value):null;
+  const hhoo=k.costoHHOO||0;
+  const costo=(cs?cs.total:k.costo)+hhoo;
+  const mGs=x=>x>=1e6?(x/1e6).toFixed(1)+'M':(x/1000).toFixed(0)+'k';
 
   // Período anterior equivalente (mismo N de días, inmediatamente antes) para tendencia
   const fDesdeD=new Date(desde||isoShift(-30));
@@ -1643,7 +1653,7 @@ function renderKPIs(fallas,ots,desde,hasta){
     {k:'Cumplimiento',v:cumpl.toFixed(0),u:'%',n:cerradas.length+' de '+k.validas.length+' OT cerradas'+(k.anuladas.length?' · '+k.anuladas.length+' anuladas excluidas':''),t:tone(cumpl,85,65),ic:'✅',trend:kAnt?calcTrend(cumpl,kAnt.cumpl):null},
     {k:'Backlog',v:backlog,u:'',n:'OT abiertas o en curso',t:backlog>10?'var(--danger)':backlog>4?'var(--warn)':'var(--ok)',ic:'📋',trend:kAnt?calcTrend(backlog,kAnt.backlog,true):null},
     {k:'Fallas con línea parada',v:parados,u:'',n:equiposParados+' equipo(s) distintos sin concluir',t:parados?'var(--danger)':'var(--ok)',ic:'⚠️'},
-    (D.hayCostos(typeof otsTodas!=='undefined'?otsTodas:ots)?{k:'Costo del período',v:costo>=1e6?(costo/1e6).toFixed(1)+'M':(costo/1000).toFixed(0)+'k',u:'Gs',n:'repuestos y servicios en OT cerradas',t:'var(--accent)',ic:'💰',trend:kAnt?calcTrend(costo,kAnt.costo,true):null}:{k:'Costo del período',v:'—',u:'',n:'el costo no se carga en las OT',t:'var(--border-hi)',ic:'💰'})
+    ((cs||D.hayCostos(typeof otsTodas!=='undefined'?otsTodas:ots))?{k:'Costo del período',v:costo>=1e6?(costo/1e6).toFixed(1)+'M':(costo/1000).toFixed(0)+'k',u:'Gs',n:cs?('SAP + caja chica + servicios · máquinas '+mGs(cs.maquina)+' · planta '+mGs(cs.planta)+' · HHOO '+mGs(hhoo)):'repuestos y servicios en OT cerradas',t:'var(--accent)',ic:'💰',trend:kAnt?calcTrend(costo,kAnt.costo,true):null}:{k:'Costo del período',v:'—',u:'',n:'el costo no se carga en las OT',t:'var(--border-hi)',ic:'💰'})
   ];
   document.getElementById('kpiRow').innerHTML=K.map(x=>
     '<div class="kpi" style="--tone:'+x.t+'">'
@@ -1890,7 +1900,7 @@ function cardOT(o){
     +(o.FechaProgramada?'<span>'+esc(D.fmtFecha(o.FechaProgramada))+'</span>':'')
     +(o.HorasEstimadas?'<span>'+esc(o.HorasEstimadas)+'h est.</span>':'')
     +(cerrada&&o.HorasReales?'<span>'+esc(o.HorasReales)+'h reales</span>':'')
-    +(cerrada&&o.Costo?'<span>Gs '+num(o.Costo).toLocaleString('es-PY')+'</span>':'')+'</div>'
+    +(cerrada&&o.Costo?'<span>Gs '+num(o.Costo).toLocaleString('es-PY')+'</span>':'')+(cerrada&&o.HorasReales?'<span>HHOO Gs '+num(o.HHOO_Costo).toLocaleString('es-PY')+'</span>':'')+'</div>'
     +'<div class="card-acts">'
     +(o.Estado==='Abierta'?'<button class="card-btn" data-act="programar" data-id="'+esc(o.NroOT)+'">📅 Programar</button>':'')
     +(o.Estado==='En curso'?'<button class="card-btn" data-act="reprogramar" data-id="'+esc(o.NroOT)+'">↩ Reprogramar</button>':'')
@@ -2414,7 +2424,9 @@ function renderPlanesCronograma(){
     }
     const base = new Date((p.UltimaGeneracion || p.FechaInicio)+'T00:00:00');
     const intervalo = Number(p.IntervaloNum)||1;
-    const diasCiclo = p.Periodicidad==='semanas' ? intervalo*7
+    // Plan "semanal_diario": el backend fuerza ciclo fijo de 7 días (1 OT semanal Lun-Sáb).
+    const diasCiclo = p.ModoGeneracion==='semanal_diario' ? 7
+                     : p.Periodicidad==='semanas' ? intervalo*7
                      : p.Periodicidad==='meses' ? intervalo*30
                      : intervalo;
     const horasCiclo = diasCiclo * 24;
@@ -3152,6 +3164,7 @@ function abrirDetalleOT(nroOT){
     document.getElementById('dOtHorasReales').textContent = o.HorasReales ? o.HorasReales + ' h' : '—';
     document.getElementById('dOtFechaCierre').textContent = o.FechaCierre ? D.fmtFecha(o.FechaCierre) : '—';
     document.getElementById('dOtCosto').textContent = o.Costo ? Number(o.Costo).toLocaleString('es-PY') + ' Gs.' : '—';
+    document.getElementById('dOtHHOO').textContent = Number(o.HHOO_Costo||0).toLocaleString('es-PY') + ' Gs.' + (o.HHOO_SinTarifa ? '  (sin tarifa: ' + o.HHOO_SinTarifa + ')' : '');
     document.getElementById('dOtObsCierre').textContent = o.ObservacionesCierre || '—';
   }
   // Buscar foto de la falla asociada
