@@ -1588,7 +1588,7 @@ function aplicarFiltros(){
     return true;
   });
   const ots=otsTodas.filter(o=>{
-    if(!inRange((o.FechaProgramada||o.FechaCreacion||'').toString().slice(0,10))) return false;
+    if(!inRange(D.fCierre(o))) return false; // fecha efectiva: cierre (o programada/creación si no hay), igual que el tablero
     if(planta&&o.Planta!==planta) return false;
     if(tec&&!D.tieneTecnico(o.Tecnico,tec)) return false;
     if(prio&&o.Prioridad!==prio) return false;
@@ -3654,7 +3654,7 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
   window.renderAnalitica=function(){
     const h=hoy(), ini=addD(h,-(anaDias-1));
     const fal=porPlanta(fAll()).filter(f=>{const d=f10(f.Fecha);return d>=ini&&d<=h;});
-    const ots=porPlanta(oAll()).filter(o=>{const d=f10(o.FechaProgramada||o.FechaCreacion);return d>=ini&&d<=h;});
+    const ots=porPlanta(oAll()).filter(o=>{const d=D.fCierre(o);return d>=ini&&d<=h;});
     const k=D.kpis(fal,ots,anaDias);
     document.getElementById('anaKpis').innerHTML=[
       mini('Fallas reportadas',k.nFallas,'',k.equiposConFalla+' equipos afectados'),
@@ -3692,7 +3692,7 @@ setInterval(()=>{ if(navigator.onLine&&!document.hidden) recargar() },120000);
   const semanaISO=d=>{const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const dn=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-dn);const y=new Date(Date.UTC(t.getUTCFullYear(),0,1));return Math.ceil(((t-y)/86400000+1)/7);};
   const trendTxt=(a,b,inv,suf)=>{if(b==null)return '';const d=a-b;if(Math.abs(d)<0.05)return '<div class="s">= período anterior</div>';const good=inv?d<0:d>0;return '<div class="s '+(good?'up':'down')+'">'+(d>0?'+':'')+(Number.isInteger(d)?d:d.toFixed(1))+(suf||'')+' vs. anterior</div>';};
   function rango(ini,fin){const fal=porPlanta(fAll()).filter(f=>{const d=f10(f.Fecha);return d>=ini&&d<=fin;});
-    const ots=porPlanta(oAll()).filter(o=>{const d=f10(o.FechaProgramada||o.FechaCreacion);return d>=ini&&d<=fin;});return {fal,ots,k:D.kpis(fal,ots,dDiff(fin,ini)+1)};}
+    const ots=porPlanta(oAll()).filter(o=>{const d=D.fCierre(o);return d>=ini&&d<=fin;});return {fal,ots,k:D.kpis(fal,ots,dDiff(fin,ini)+1)};}
   window.renderReportes=function(){ if(repActual==='op') renderRepOp(); else renderRepEj(); };
 
   function renderRepOp(){
