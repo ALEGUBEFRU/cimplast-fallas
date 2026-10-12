@@ -704,7 +704,7 @@ function aplicarFiltros(){
     return true;
   });
   const ots=otsTodas.filter(o=>{
-    if(!inRange((o.FechaProgramada||o.FechaCreacion||'').toString().slice(0,10))) return false;
+    if(!inRange((o.FechaCierre||o.FechaProgramada||o.FechaCreacion||'').toString().slice(0,10))) return false; // fecha efectiva: cierre (o programada/creación si no hay), igual que el tablero
     if(planta&&o.Planta!==planta) return false;
     if(tec&&!D.tieneTecnico(o.Tecnico,tec)) return false;
     if(prio&&o.Prioridad!==prio) return false;
