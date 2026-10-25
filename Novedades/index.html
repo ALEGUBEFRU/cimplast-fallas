@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f3a2e">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Novedades Mantenimiento</title>
+<style>
+:root{
+  --bg:#eef1ee; --card:#fff; --ink:#17221d; --ink2:#5a6861; --line:#d4dbd6; --top:#1f3a2e; --topink:#f2f5f1;
+  --ok:#2d8a52; --amb:#b97f00; --rojo:#cc4a17; --azul:#2f5f86; --gris:#8a968f;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#111714; --card:#1b231f; --ink:#e7ece8; --ink2:#a4b1aa; --line:#2d3a33; --top:#16291f; --topink:#e7ece8;
+  --ok:#5cc583; --amb:#e8b23c; --rojo:#f08050; --azul:#7fb0d8; --gris:#7d8a83; color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+button{font:inherit;color:inherit;cursor:pointer}
+header{position:sticky;top:0;z-index:5;background:var(--top);color:var(--topink);padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px}
+.fila1{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{font-size:19px;margin:0;font-weight:700}
+.area{font-size:13px;opacity:.85}
+.btn-act{background:rgba(255,255,255,.14);border:0;border-radius:10px;padding:9px 12px;color:var(--topink);font-weight:600;font-size:14px}
+.estado{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:13px}
+.pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border-radius:20px;padding:3px 10px}
+.pill i{width:8px;height:8px;border-radius:50%;background:#7ddc9c}
+.pill.off i{background:#f2a33a}
+.pill.cola{background:#f2a33a;color:#1b1206;font-weight:700}
+main{padding:12px 12px 0;display:flex;flex-direction:column;gap:10px;max-width:640px;margin:0 auto}
+.resumen{font-size:13.5px;color:var(--ink2);padding:2px 4px}
+.card{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--gris);border-radius:12px;padding:12px 12px 12px 12px;display:flex;flex-direction:column;gap:6px;text-align:left;width:100%}
+.card.det{border-left-color:var(--rojo)}
+.card .t{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.card .eq{font-weight:700;font-size:16.5px}
+.card .dias{font-size:13px;color:var(--ink2);white-space:nowrap}
+.card .sin{font-size:14px;color:var(--ink2);overflow-wrap:anywhere}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;border-radius:12px;padding:2px 9px;border:1px solid var(--line);color:var(--ink2)}
+.chip.det{border-color:var(--rojo);color:var(--rojo);font-weight:600}
+.nov{font-size:13.5px;border-radius:8px;padding:6px 9px;background:var(--bg)}
+.nov b{font-weight:700}
+.nov.falta{color:var(--amb);font-weight:600;background:transparent;border:1px dashed var(--amb)}
+.nov.pend{border:1px dashed var(--gris)}
+.nov.ger{border:2px solid var(--rojo)}
+.vacio{text-align:center;color:var(--ink2);padding:40px 10px}
+.pie{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,var(--bg) 30%);display:flex;justify-content:center}
+.pie button{width:100%;max-width:640px;background:var(--card);border:2px solid var(--top);border-radius:12px;padding:13px;font-weight:700}
+/* hoja de carga */
+.velo{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.hoja{background:var(--card);width:100%;max-width:640px;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;max-height:92vh;overflow:auto}
+.hoja h2{margin:0;font-size:18px}
+.hoja .sub{font-size:14px;color:var(--ink2);margin:-6px 0 0}
+.opc{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opc button{border:2px solid var(--line);background:var(--bg);border-radius:12px;padding:14px 8px;font-weight:600;font-size:15px;min-height:56px}
+.opc button[aria-pressed="true"]{border-color:var(--top);background:var(--top);color:var(--topink)}
+.opc button.res[aria-pressed="true"]{border-color:var(--ok);background:var(--ok);color:#fff}
+.ger{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:12px;padding:12px;font-weight:600;background:var(--bg);text-align:left}
+.ger[aria-pressed="true"]{border-color:var(--rojo);color:var(--rojo)}
+.ger .caja{width:24px;height:24px;border-radius:6px;border:2px solid currentColor;display:grid;place-items:center;flex:none}
+.ger[aria-pressed="true"] .caja::after{content:"✓";font-weight:800}
+textarea,input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:10px}
+textarea{min-height:70px;resize:vertical}
+label{font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:5px}
+.acc{display:flex;gap:8px}
+.acc button{flex:1;border-radius:12px;padding:14px;font-weight:700;border:0}
+.prim{background:var(--top);color:var(--topink)}
+.prim:disabled{opacity:.4}
+.sec{background:var(--bg);border:2px solid var(--line)!important}
+.aviso{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:30;max-width:90vw}
+.err{color:var(--rojo);font-size:14px}
+:focus-visible{outline:3px solid var(--azul);outline-offset:2px}
+</style>
+</head>
+<body>
+<header>
+  <div class="fila1">
+    <div><h1>Novedades</h1><div class="area" id="area"></div></div>
+    <button class="btn-act" id="btnAct" type="button">Actualizar</button>
+  </div>
+  <div class="estado" id="estado"></div>
+</header>
+<main id="lista"></main>
+<div class="pie"><button type="button" id="btnGeneral">+ Novedad general (sin falla)</button></div>
+<div id="capa"></div>
+<div id="aviso" class="aviso" hidden></div>
+
+<script>
+"use strict";
+const ESTADOS = ["En reparación", "Falta repuesto", "Falta personal", "Espera tercero", "En observación", "Resuelta"];
+const AREAS = ["Plantas 3-4-5", "Titese (Planta 6)", "Matricería"];
+const K = {cfg: "nov_cfg", cola: "nov_cola", lista: "nov_lista"};
+
+// ── almacenamiento local (todo protegido: si falla, la app sigue) ──
+function leer(k, def){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e){ return def; } }
+function guardar(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+let cfg = leer(K.cfg, null);
+let cola = leer(K.cola, []);
+let lista = leer(K.lista, null);
+let enviando = false, cargando = false, ultimoError = "";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const hhmm = d => new Date(d).toLocaleTimeString("es-PY", {hour:"2-digit", minute:"2-digit"});
+const esHoy = d => new Date(d).toDateString() === new Date().toDateString();
+function hace(d){
+  const m = Math.round((Date.now() - new Date(d)) / 60000);
+  if (m < 60) return `hace ${Math.max(m,0)} min`;
+  const h = Math.round(m / 60); if (h < 24) return `hace ${h} h`;
+  return `hace ${Math.round(h / 24)} d`;
+}
+function cuando(d){ return esHoy(d) ? `hoy ${hhmm(d)}` : new Date(d).toLocaleDateString("es-PY", {day:"2-digit", month:"2-digit"}) + " " + hhmm(d); }
+function aviso(t){ const a = $("aviso"); a.textContent = t; a.hidden = false; clearTimeout(aviso.t); aviso.t = setTimeout(() => a.hidden = true, 2600); }
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+// ── red ──
+async function traerLista(){
+  if (!cfg || cargando) return;
+  cargando = true; pintarEstado();
+  try {
+    const u = `${cfg.url}?accion=lista&clave=${encodeURIComponent(cfg.clave)}&area=${encodeURIComponent(cfg.area)}`;
+    const r = await fetch(u, {cache: "no-store"});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || "Error del servidor");
+    lista = j; guardar(K.lista, lista); ultimoError = "";
+  } catch(e){ ultimoError = navigator.onLine ? "No se pudo actualizar: " + e.message : ""; }
+  cargando = false; pintar();
+}
+async function enviarCola(){
+  if (!cfg || enviando || !cola.length) return;
+  enviando = true; pintarEstado();
+  try {
+    const body = JSON.stringify({clave: cfg.clave, usuario: cfg.usuario, area: cfg.area, items: cola.slice(0, 50)});
+    const r = await fetch(cfg.url, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || "Error del servidor");
+    const ok = new Set(j.recibidos || []);
+    cola = cola.filter(x => !ok.has(x.uid)); guardar(K.cola, cola);
+    if (ok.size) aviso(ok.size === 1 ? "Novedad enviada" : `${ok.size} novedades enviadas`);
+    ultimoError = "";
+  } catch(e){ ultimoError = navigator.onLine ? "No se pudo enviar: " + e.message : ""; }
+  enviando = false; pintar();
+  if (cola.length && navigator.onLine && !ultimoError) enviarCola();
+}
+async function sincronizar(){ await enviarCola(); await traerLista(); }
+
+// ── pantalla ──
+function pintarEstado(){
+  if (!cfg) { $("estado").innerHTML = ""; return; }
+  $("area").textContent = `${cfg.area} · ${cfg.usuario}`;
+  const on = navigator.onLine;
+  let h = `<span class="pill ${on ? "" : "off"}"><i></i>${on ? "Con señal" : "Sin señal: se guarda en el teléfono"}</span>`;
+  if (cola.length) h += `<span class="pill cola">${cola.length} por enviar</span>`;
+  if (enviando) h += `<span class="pill">Enviando…</span>`;
+  else if (cargando) h += `<span class="pill">Actualizando…</span>`;
+  else if (lista) h += `<span class="pill">Lista de ${cuando(lista.generado)}</span>`;
+  $("estado").innerHTML = h;
+}
+function novedadDe(it){
+  const loc = cola.filter(x => x.fallaId === it.id).sort((a, b) => a.cargado < b.cargado ? 1 : -1)[0];
+  if (loc) return {...loc, pendiente: true};
+  return it.novedad;
+}
+function pintar(){
+  pintarEstado();
+  if (!cfg) return;
+  const el = $("lista");
+  if (!lista){ el.innerHTML = `<p class="vacio">${navigator.onLine ? "Cargando la lista…" : "Sin señal. La lista aparece la primera vez que haya señal."}</p>`; return; }
+  const items = lista.items || [];
+  let sinHoy = 0;
+  const cards = items.map(it => {
+    const n = novedadDe(it);
+    const det = /^(Sí|Parcial)/.test(it.detenido);
+    let nov;
+    if (n && esHoy(n.cargado)) {
+      const cls = n.pendiente ? "pend" : (n.gerencia ? "ger" : "");
+      nov = `<div class="nov ${cls}"><b>${esc(n.estado)}</b>${n.gerencia ? " · Necesita a la Gerencia" : ""} · ${cuando(n.cargado)}${n.pendiente ? " · por enviar" : ""}${n.nota ? `<br>${esc(n.nota)}` : ""}</div>`;
+    } else {
+      sinHoy++;
+      nov = `<div class="nov falta">Sin novedad hoy${n ? ` · última: ${esc(n.estado)} (${cuando(n.cargado)})` : ""}</div>`;
+    }
+    if (n && n.estado === "Resuelta" && esHoy(n.cargado)) nov += `<div class="chips"><span class="chip">Falta cerrar en el CMMS</span></div>`;
+    return `<button class="card ${det ? "det" : ""}" type="button" data-id="${esc(it.id)}">
+      <div class="t"><span class="eq">${esc(it.equipo)}</span><span class="dias">${esc(it.planta)} · ${hace(it.desde)}</span></div>
+      <div class="sin">${esc(it.sintoma)}</div>
+      <div class="chips">${det ? `<span class="chip det">${esc(it.detenido)}</span>` : ""}${it.ot ? `<span class="chip">${esc(it.ot)}</span>` : `<span class="chip">Sin OT</span>`}${it.subestado ? `<span class="chip">${esc(it.subestado)}</span>` : ""}</div>
+      ${nov}</button>`;
+  }).join("");
+  const gen = cola.filter(x => !x.fallaId).length;
+  el.innerHTML = (ultimoError ? `<p class="err">${esc(ultimoError)}</p>` : "") +
+    `<div class="resumen">${items.length} fallas abiertas · <b>${sinHoy} sin novedad hoy</b>${gen ? ` · ${gen} novedad general por enviar` : ""}</div>` +
+    (cards || `<p class="vacio">No hay fallas abiertas en ${esc(cfg.area)}.</p>`);
+}
+
+// ── hoja de carga ──
+function abrirCarga(it){
+  let estado = "", gerencia = false;
+  const titulo = it ? esc(it.equipo) : "Novedad general";
+  const sub = it ? esc(it.sintoma) : "Algo que no está ligado a una falla: falta de personal, un problema de la planta, un pedido.";
+  const opciones = it ? ESTADOS : ["Falta personal", "Falta repuesto", "Pedido", "Otro"];
+  $("capa").innerHTML = `<div class="velo" id="velo"><div class="hoja" role="dialog" aria-modal="true" aria-label="Cargar novedad">
+    <h2>${titulo}</h2><p class="sub">${sub}</p>
+    <div class="opc" id="opc">${opciones.map(e => `<button type="button" class="${e === "Resuelta" ? "res" : ""}" aria-pressed="false" data-e="${esc(e)}">${esc(e)}</button>`).join("")}</div>
+    <button type="button" class="ger" id="ger" aria-pressed="false"><span class="caja"></span>Necesito a la Gerencia (no lo puedo resolver)</button>
+    <label>Nota (opcional)<textarea id="nota" maxlength="300" placeholder="Ej.: llega el rodamiento mañana; falta un técnico en el turno noche"></textarea></label>
+    <div class="acc"><button type="button" class="sec" id="cancelar">Cancelar</button><button type="button" class="prim" id="guardar" disabled>Guardar</button></div>
+  </div></div>`;
+  const listo = () => $("guardar").disabled = !(estado || (!it && $("nota").value.trim()));
+  $("opc").onclick = e => { const b = e.target.closest("button"); if (!b) return;
+    estado = b.dataset.e; $("opc").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); listo(); };
+  $("ger").onclick = () => { gerencia = !gerencia; $("ger").setAttribute("aria-pressed", String(gerencia)); };
+  $("nota").oninput = listo;
+  $("cancelar").onclick = cerrar;
+  $("velo").onclick = e => { if (e.target.id === "velo") cerrar(); };
+  $("guardar").onclick = () => {
+    cola.push({uid: uid(), cargado: new Date().toISOString(), fallaId: it ? it.id : "", equipo: it ? it.equipo : "", planta: it ? it.planta : "",
+      ot: it ? it.ot : "", estado: estado || "Nota", gerencia, nota: $("nota").value.trim()});
+    guardar(K.cola, cola); cerrar(); pintar();
+    aviso(navigator.onLine ? "Guardado. Enviando…" : "Guardado en el teléfono. Se envía al volver la señal.");
+    enviarCola();
+  };
+}
+function cerrar(){ $("capa").innerHTML = ""; }
+
+// ── configuración (primera vez) ──
+function pantallaConfig(){
+  const c = cfg || {url: "", clave: "", usuario: "", area: "Plantas 3-4-5"};
+  $("lista").innerHTML = `<div class="hoja" style="border-radius:12px;max-height:none">
+    <h2>Configurar la app</h2><p class="sub">Se hace una sola vez. Los datos los da Gerencia Técnica.</p>
+    <label>Su nombre<input id="cUsu" value="${esc(c.usuario)}" autocomplete="name"></label>
+    <label>Área<select id="cArea" style="font:inherit;padding:10px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink)">${AREAS.map(a => `<option ${a === c.area ? "selected" : ""}>${a}</option>`).join("")}</select></label>
+    <label>Dirección del servicio<input id="cUrl" value="${esc(c.url)}" placeholder="https://script.google.com/macros/s/…/exec" inputmode="url"></label>
+    <label>Clave<input id="cClave" value="${esc(c.clave)}" autocomplete="off"></label>
+    <p class="err" id="cErr"></p>
+    <div class="acc"><button type="button" class="prim" id="cOk">Guardar y entrar</button></div></div>`;
+  $("cOk").onclick = () => {
+    const n = {usuario: $("cUsu").value.trim(), area: $("cArea").value, url: $("cUrl").value.trim(), clave: $("cClave").value.trim()};
+    if (!n.usuario || !n.clave || !/^https:\/\//.test(n.url)) { $("cErr").textContent = "Complete nombre, dirección (https://…) y clave."; return; }
+    if (cfg && cfg.area !== n.area) { lista = null; guardar(K.lista, null); }
+    cfg = n; guardar(K.cfg, cfg); pintar(); sincronizar();
+  };
+}
+
+// ── eventos ──
+$("lista").addEventListener("click", e => {
+  const b = e.target.closest(".card"); if (!b || !lista) return;
+  const it = (lista.items || []).find(x => x.id === b.dataset.id); if (it) abrirCarga(it);
+});
+$("btnGeneral").onclick = () => cfg && abrirCarga(null);
+$("btnAct").onclick = () => cfg ? sincronizar() : null;
+$("area").addEventListener("click", pantallaConfig);  // tocar el área/nombre abre la configuración; la cola no se pierde
+window.addEventListener("online", () => { pintar(); sincronizar(); });
+window.addEventListener("offline", pintar);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) sincronizar(); });
+setInterval(() => { if (navigator.onLine) sincronizar(); }, 120000);
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+if (!cfg) pantallaConfig(); else { pintar(); sincronizar(); }
+</script>
+</body>
+</html>
