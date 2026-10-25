@@ -1,5 +1,5 @@
 // sw.js — permite abrir la app sin señal. Guarda solo los archivos de la app, nunca los datos.
-const VERSION = "novedades-v2";
+const VERSION = "novedades-v3";
 const ARCHIVOS = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
