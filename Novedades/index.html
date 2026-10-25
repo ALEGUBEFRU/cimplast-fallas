@@ -16,6 +16,7 @@
 @media (prefers-color-scheme: dark){:root{
   --bg:#111714; --card:#1b231f; --ink:#e7ece8; --ink2:#a4b1aa; --line:#2d3a33; --top:#16291f; --topink:#e7ece8;
   --ok:#5cc583; --amb:#e8b23c; --rojo:#f08050; --azul:#7fb0d8; --gris:#7d8a83; color-scheme:dark}}
+[hidden]{display:none!important}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
@@ -126,7 +127,7 @@ async function traerLista(){
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || "Error del servidor");
     lista = j; guardar(K.lista, lista); ultimoError = "";
-  } catch(e){ ultimoError = navigator.onLine ? "No se pudo actualizar: " + e.message : ""; }
+  } catch(e){ ultimoError = navigator.onLine ? "No se pudo actualizar: " + (e.message === "Failed to fetch" ? "el navegador bloqueó la conexión con Google (revisar dirección del servicio o permisos)" : e.message) : ""; }
   cargando = false; pintar();
 }
 async function enviarCola(){
@@ -166,9 +167,11 @@ function novedadDe(it){
 }
 function pintar(){
   pintarEstado();
+  document.querySelector(".pie").hidden = !cfg;
   if (!cfg) return;
   const el = $("lista");
-  if (!lista){ el.innerHTML = `<p class="vacio">${navigator.onLine ? "Cargando la lista…" : "Sin señal. La lista aparece la primera vez que haya señal."}</p>`; return; }
+  if (!lista){ el.innerHTML = ultimoError ? `<p class="err">${esc(ultimoError)}</p><p class="vacio">Toque «Actualizar» para reintentar, o toque su nombre arriba para revisar la configuración.</p>`
+    : `<p class="vacio">${!navigator.onLine ? "Sin señal. La lista aparece la primera vez que haya señal." : (cargando ? "Cargando la lista…" : "Toque «Actualizar» para cargar la lista.")}</p>`; return; }
   const items = lista.items || [];
   let sinHoy = 0;
   const cards = items.map(it => {
@@ -236,6 +239,7 @@ function pantallaConfig(){
     <label>Clave<input id="cClave" value="${esc(c.clave)}" autocomplete="off"></label>
     <p class="err" id="cErr"></p>
     <div class="acc"><button type="button" class="prim" id="cOk">Guardar y entrar</button></div></div>`;
+  document.querySelector(".pie").hidden = true;
   $("cOk").onclick = () => {
     const n = {usuario: $("cUsu").value.trim(), area: $("cArea").value, url: $("cUrl").value.trim(), clave: $("cClave").value.trim()};
     if (!n.usuario || !n.clave || !/^https:\/\//.test(n.url)) { $("cErr").textContent = "Complete nombre, dirección (https://…) y clave."; return; }
