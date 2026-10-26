@@ -2,7 +2,7 @@
 // Convive con el sw.js del CMMS (raíz del sitio): usa caches con prefijo "novedades-app-" y solo borra las suyas.
 // Cloudflare redirige /x.html → /x: no se precachea index.html ni se guardan respuestas redirigidas.
 const PREFIJO = "novedades-app-";
-const VERSION = PREFIJO + "v4";
+const VERSION = PREFIJO + "v5";
 const ARCHIVOS = ["./", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
