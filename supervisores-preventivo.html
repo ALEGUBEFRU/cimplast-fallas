@@ -876,7 +876,9 @@ select.f-in{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
       <div class="field"><label>Tipo</label><div id="dOtTipo" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
       <div class="field"><label>Prioridad</label><div id="dOtPrio" style="font-size:13px;font-weight:700;padding:6px 0">—</div></div>
     </div>
-    <div class="field"><label>Técnico(s)</label><div id="dOtTecnico" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
+    <div class="field"><label>Técnico(s)</label><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div id="dOtTecnico" style="font-size:13px;color:var(--text);padding:6px 0">—</div><button type="button" id="dOtBtnTec" class="btn-clear" style="padding:3px 10px" onclick="toggleEditarTecnicoOT()">✏️ Cambiar</button></div>
+      <div id="dOtTecEdit" style="display:none;margin-top:6px"><select id="dOtTecnicoSel" multiple style="height:130px;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;padding:6px;outline:none"></select><small style="color:var(--muted);font-size:11px">Ctrl/Cmd para seleccionar más de uno</small>
+      <div style="display:flex;gap:8px;margin-top:6px"><button type="button" class="btn-primary" id="dOtBtnTecGuardar" style="padding:6px 14px;font-size:12px" onclick="guardarTecnicoOT()">Guardar</button><button type="button" class="btn-clear" style="padding:6px 14px" onclick="toggleEditarTecnicoOT(false)">Cancelar</button></div></div></div>
     <div class="field"><label>Descripción</label><div id="dOtDesc" style="font-size:13px;color:var(--label);padding:6px 0;line-height:1.5">—</div></div>
     <div class="row-2">
       <div class="field"><label>Fecha programada</label><div id="dOtFechaProg" style="font-size:13px;color:var(--text);padding:6px 0">—</div></div>
@@ -1430,6 +1432,43 @@ async function guardarSubEstadoOT(nroOT, subEstado){
     if(item) item.SubEstado=prev; aplicarFiltros();
     showToast('No se pudo actualizar: '+err.message,'err');
   }
+}
+
+/* ══ CAMBIAR TÉCNICO DE OT ══ */
+let otTecnicoActual=null;
+function toggleEditarTecnicoOT(mostrar){
+  const box=document.getElementById('dOtTecEdit');
+  const ver=mostrar===undefined ? box.style.display==='none' : mostrar;
+  box.style.display=ver?'block':'none';
+  if(!ver) return;
+  const o=otsTodas.find(x=>x.NroOT===otTecnicoActual); if(!o) return;
+  const actuales=D.tecnicosDe(o.Tecnico);
+  const s=document.getElementById('dOtTecnicoSel'); s.innerHTML='';
+  const nombres=TECNICOS.map(t=>t.nombre);
+  TECNICOS.forEach(t=>s.add(new Option(t.nombre+' · '+t.esp, t.nombre, false, actuales.includes(t.nombre))));
+  actuales.filter(n=>!nombres.includes(n)).forEach(n=>s.add(new Option(n, n, false, true))); // técnico fuera de lista
+}
+async function guardarTecnicoOT(){
+  const o=otsTodas.find(x=>x.NroOT===otTecnicoActual); if(!o) return;
+  const tecnico=Array.from(document.getElementById('dOtTecnicoSel').selectedOptions).map(op=>op.value).join(', ');
+  if(!tecnico){ showToast('Seleccioná al menos un técnico','err'); return; }
+  if(tecnico===(o.Tecnico||'')){ toggleEditarTecnicoOT(false); return; }
+  const prev=o.Tecnico, btn=document.getElementById('dOtBtnTecGuardar');
+  btn.disabled=true; btn.textContent='Guardando…';
+  o.Tecnico=tecnico; aplicarFiltros(); // optimista
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:(window.CIMPLAST_DATA.apiPostBody({
+      accion:'actualizarOT', nroOT:o.NroOT, tecnico
+    }))});
+    const d=await r.json();
+    if(d.ok===false) throw new Error(d.error||'API');
+    document.getElementById('dOtTecnico').textContent=tecnico;
+    toggleEditarTecnicoOT(false);
+    showToast('OT '+o.NroOT+' → '+tecnico);
+  }catch(err){
+    o.Tecnico=prev; aplicarFiltros();
+    showToast('No se pudo cambiar el técnico: '+err.message,'err');
+  }finally{ btn.disabled=false; btn.textContent='Guardar'; }
 }
 
 /* ══ MODAL GENERAR OT ══ */
@@ -2710,6 +2749,9 @@ function abrirDetalleOT(nroOT){
   dPrio.textContent = o.Prioridad || '—';
   dPrio.style.color = prio;
   document.getElementById('dOtTecnico').textContent = o.Tecnico || 'Sin asignar';
+  otTecnicoActual = o.NroOT;
+  toggleEditarTecnicoOT(false);
+  document.getElementById('dOtBtnTec').style.display = o.Estado === 'Cerrada' ? 'none' : '';
   document.getElementById('dOtDesc').textContent = o.Descripcion || '—';
   document.getElementById('dOtFechaProg').textContent = o.FechaProgramada ? D.fmtFecha(o.FechaProgramada) : '—';
   document.getElementById('dOtHoras').textContent = o.HorasEstimada ? o.HorasEstimada + ' h' : '—';
