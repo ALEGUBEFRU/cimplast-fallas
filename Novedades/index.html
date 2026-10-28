@@ -65,6 +65,7 @@ main{padding:12px 12px 0;display:flex;flex-direction:column;gap:10px;max-width:6
 .selp{display:flex;flex-wrap:wrap;gap:8px}
 .selp button{border:2px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 14px;font-weight:600}
 .selp button[aria-pressed="true"]{border-color:var(--top);background:var(--top);color:var(--topink)}
+.selp button.fin[aria-pressed="true"]{border-color:var(--ok);background:var(--ok);color:#fff}
 /* hoja de carga */
 .velo{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 .hoja{background:var(--card);width:100%;max-width:640px;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;max-height:92vh;overflow:auto}
@@ -107,7 +108,8 @@ label{font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:5px}
 <script>
 "use strict";
 const ESTADOS_FALLA = ["En reparación", "Falta repuesto", "Falta personal", "Espera tercero", "En observación", "Resuelta"];
-const ESTADOS_TRABAJO = ["En curso", "Falta material", "Falta personal", "Pausado", "Terminado"];
+const ESTADOS_TRABAJO = ["En curso", "Falta material", "Falta personal", "Pausado", "Terminado", "Pasó a OT"];
+const CIERRE_TRABAJO = ["Terminado", "Pasó a OT"];
 const ESTADOS_GENERAL = ["Falta personal", "Falta repuesto", "Pedido", "Otro"];
 const AREAS = ["Plantas 3-4-5", "Titese (Planta 6)", "Matricería"];
 const PLANTAS = {"Plantas 3-4-5": ["Planta 3", "Planta 4", "Planta 5"], "Titese (Planta 6)": ["Titese"], "Matricería": ["Matricería"]};
@@ -230,7 +232,7 @@ function tarjeta(it){
   if (n && n.asignados && n.asignados.length) nov += `<div class="chips"><span class="chip">Asignado: ${esc(n.asignados.join(", "))}</span></div>`;
   if (!trab && n && n.estado === "Resuelta" && esHoy(n.cargado)) nov += `<div class="chips"><span class="chip">Falta cerrar en el CMMS</span></div>`;
   const chips = trab
-    ? `<span class="chip trab">Trabajo</span>${it.equipo ? `<span class="chip">${esc(it.equipo)}</span>` : ""}${n && n.estado === "Terminado" ? `<span class="chip ok">Terminado</span>` : ""}`
+    ? `<span class="chip trab">Trabajo</span>${it.equipo ? `<span class="chip">${esc(it.equipo)}</span>` : ""}${n && CIERRE_TRABAJO.includes(n.estado) ? `<span class="chip ok">${esc(n.estado)}</span>` : ""}`
     : `${det ? `<span class="chip det">${esc(it.detenido)}</span>` : ""}${it.ot ? `<span class="chip">${esc(it.ot)}</span>` : `<span class="chip">Sin OT</span>`}${it.subestado ? `<span class="chip">${esc(it.subestado)}</span>` : ""}`;
   const html = `<button class="card ${trab ? "trab" : (det ? "det" : "")}" type="button" data-id="${esc(it.id)}">
     <div class="t"><span class="eq">${esc(trab ? corto(it.sintoma, 70) : it.equipo)}</span><span class="dias">${esc(it.planta)} · ${hace(it.desde)}</span></div>
@@ -295,12 +297,17 @@ function abrirCarga(it){
   const opciones = !it ? ESTADOS_GENERAL : (trab ? ESTADOS_TRABAJO : ESTADOS_FALLA);
   $("capa").innerHTML = `<div class="velo" id="velo"><div class="hoja" role="dialog" aria-modal="true" aria-label="Cargar novedad">
     <h2>${titulo}</h2><p class="sub">${sub}</p>
-    <div class="opc" id="opc">${opciones.map(e => `<button type="button" class="${e === "Resuelta" || e === "Terminado" ? "res" : ""}" aria-pressed="false" data-e="${esc(e)}">${esc(e)}</button>`).join("")}</div>
+    <div class="opc" id="opc">${opciones.map(e => `<button type="button" class="${e === "Resuelta" || CIERRE_TRABAJO.includes(e) ? "res" : ""}" aria-pressed="false" data-e="${esc(e)}">${esc(e)}</button>`).join("")}</div>
     ${botonesTecnicos(asignados)}
     <button type="button" class="ger" id="ger" aria-pressed="false"><span class="caja"></span>Buscar definición</button>
     <label>Nota (opcional)<textarea id="nota" maxlength="300" placeholder="Ej.: llega el rodamiento mañana; falta un técnico en el turno noche"></textarea></label>
     ${pieForm()}</div></div>`;
-  const listo = () => $("guardar").disabled = !(estado || (!it && $("nota").value.trim()));
+  const notaVacia = () => !$("nota").value.trim();
+  const listo = () => {
+    const ot = estado === "Pasó a OT";
+    $("nota").placeholder = ot ? "Número de OT (obligatorio). Ej.: OT-2026-10250" : "Ej.: llega el rodamiento mañana; falta un técnico en el turno noche";
+    $("guardar").disabled = !(estado || (!it && !notaVacia())) || (ot && notaVacia());
+  };
   elegirUno("opc", e => { estado = e; listo(); });
   activarTecnicos(asignados);
   $("ger").onclick = () => { definicion = !definicion; $("ger").setAttribute("aria-pressed", String(definicion)); };
@@ -318,12 +325,12 @@ function abrirTrabajo(){
   const plantas = PLANTAS[cfg.area] || [];
   if (plantas.length === 1) planta = plantas[0];
   $("capa").innerHTML = `<div class="velo" id="velo"><div class="hoja" role="dialog" aria-modal="true" aria-label="Nuevo trabajo">
-    <h2>Nuevo trabajo</h2><p class="sub">Un trabajo que no es una falla. Ej.: soldar estructura de cañerías en Planta 5.</p>
+    <h2>Nuevo trabajo</h2><p class="sub">Un trabajo que no es una falla. Ej.: soldar estructura de cañerías en Planta 5. Si ya lo terminó, elija «Terminado».</p>
     <label>Qué trabajo<textarea id="desc" maxlength="200" placeholder="Ej.: Soldar estructura de cañerías de agua"></textarea></label>
     <div class="tit">Planta</div><div class="selp" id="plantas">${plantas.map(p => `<button type="button" aria-pressed="${p === planta}" data-e="${esc(p)}">${esc(p)}</button>`).join("")}</div>
     <label>Equipo o lugar (opcional)<input id="lugar" maxlength="80" placeholder="Ej.: sector chillers, techo depósito"></label>
     ${botonesTecnicos(asignados)}
-    <div class="tit">Estado</div><div class="selp" id="est">${["Pendiente", "En curso"].map(e => `<button type="button" aria-pressed="${e === estado}" data-e="${e}">${e}</button>`).join("")}</div>
+    <div class="tit">Estado</div><div class="selp" id="est">${["Pendiente", "En curso", "Terminado"].map(e => `<button type="button" class="${e === "Terminado" ? "fin" : ""}" aria-pressed="${e === estado}" data-e="${e}">${e}</button>`).join("")}</div>
     ${pieForm()}</div></div>`;
   const tecs = (lista && lista.tecnicos) || [];
   const listo = () => $("guardar").disabled = !($("desc").value.trim() && planta && (asignados.size || !tecs.length));
